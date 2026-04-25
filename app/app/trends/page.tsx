@@ -452,7 +452,7 @@ export default function TrendsPage() {
 
           <p className="expert-trends-subtitle">
             {profileNiche
-              ? `Ориентиры для ниши: ${profileNiche}${profilePlatform ? ` ? ${profilePlatform}` : ""}`
+              ? `Ориентиры для ниши: ${profileNiche}`
               : "Тренды станут точнее после заполнения профиля."}
           </p>
 
@@ -524,7 +524,7 @@ export default function TrendsPage() {
             <article className="video-card" key={video.id}>
               <div className="video-preview">
                 <span>▶</span>
-                <b>Бесплатно</b>
+
               </div>
               <h3>{video.title}</h3>
               <p>{video.description}</p>
