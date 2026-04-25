@@ -35,6 +35,15 @@ type DiscussSource =
   | { kind: "calendar"; day: number }
   | { kind: "node"; nodeId: string };
 
+type AiRole = {
+  key: string;
+  file: string;
+};
+
+type DiscussSource =
+  | { kind: "calendar"; day: number }
+  | { kind: "node"; nodeId: string };
+
 export default function ContentMapPage() {
   const [email, setEmail] = useState("");
   const [profileExists, setProfileExists] = useState<boolean | null>(null);
@@ -47,6 +56,8 @@ export default function ContentMapPage() {
   const [calendarAiComment, setCalendarAiComment] = useState("");
   const [calendarAiDraft, setCalendarAiDraft] = useState<CalendarPlanItem | null>(null);
   const [discussSource, setDiscussSource] = useState<DiscussSource | null>(null);
+  const [aiRoles, setAiRoles] = useState<AiRole[]>([]);
+  const [selectedAgent, setSelectedAgent] = useState("daily_manager");
 
   useEffect(() => {
     const savedEmail = localStorage.getItem("lesik_email") || "";
@@ -72,6 +83,20 @@ export default function ContentMapPage() {
     };
 
     load();
+  }, []);
+
+  useEffect(() => {
+    const loadRoles = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/ai/roles");
+        const data = await res.json();
+        setAiRoles(data.roles || []);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    loadRoles();
   }, []);
 
   const generate = async () => {
@@ -156,6 +181,7 @@ export default function ContentMapPage() {
           email,
           item: selectedItem,
           question: calendarAiQuestion.trim(),
+          agent: selectedAgent,
         }),
       });
 
@@ -333,6 +359,13 @@ export default function ContentMapPage() {
 
             <div className="profile-form-block">
               <h3>Ваш вопрос к ИИ</h3>
+              <select value={selectedAgent} onChange={(e) => setSelectedAgent(e.target.value)}>
+                {aiRoles.map((role) => (
+                  <option key={role.key} value={role.key}>
+                    {role.key}
+                  </option>
+                ))}
+              </select>
               <textarea
                 value={calendarAiQuestion}
                 placeholder="Например: сделай этот пост более продающим, но без агрессии"

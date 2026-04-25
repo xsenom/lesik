@@ -17,6 +17,15 @@ import uuid
 BASE_DIR = Path(__file__).parent
 DB_PATH = BASE_DIR / "lesik.db"
 PROMPT_PATH = BASE_DIR / "prompts" / "content_map.md"
+AI_ROLES_DIR = BASE_DIR / "prompts" / "ai_roles"
+
+AI_ROLE_FILES = {
+    "audience_architect": "01_Архитектор_позиционирования_и_ЦА.txt",
+    "social_strategy": "02_Стратег_продвижения_в_соцсетях.txt",
+    "product_architect": "03_Продуктовый_архитектор.txt",
+    "daily_manager": "04_Ежедневный_менеджер_продвижения.txt",
+    "marketing_office": "05_Маркетинговый_офис_10_сотрудников.txt",
+}
 
 load_dotenv(BASE_DIR / ".env")
 
@@ -59,6 +68,7 @@ class ContentMapDiscussIn(BaseModel):
     email: EmailStr
     item: dict
     question: str
+    agent: str = "daily_manager"
 
 
 class AudienceAnalysisIn(BaseModel):
@@ -188,6 +198,27 @@ def startup():
 @app.get("/health")
 def health():
     return {"ok": True}
+
+
+def load_ai_role_prompt(agent: str) -> str:
+    key = (agent or "").strip()
+    filename = AI_ROLE_FILES.get(key)
+    if not filename:
+        return ""
+    path = AI_ROLES_DIR / filename
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="utf-8").strip()
+
+
+@app.get("/ai/roles")
+def get_ai_roles():
+    return {
+        "roles": [
+            {"key": key, "file": filename}
+            for key, filename in AI_ROLE_FILES.items()
+        ]
+    }
 
 
 @app.get("/videos")
@@ -572,12 +603,14 @@ def discuss_content_map_item(data: ContentMapDiscussIn):
     if not OPENAI_API_KEY or OPENAI_API_KEY.startswith("вставь"):
         return {"ok": True, "email": email, "updated_item": fallback, "comment": fallback["comment"]}
 
-    system_prompt = """
+    base_prompt = """
 Ты — редактор контент-плана. Пользователь присылает карточку поста и вопрос.
 Верни только JSON с ключами:
 topic, platform, format, task, goal, comment.
 Сделай формулировки яснее и практичнее, сохрани общий смысл.
 """
+    role_prompt = load_ai_role_prompt(data.agent)
+    system_prompt = f"{role_prompt}\n\n{base_prompt}".strip() if role_prompt else base_prompt
 
     client = OpenAI(api_key=OPENAI_API_KEY.strip())
     model = os.getenv("OPENAI_MODEL", OPENAI_MODEL).strip()
@@ -970,7 +1003,9 @@ async def upload_audience_analysis(
 @app.post("/audience-analysis/analyze")
 def analyze_audience_with_ai(data: AudienceAnalysisIn):
     prompt_path = Path(__file__).parent / "prompts" / "audience_architect.md"
-    system_prompt = prompt_path.read_text(encoding="utf-8")
+    legacy_prompt = prompt_path.read_text(encoding="utf-8")
+    role_prompt = load_ai_role_prompt("audience_architect")
+    system_prompt = f"{role_prompt}\n\n{legacy_prompt}".strip() if role_prompt else legacy_prompt
 
     client = OpenAI(api_key=OPENAI_API_KEY.strip())
     model = os.getenv("OPENAI_MODEL", OPENAI_MODEL).strip()
