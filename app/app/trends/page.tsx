@@ -32,6 +32,21 @@ type VideoItem = {
   url: string;
 };
 
+function getYouTubeEmbed(url: string) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes("youtu.be")) {
+      const id = parsed.pathname.replace("/", "");
+      return id ? `https://www.youtube.com/embed/${id}?autoplay=1` : "";
+    }
+    if (parsed.hostname.includes("youtube.com")) {
+      const id = parsed.searchParams.get("v");
+      return id ? `https://www.youtube.com/embed/${id}?autoplay=1` : "";
+    }
+  } catch {}
+  return "";
+}
+
 const TELEGRAM_BOT_URL =
   process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL || "https://t.me/";
 
@@ -157,6 +172,7 @@ function buildCalendarDays(calendar: CalendarItem[], startDate: string): Calenda
 
 export default function TrendsPage() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
+  const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [profileNiche, setProfileNiche] = useState("");
   const [profilePlatform, setProfilePlatform] = useState("");
   const [calendar, setCalendar] = useState<CalendarItem[]>([]);
@@ -524,7 +540,7 @@ export default function TrendsPage() {
                   } catch (e) {
                     console.error(e);
                   }
-                  window.open(video.url, "_blank", "noopener,noreferrer");
+                  setActiveVideo(video);
                 }}
               >
                 ▶ Смотреть
@@ -533,6 +549,38 @@ export default function TrendsPage() {
           ))}
         </SwipeRow>
       </section>
+
+      {activeVideo && (
+        <div className="profile-modal-backdrop" onClick={() => setActiveVideo(null)}>
+          <div className="profile-modal profile-modal-large" onClick={(e) => e.stopPropagation()}>
+            <div className="profile-modal-head">
+              <div>
+                <p className="eyebrow">Видеоурок</p>
+                <h2>{activeVideo.title}</h2>
+              </div>
+              <button type="button" onClick={() => setActiveVideo(null)}>×</button>
+            </div>
+
+            {getYouTubeEmbed(activeVideo.url) ? (
+              <iframe
+                title={activeVideo.title}
+                src={getYouTubeEmbed(activeVideo.url)}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+                style={{ width: "100%", minHeight: 420, border: 0, borderRadius: 18 }}
+              />
+            ) : (
+              <video
+                controls
+                autoPlay
+                src={activeVideo.url}
+                style={{ width: "100%", borderRadius: 18, background: "#000" }}
+              />
+            )}
+          </div>
+        </div>
+      )}
 
 
       {instaCalendarOpen && (

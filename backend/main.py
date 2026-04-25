@@ -27,7 +27,11 @@ app = FastAPI(title="LESik API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1):3000",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -175,9 +179,9 @@ def startup():
                 VALUES (?, ?, ?, ?, ?)
                 """,
                 [
-                    ("Как пользоваться ЛЕСik", "Короткое видео: как идти маленькими шагами и не терять фокус.", "https://www.youtube.com/results?search_query=как+пользоваться+лесik", 1, now),
-                    ("Как продавать через контент", "Почему контент должен вести к цели, а не просто заполнять ленту.", "https://www.youtube.com/results?search_query=как+продавать+через+контент", 1, now),
-                    ("Mini App в Telegram", "Кабинет, уведомления и ежедневные задачи.", "https://www.youtube.com/results?search_query=telegram+mini+app+обучение", 1, now),
+                    ("Как пользоваться ЛЕСik", "Короткое видео: как идти маленькими шагами и не терять фокус.", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", 1, now),
+                    ("Как продавать через контент", "Почему контент должен вести к цели, а не просто заполнять ленту.", "https://www.youtube.com/watch?v=ysz5S6PUM-U", 1, now),
+                    ("Mini App в Telegram", "Кабинет, уведомления и ежедневные задачи.", "https://www.youtube.com/watch?v=jNQXAC9IVRw", 1, now),
                 ],
             )
 
@@ -578,27 +582,31 @@ topic, platform, format, task, goal, comment.
     client = OpenAI(api_key=OPENAI_API_KEY.strip())
     model = os.getenv("OPENAI_MODEL", OPENAI_MODEL).strip()
 
-    response = client.chat.completions.create(
-        model=model,
-        temperature=0.4,
-        response_format={"type": "json_object"},
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {
-                "role": "user",
-                "content": json.dumps(
-                    {"item": item, "question": question},
-                    ensure_ascii=False
-                ),
-            },
-        ],
-    )
-
-    raw = response.choices[0].message.content or "{}"
-
     try:
-        result = json.loads(raw)
-    except Exception:
+        response = client.chat.completions.create(
+            model=model,
+            temperature=0.4,
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {
+                    "role": "user",
+                    "content": json.dumps(
+                        {"item": item, "question": question},
+                        ensure_ascii=False
+                    ),
+                },
+            ],
+        )
+
+        raw = response.choices[0].message.content or "{}"
+
+        try:
+            result = json.loads(raw)
+        except Exception:
+            result = fallback
+    except Exception as e:
+        print("DISCUSS_ITEM_ERROR:", repr(e))
         result = fallback
 
     updated_item = {
