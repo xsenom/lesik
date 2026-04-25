@@ -303,6 +303,9 @@ export default function ContentMapPage() {
                   <p><b>{item.platform}</b> · {item.format}</p>
                   <p>{item.task}</p>
                   <small>{item.goal}</small>
+                  <button type="button" className="calendar-ai-inline-button">
+                    Обсудить с ИИ
+                  </button>
                 </article>
               ))}
             </div>
