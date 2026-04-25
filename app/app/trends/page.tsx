@@ -25,23 +25,12 @@ type CalendarDay = {
   tasks: { id: string; text: string }[];
 };
 
-const videos = [
-  {
-    title: "Как пользоваться ЛЕСik",
-    text: "Короткое видео: как идти маленькими шагами и не терять фокус.",
-    locked: false,
-  },
-  {
-    title: "Как продавать через контент",
-    text: "Почему контент должен вести к цели, а не просто заполнять ленту.",
-    locked: false,
-  },
-  {
-    title: "Mini App в Telegram",
-    text: "Кабинет, уведомления и ежедневные задачи.",
-    locked: true,
-  },
-];
+type VideoItem = {
+  id: number;
+  title: string;
+  description: string;
+  url: string;
+};
 
 const TELEGRAM_BOT_URL =
   process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL || "https://t.me/";
@@ -167,6 +156,7 @@ function buildCalendarDays(calendar: CalendarItem[], startDate: string): Calenda
 }
 
 export default function TrendsPage() {
+  const [videos, setVideos] = useState<VideoItem[]>([]);
   const [profileNiche, setProfileNiche] = useState("");
   const [profilePlatform, setProfilePlatform] = useState("");
   const [calendar, setCalendar] = useState<CalendarItem[]>([]);
@@ -252,6 +242,20 @@ export default function TrendsPage() {
     };
 
     load();
+  }, []);
+
+  useEffect(() => {
+    const loadVideos = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/videos");
+        const data = await res.json();
+        setVideos(data.videos || []);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    loadVideos();
   }, []);
 
   useEffect(() => {
@@ -501,15 +505,29 @@ export default function TrendsPage() {
 
         <SwipeRow className="video-row">
           {videos.map((video) => (
-            <article className="video-card" key={video.title}>
+            <article className="video-card" key={video.id}>
               <div className="video-preview">
-                {video.locked ? <span>🔒</span> : <span>▶</span>}
-                {video.locked && <b>PRO</b>}
+                <span>▶</span>
+                <b>Бесплатно</b>
               </div>
               <h3>{video.title}</h3>
-              <p>{video.text}</p>
-              <button type="button">
-                {video.locked ? "🔒 Доступ по подписке" : "▶ Смотреть"}
+              <p>{video.description}</p>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await fetch(`http://localhost:8000/videos/${video.id}/view`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email }),
+                    });
+                  } catch (e) {
+                    console.error(e);
+                  }
+                  window.open(video.url, "_blank", "noopener,noreferrer");
+                }}
+              >
+                ▶ Смотреть
               </button>
             </article>
           ))}
