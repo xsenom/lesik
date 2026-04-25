@@ -1,0 +1,384 @@
+﻿"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+type CalendarItem = {
+  day: number;
+  date_label: string;
+  platform: string;
+  format: string;
+  topic: string;
+  task: string;
+  goal: string;
+};
+
+const videos = [
+  {
+    title: "Как пользоваться ЛЕСik",
+    text: "Короткое видео: как идти маленькими шагами и не терять фокус.",
+    locked: false,
+  },
+  {
+    title: "Как продавать через контент",
+    text: "Почему контент должен вести к цели, а не просто заполнять ленту.",
+    locked: false,
+  },
+  {
+    title: "Mini App в Telegram",
+    text: "Как будет работать кабинет, уведомления и ежедневные задачи.",
+    locked: true,
+  },
+];
+
+function SwipeRow({ children, className }: { children: React.ReactNode; className: string }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const drag = useRef({ down: false, startX: 0, scrollLeft: 0 });
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      onMouseDown={(e) => {
+        if (!ref.current) return;
+        drag.current = { down: true, startX: e.pageX, scrollLeft: ref.current.scrollLeft };
+      }}
+      onMouseLeave={() => (drag.current.down = false)}
+      onMouseUp={() => (drag.current.down = false)}
+      onMouseMove={(e) => {
+        if (!drag.current.down || !ref.current) return;
+        e.preventDefault();
+        const walk = (e.pageX - drag.current.startX) * 1.35;
+        ref.current.scrollLeft = drag.current.scrollLeft - walk;
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+export default function TrendsPage() {
+  const [calendar, setCalendar] = useState<CalendarItem[]>([]);
+  const [name, setName] = useState("друг");
+  const [avatar, setAvatar] = useState("");
+  const [checked, setChecked] = useState<Record<number, boolean>>({});
+  const [startDate, setStartDate] = useState("");
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [notify, setNotify] = useState({
+    email: true,
+    telegram: false,
+    wallet: false,
+  });
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("lesik_email") || "";
+    const savedAvatar = localStorage.getItem("lesik_avatar") || "";
+    const savedStartDate = localStorage.getItem("lesik_calendar_start") || "";
+    const savedNotify = localStorage.getItem("lesik_notify");
+
+    setAvatar(savedAvatar);
+    setStartDate(savedStartDate);
+    setSelectedDate(savedStartDate);
+
+    if (savedNotify) {
+      try {
+        setNotify(JSON.parse(savedNotify));
+      } catch {}
+    }
+
+    if (!savedEmail) return;
+
+    const load = async () => {
+      try {
+        const profileRes = await fetch(`http://localhost:8000/profiles/by-email?email=${encodeURIComponent(savedEmail)}`);
+        const profileData = await profileRes.json();
+
+        if (profileData.profile?.name) setName(profileData.profile.name);
+
+        const mapRes = await fetch(`http://localhost:8000/content-map/by-email?email=${encodeURIComponent(savedEmail)}`);
+        const mapData = await mapRes.json();
+
+        if (mapData.content_map?.map?.calendar) {
+          setCalendar(mapData.content_map.map.calendar);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    load();
+  }, []);
+
+  const days = useMemo(() => {
+    const base = new Date();
+    return Array.from({ length: 35 }).map((_, index) => {
+      const d = new Date(base);
+      d.setDate(base.getDate() + index);
+
+      return {
+        value: d.toISOString().slice(0, 10),
+        day: d.getDate(),
+        weekday: d.toLocaleDateString("ru-RU", { weekday: "short" }),
+        month: d.toLocaleDateString("ru-RU", { month: "short" }),
+      };
+    });
+  }, []);
+
+  const goals = calendar.length
+    ? calendar.slice(0, 4).map((item) => item.task)
+    : [
+        "Сформировать карту контента",
+        "Выбрать дату старта календаря",
+        "Определить один маленький шаг на сегодня",
+        "Подготовить первую публикацию",
+      ];
+
+  const uploadAvatar = (file?: File) => {
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const value = String(reader.result || "");
+      localStorage.setItem("lesik_avatar", value);
+      setAvatar(value);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const confirmCalendarStart = () => {
+    if (!selectedDate) return;
+
+    localStorage.setItem("lesik_calendar_start", selectedDate);
+    localStorage.setItem("lesik_notify", JSON.stringify(notify));
+    setStartDate(selectedDate);
+    setCalendarOpen(false);
+  };
+
+  const getRealDate = (day: number) => {
+    if (!startDate) return `День ${day}`;
+
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + day - 1);
+
+    return d.toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "short",
+    });
+  };
+
+  const selectedDateText = selectedDate
+    ? new Date(selectedDate).toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      })
+    : "";
+
+  return (
+    <section className="lesik-home-screen">
+
+      <header className="home-hero-ios">
+        <div className="home-hero-text">
+          <label className="home-avatar uploadable-avatar">
+            {avatar ? <img src={avatar} alt="" /> : null}
+            <input type="file" accept="image/*" onChange={(e) => uploadAvatar(e.target.files?.[0])} />
+          </label>
+
+          <div>
+            <p className="home-welcome">Привет, {name}</p>
+            <h1>Система маленьких шагов</h1>
+            <p className="home-subtitle">
+              Твоя помощь в продажах через контент. ЛЕСik собирает профиль,
+              строит карту смыслов и превращает цель в ежедневные действия.
+            </p>
+          </div>
+        </div>
+
+        <Link href="/app/content-map" className="hero-primary-button">
+          Построить карту
+        </Link>
+      </header>
+
+      <div className="home-main-grid-ios">
+        <section className="ios-glass-card goals-ios-card">
+          <div className="ios-card-head">
+            <div>
+              <p className="home-kicker">Сегодня</p>
+              <h2>Цели на день</h2>
+            </div>
+            <span>{Object.values(checked).filter(Boolean).length}/{goals.length}</span>
+          </div>
+
+          <div className="iphone-goals-list">
+            {goals.map((goal, index) => (
+              <button
+                key={`${goal}-${index}`}
+                type="button"
+                className={checked[index] ? "iphone-goal done" : "iphone-goal"}
+                onClick={() => setChecked((prev) => ({ ...prev, [index]: !prev[index] }))}
+              >
+                <span className="goal-circle">{checked[index] ? "✓" : ""}</span>
+                <b>{goal}</b>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="ios-glass-card calendar-ios-card">
+          <div className="ios-card-head">
+            <div>
+              <p className="home-kicker">Календарь</p>
+              <h2>{startDate ? `Старт: ${getRealDate(1)}` : "Начните вести план"}</h2>
+            </div>
+          </div>
+
+          <p className="ios-card-text">
+            Выберите дату старта, а ЛЕСik привяжет задачи к реальным дням.
+          </p>
+
+          <button type="button" className="ios-dark-button" onClick={() => setCalendarOpen(true)}>
+            {startDate ? "Изменить дату" : "Начать вести календарь"}
+          </button>
+        </section>
+      </div>
+
+      {calendarOpen && (
+        <div className="calendar-modal-backdrop" onClick={() => setCalendarOpen(false)}>
+          <div className="calendar-modal ios-calendar-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="calendar-modal-head">
+              <div>
+                <p className="calendar-year">2026</p>
+                <h2>Календарь</h2>
+              </div>
+              <button type="button" onClick={() => setCalendarOpen(false)}>×</button>
+            </div>
+
+            <div className="real-calendar-grid">
+              {days.map((day) => (
+                <button
+                  key={day.value}
+                  type="button"
+                  className={selectedDate === day.value ? "selected" : ""}
+                  onClick={() => setSelectedDate(day.value)}
+                >
+                  <small>{day.weekday}</small>
+                  <b>{day.day}</b>
+                  <span>{day.month}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="ios-event-preview">
+              <i />
+              <div>
+                <h3>{selectedDate ? `Начать вести с ${selectedDateText}` : "Выберите день старта"}</h3>
+                <p>С этого дня начнутся задачи, напоминания и календарь публикаций.</p>
+              </div>
+            </div>
+
+            <div className="notify-box">
+              <h3>Куда присылать уведомления?</h3>
+
+              <label>
+                <input
+                  type="checkbox"
+                  checked={notify.email}
+                  onChange={(e) => setNotify((p) => ({ ...p, email: e.target.checked }))}
+                />
+                <span>Email</span>
+              </label>
+
+              <label>
+                <input
+                  type="checkbox"
+                  checked={notify.telegram}
+                  onChange={(e) => setNotify((p) => ({ ...p, telegram: e.target.checked }))}
+                />
+                <span>Telegram</span>
+              </label>
+
+              <label>
+                <input
+                  type="checkbox"
+                  checked={notify.wallet}
+                  onChange={(e) => setNotify((p) => ({ ...p, wallet: e.target.checked }))}
+                />
+                <span>Wallet-карточка</span>
+              </label>
+            </div>
+
+            {selectedDate && (
+              <button className="calendar-confirm" type="button" onClick={confirmCalendarStart}>
+                Начать вести с {selectedDateText}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {calendar.length > 0 && (
+        <section className="ios-glass-card home-calendar-strip">
+          <div className="ios-card-head">
+            <div>
+              <p className="home-kicker">План публикаций</p>
+              <h2>Ближайшие дни</h2>
+            </div>
+            <Link href="/app/content-map">Открыть карту</Link>
+          </div>
+
+          <SwipeRow className="calendar-swipe-row">
+            {calendar.map((item) => (
+              <article key={item.day}>
+                <span>{getRealDate(item.day)}</span>
+                <b>{item.format}</b>
+                <p>{item.topic}</p>
+                <small>{item.platform}</small>
+              </article>
+            ))}
+          </SwipeRow>
+        </section>
+      )}
+
+      {!calendar.length && (
+        <section className="ios-glass-card empty-calendar-card">
+          <h2>Карта контента ещё не создана</h2>
+          <p>Сначала сформируйте карту. После этого здесь появятся календарь, цели на день и динамика.</p>
+          <Link href="/app/content-map">Сформировать карту</Link>
+        </section>
+      )}
+
+      <section className="ios-glass-card home-video-section">
+        <div className="video-head">
+          <h2>Видео от Кати</h2>
+          <p>Можно листать пальцем или мышкой</p>
+        </div>
+
+        <SwipeRow className="video-row">
+          {videos.map((video) => (
+            <article className="video-card" key={video.title}>
+              <div className="video-preview">
+                {video.locked ? <span>🔒</span> : <span>▶</span>}
+                {video.locked && <b>PRO</b>}
+              </div>
+              <h3>{video.title}</h3>
+              <p>{video.text}</p>
+              <button type="button">
+                {video.locked ? "🔒 Доступ по подписке" : "▶ Смотреть"}
+              </button>
+            </article>
+          ))}
+        </SwipeRow>
+      </section>
+
+      <footer className="home-faq-footer ios-glass-card">
+        <div>
+          <h2>Вопросы и ответы</h2>
+          <p>Здесь будет раздел с подсказками, ответами и быстрыми ссылками.</p>
+        </div>
+        <Link href="/app/profile">Проверить профиль</Link>
+      </footer>
+    </section>
+  );
+}
+
