@@ -76,6 +76,7 @@ export default function ProfilePage() {
   const [introAccepted, setIntroAccepted] = useState(false);
   const [basicDone, setBasicDone] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [productOpen, setProductOpen] = useState(false);
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [audienceUploading, setAudienceUploading] = useState(false);
@@ -210,7 +211,7 @@ export default function ProfilePage() {
 
     const email = answers.email || localStorage.getItem("lesik_email") || "";
     if (!email) {
-      alert("??????? ????????? email.");
+      alert("Сначала укажите корректный email.");
       return;
     }
 
@@ -238,7 +239,7 @@ export default function ProfilePage() {
       }));
     } catch (e) {
       console.error(e);
-      alert("?? ??????? ????????? ?????. ????????? backend ? OPENAI_API_KEY.");
+      alert("Не удалось разобрать файл. Проверьте backend и OPENAI_API_KEY.");
     } finally {
       setAudienceUploading(false);
     }
@@ -248,7 +249,7 @@ export default function ProfilePage() {
   const runAudienceAiAnalysis = async (nextAnswers?: { question: string; answer: string }[]) => {
     const email = answers.email || localStorage.getItem("lesik_email") || "";
     if (!email) {
-      alert("??????? ????????? email.");
+      alert("Сначала укажите корректный email.");
       return;
     }
 
@@ -280,7 +281,7 @@ export default function ProfilePage() {
       }
     } catch (e) {
       console.error(e);
-      alert("?? ??????? ????????? ??-?????? ?????????.");
+      alert("Не удалось запустить ИИ-анализ аудитории.");
     } finally {
       setAudienceAiLoading(false);
     }
@@ -313,7 +314,13 @@ export default function ProfilePage() {
     setAudienceAiOpen(false);
   };
 
-  const saveDetails = async () => {
+  const saveDetails = async ({
+    closeDetails = true,
+    closeProduct = false,
+  }: {
+    closeDetails?: boolean;
+    closeProduct?: boolean;
+  } = {}) => {
     setSaving(true);
 
     try {
@@ -331,17 +338,24 @@ export default function ProfilePage() {
       if (!res.ok) throw new Error(await res.text());
 
       setDetails(payload);
-      setDetailsOpen(false);
+      if (closeDetails) {
+        setDetailsOpen(false);
+      }
+      if (closeProduct) {
+        setProductOpen(false);
+      }
+      return true;
     } catch (e) {
       console.error(e);
       alert("Не удалось сохранить расширенный профиль.");
+      return false;
     } finally {
       setSaving(false);
     }
   };
 
   const saveNotify = async () => {
-    await saveDetails();
+    await saveDetails({ closeDetails: false });
     setNotifyOpen(false);
   };
 
@@ -527,7 +541,11 @@ export default function ProfilePage() {
 
         <div className="client-actions profile-actions">
           <button type="button" onClick={() => setDetailsOpen(true)}>
-            Заполнить анализ и продукт
+            Заполнить анализ аудитории
+          </button>
+
+          <button type="button" onClick={() => setProductOpen(true)}>
+            Вопросы по продукту
           </button>
 
           <button type="button" className="secondary" onClick={() => setNotifyOpen(true)}>
@@ -612,19 +630,19 @@ export default function ProfilePage() {
           <div className="profile-modal profile-modal-large audience-ai-modal" onClick={(e) => e.stopPropagation()}>
             <div className="profile-modal-head">
               <div>
-                <p className="eyebrow">??-??????</p>
-                <h2>?????????? ?????????</h2>
+                <p className="eyebrow">ИИ-помощник</p>
+                <h2>Интервью по аудитории</h2>
               </div>
-              <button type="button" onClick={() => setAudienceAiOpen(false)}>?</button>
+              <button type="button" onClick={() => setAudienceAiOpen(false)}>×</button>
             </div>
 
             <p className="profile-modal-text">
-              ?? ???????? ?????? ??????? ?????????. ???? ?????? ???? ? ?????? ?????????? ??????? ?? ??????.
+              ИИ задаст уточняющие вопросы по вашей аудитории и подготовит финальный черновик анализа.
             </p>
 
             {audienceAiLoading && (
               <div className="audience-ai-state">
-                ????????? ??-?????? ?????????
+                Формирую следующий вопрос...
               </div>
             )}
 
@@ -633,28 +651,28 @@ export default function ProfilePage() {
                 <h3>{audienceAiQuestion}</h3>
                 <textarea
                   value={audienceAiAnswer}
-                  placeholder="???????? ?? ??????..."
+                  placeholder="Введите ответ на вопрос..."
                   onChange={(e) => setAudienceAiAnswer(e.target.value)}
                 />
                 <button type="button" className="modal-save-button" onClick={answerAudienceAiQuestion}>
-                  ????????? ??-?????? ?????????
+                  Отправить ответ
                 </button>
               </div>
             )}
 
             {!audienceAiLoading && audienceAiDraft && (
               <div className="audience-ai-result-box">
-                <h3>??????? ?????? ?????????</h3>
+                <h3>Черновик анализа аудитории</h3>
                 <textarea
                   value={audienceAiDraft}
                   onChange={(e) => setAudienceAiDraft(e.target.value)}
                 />
                 <div className="audience-ai-actions">
                   <button type="button" className="modal-save-button" onClick={saveAudienceAiDraft}>
-                    ????????? ??-?????? ?????????
+                    Сохранить в профиль
                   </button>
                   <button type="button" className="modal-secondary-button" onClick={() => setAudienceAiOpen(false)}>
-                    ????????? ??-?????? ?????????
+                    Закрыть
                   </button>
                 </div>
               </div>
@@ -669,7 +687,7 @@ export default function ProfilePage() {
             <div className="profile-modal-head">
               <div>
                 <p className="eyebrow">Глубокий профиль</p>
-                <h2>Аудитория, площадки и продукт</h2>
+                <h2>Аудитория и площадки</h2>
               </div>
               <button type="button" onClick={() => setDetailsOpen(false)}>×</button>
             </div>
@@ -717,13 +735,56 @@ export default function ProfilePage() {
                   runAudienceAiAnalysis([]);
                 }}
               >
-                ????????? ??-?????? ?????????
+                Запустить ИИ-интервью по аудитории
               </button>
 
             </div>
 
             <div className="profile-form-block">
-              <h3>3. Продукт</h3>
+              <h3>2. Площадки развития</h3>
+              <p>Выберите каналы, где хотите развивать контент и продажи.</p>
+              <div className="product-status-row">
+                {platforms.map((platform) => (
+                  <button
+                    key={platform}
+                    type="button"
+                    className={details.platforms.includes(platform) ? "selected" : ""}
+                    onClick={() => togglePlatform(platform)}
+                  >
+                    {platform}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="profile-form-block">
+              <h3>3. Продукт — в отдельном окне</h3>
+              <p>Вопросы по продукту теперь вынесены в отдельное окно для удобства.</p>
+              <button type="button" className="product-open-button" onClick={() => setProductOpen(true)}>
+                Открыть вопросы по продукту
+              </button>
+            </div>
+
+            <button type="button" className="modal-save-button" onClick={saveDetails} disabled={saving}>
+              {saving ? "Сохраняю..." : "Сохранить глубокий профиль"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {productOpen && (
+        <div className="profile-modal-backdrop" onClick={() => setProductOpen(false)}>
+          <div className="profile-modal profile-modal-large product-unpack-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="profile-modal-head">
+              <div>
+                <p className="eyebrow">Продукт</p>
+                <h2>Вопросы по продукту</h2>
+              </div>
+              <button type="button" onClick={() => setProductOpen(false)}>×</button>
+            </div>
+
+            <div className="profile-form-block">
+              <h3>Статус продукта</h3>
               <div className="product-status-row">
                 {["Есть продукт", "Продукта пока нет"].map((status) => (
                   <button
@@ -789,13 +850,18 @@ export default function ProfilePage() {
                   onChange={(e) => setDetails((prev) => ({ ...prev, product_ideas_request: e.target.value }))}
                 />
                 <p className="form-hint">
-                  Позже офис 10 агентов предложит 5 вариантов продукта и поможет развить идеи.
+                  Позже офис 10 агентов предложит варианты продукта и поможет развить идеи.
                 </p>
               </div>
             )}
 
-            <button type="button" className="modal-save-button" onClick={saveDetails} disabled={saving}>
-              {saving ? "Сохраняю..." : "Сохранить глубокий профиль"}
+            <button
+              type="button"
+              className="modal-save-button"
+              onClick={() => saveDetails({ closeDetails: false, closeProduct: true })}
+              disabled={saving}
+            >
+              {saving ? "Сохраняю..." : "Сохранить ответы по продукту"}
             </button>
           </div>
         </div>
