@@ -46,6 +46,17 @@ class EmailIn(BaseModel):
     email: EmailStr
 
 
+class ContentMapSaveIn(BaseModel):
+    email: EmailStr
+    map: dict
+
+
+class ContentMapDiscussIn(BaseModel):
+    email: EmailStr
+    item: dict
+    question: str
+
+
 class AudienceAnalysisIn(BaseModel):
     email: EmailStr
     base_text: str = ""
@@ -235,6 +246,108 @@ def generate_content_map(data: EmailIn):
         )
 
     return {"ok": True, "map": result}
+
+
+@app.post("/content-map/save")
+def save_content_map(data: ContentMapSaveIn):
+    email = str(data.email).strip().lower()
+
+    with db() as conn:
+        row = conn.execute(
+            """
+            SELECT profile_id
+            FROM content_maps
+            WHERE email = ?
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (email,),
+        ).fetchone()
+
+        conn.execute(
+            """
+            INSERT INTO content_maps (email, profile_id, map_json, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (
+                email,
+                row["profile_id"] if row else None,
+                json.dumps(data.map, ensure_ascii=False),
+                datetime.utcnow().isoformat(),
+            ),
+        )
+
+    return {"ok": True}
+
+
+@app.post("/content-map/discuss-item")
+def discuss_content_map_item(data: ContentMapDiscussIn):
+    item = data.item or {}
+    question = (data.question or "").strip()
+    email = str(data.email).strip().lower()
+
+    if not question:
+        raise HTTPException(status_code=400, detail="question_required")
+
+    fallback = {
+        "topic": str(item.get("topic", "")),
+        "platform": str(item.get("platform", "")),
+        "format": str(item.get("format", "")),
+        "task": str(item.get("task", "")),
+        "goal": str(item.get("goal", "")),
+        "comment": "Добавьте конкретики в тезисы и призыв к действию, чтобы пост лучше конвертировал.",
+    }
+
+    if not OPENAI_API_KEY or OPENAI_API_KEY.startswith("вставь"):
+        return {"ok": True, "email": email, "updated_item": fallback, "comment": fallback["comment"]}
+
+    system_prompt = """
+Ты — редактор контент-плана. Пользователь присылает карточку поста и вопрос.
+Верни только JSON с ключами:
+topic, platform, format, task, goal, comment.
+Сделай формулировки яснее и практичнее, сохрани общий смысл.
+"""
+
+    client = OpenAI(api_key=OPENAI_API_KEY.strip())
+    model = os.getenv("OPENAI_MODEL", OPENAI_MODEL).strip()
+
+    response = client.chat.completions.create(
+        model=model,
+        temperature=0.4,
+        response_format={"type": "json_object"},
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {
+                "role": "user",
+                "content": json.dumps(
+                    {"item": item, "question": question},
+                    ensure_ascii=False
+                ),
+            },
+        ],
+    )
+
+    raw = response.choices[0].message.content or "{}"
+
+    try:
+        result = json.loads(raw)
+    except Exception:
+        result = fallback
+
+    updated_item = {
+        "topic": str(result.get("topic", fallback["topic"])),
+        "platform": str(result.get("platform", fallback["platform"])),
+        "format": str(result.get("format", fallback["format"])),
+        "task": str(result.get("task", fallback["task"])),
+        "goal": str(result.get("goal", fallback["goal"])),
+    }
+
+    return {
+        "ok": True,
+        "email": email,
+        "updated_item": updated_item,
+        "comment": str(result.get("comment", fallback["comment"])),
+    }
 
 @app.get("/content-map/ics")
 def download_ics(email: str):

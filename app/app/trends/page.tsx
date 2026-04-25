@@ -29,17 +29,17 @@ const videos = [
   {
     title: "Как пользоваться ЛЕСik",
     text: "Короткое видео: как идти маленькими шагами и не терять фокус.",
-    locked: false,
+    href: "https://www.youtube.com/results?search_query=как+пользоваться+лесik",
   },
   {
     title: "Как продавать через контент",
     text: "Почему контент должен вести к цели, а не просто заполнять ленту.",
-    locked: false,
+    href: "https://www.youtube.com/results?search_query=как+продавать+через+контент",
   },
   {
     title: "Mini App в Telegram",
     text: "Кабинет, уведомления и ежедневные задачи.",
-    locked: true,
+    href: "https://www.youtube.com/results?search_query=telegram+mini+app+обучение",
   },
 ];
 
@@ -503,13 +503,16 @@ export default function TrendsPage() {
           {videos.map((video) => (
             <article className="video-card" key={video.title}>
               <div className="video-preview">
-                {video.locked ? <span>🔒</span> : <span>▶</span>}
-                {video.locked && <b>PRO</b>}
+                <span>▶</span>
+                <b>Бесплатно</b>
               </div>
               <h3>{video.title}</h3>
               <p>{video.text}</p>
-              <button type="button">
-                {video.locked ? "🔒 Доступ по подписке" : "▶ Смотреть"}
+              <button
+                type="button"
+                onClick={() => window.open(video.href, "_blank", "noopener,noreferrer")}
+              >
+                ▶ Смотреть
               </button>
             </article>
           ))}
