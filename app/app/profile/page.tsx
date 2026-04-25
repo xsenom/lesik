@@ -25,6 +25,8 @@ type ProfileDetails = {
   why_buy: string;
   why_not_buy: string;
   product_ideas_request: string;
+  tariff_plan: string;
+  pro_paid_until: string;
 };
 
 const emptyAnswers: Answers = {
@@ -49,6 +51,8 @@ const emptyDetails: ProfileDetails = {
   why_buy: "",
   why_not_buy: "",
   product_ideas_request: "",
+  tariff_plan: "free",
+  pro_paid_until: "",
 };
 
 const basicQuestions = [
@@ -296,6 +300,11 @@ export default function ProfilePage() {
     closeDetails?: boolean;
     closeProduct?: boolean;
   } = {}) => {
+    if (details.tariff_plan === "pro" && !details.pro_paid_until) {
+      alert("Для тарифа PRO укажите дату оплаты (до какого числа).");
+      return false;
+    }
+
     setSaving(true);
 
     try {
@@ -448,6 +457,15 @@ export default function ProfilePage() {
                 details.notify_email ? "Email" : "",
                 details.notify_telegram ? "Telegram" : "",
               ].filter(Boolean).join(", ") || "Не выбрано"}
+            </b>
+          </div>
+
+          <div className="client-status">
+            <span>Тариф</span>
+            <b>
+              {details.tariff_plan === "pro"
+                ? `PRO${details.pro_paid_until ? ` до ${details.pro_paid_until}` : ""}`
+                : "FREE"}
             </b>
           </div>
         </div>
@@ -668,7 +686,38 @@ export default function ProfilePage() {
             </div>
 
             <div className="profile-form-block">
-              <h3>1. Анализ аудитории — обязательно</h3>
+              <h3>1. Тариф — обязательно</h3>
+              <p>Укажите текущий тариф клиента. Для PRO обязательно дата оплаченного периода.</p>
+              <div className="product-status-row">
+                {[
+                  { key: "free", label: "FREE" },
+                  { key: "pro", label: "PRO" },
+                ].map((tariff) => (
+                  <button
+                    key={tariff.key}
+                    type="button"
+                    className={details.tariff_plan === tariff.key ? "selected" : ""}
+                    onClick={() => setDetails((prev) => ({ ...prev, tariff_plan: tariff.key }))}
+                  >
+                    {tariff.label}
+                  </button>
+                ))}
+              </div>
+
+              {details.tariff_plan === "pro" && (
+                <>
+                  <h3>Оплачено до</h3>
+                  <input
+                    type="date"
+                    value={details.pro_paid_until || ""}
+                    onChange={(e) => setDetails((prev) => ({ ...prev, pro_paid_until: e.target.value }))}
+                  />
+                </>
+              )}
+            </div>
+
+            <div className="profile-form-block">
+              <h3>2. Анализ аудитории — обязательно</h3>
               <p>
                 Вставьте сюда распаковку аудитории: кто эти люди, что болит,
                 чего хотят, почему подписываются, почему покупают или сомневаются.
@@ -712,6 +761,24 @@ export default function ProfilePage() {
               >
                 Запустить ИИ-интервью по аудитории
               </button>
+            </div>
+
+            <button type="button" className="modal-save-button" onClick={saveDetails} disabled={saving}>
+              {saving ? "Сохраняю..." : "Сохранить глубокий профиль"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {productOpen && (
+        <div className="profile-modal-backdrop" onClick={() => setProductOpen(false)}>
+          <div className="profile-modal profile-modal-large product-unpack-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="profile-modal-head">
+              <div>
+                <p className="eyebrow">Продукт</p>
+                <h2>Вопросы по продукту</h2>
+              </div>
+              <button type="button" onClick={() => setProductOpen(false)}>×</button>
             </div>
 
             <button type="button" className="modal-save-button" onClick={saveDetails} disabled={saving}>

@@ -31,6 +31,10 @@ type ContentMap = {
   calendar: CalendarPlanItem[];
 };
 
+type DiscussSource =
+  | { kind: "calendar"; day: number }
+  | { kind: "node"; nodeId: string };
+
 export default function ContentMapPage() {
   const [email, setEmail] = useState("");
   const [profileExists, setProfileExists] = useState<boolean | null>(null);
@@ -42,6 +46,7 @@ export default function ContentMapPage() {
   const [calendarAiLoading, setCalendarAiLoading] = useState(false);
   const [calendarAiComment, setCalendarAiComment] = useState("");
   const [calendarAiDraft, setCalendarAiDraft] = useState<CalendarPlanItem | null>(null);
+  const [discussSource, setDiscussSource] = useState<DiscussSource | null>(null);
 
   useEffect(() => {
     const savedEmail = localStorage.getItem("lesik_email") || "";
@@ -106,7 +111,33 @@ export default function ContentMapPage() {
 
   const openCalendarAi = (item: CalendarPlanItem) => {
     setSelectedItem(item);
+    setDiscussSource({ kind: "calendar", day: item.day });
     setCalendarAiDraft(item);
+    setCalendarAiQuestion("");
+    setCalendarAiComment("");
+    setCalendarAiOpen(true);
+  };
+
+  const openNodeAi = (node: ContentMap["nodes"][number]) => {
+    setSelectedItem({
+      day: 0,
+      date_label: "Блок карты",
+      platform: "Карта контента",
+      format: node.type,
+      topic: node.title,
+      task: node.description,
+      goal: "Усилить стратегию и качество контента",
+    });
+    setDiscussSource({ kind: "node", nodeId: node.id });
+    setCalendarAiDraft({
+      day: 0,
+      date_label: "Блок карты",
+      platform: "Карта контента",
+      format: node.type,
+      topic: node.title,
+      task: node.description,
+      goal: "Усилить стратегию и качество контента",
+    });
     setCalendarAiQuestion("");
     setCalendarAiComment("");
     setCalendarAiOpen(true);
@@ -149,21 +180,36 @@ export default function ContentMapPage() {
   };
 
   const applyCalendarAiDraft = async () => {
-    if (!map || !selectedItem || !calendarAiDraft) return;
+    if (!map || !selectedItem || !calendarAiDraft || !discussSource) return;
 
-    const nextMap: ContentMap = {
-      ...map,
-      calendar: map.calendar.map((item) =>
-        item.day === selectedItem.day
-          ? {
-              ...item,
-              ...calendarAiDraft,
-              day: item.day,
-              date_label: item.date_label,
-            }
-          : item
-      ),
-    };
+    const nextMap: ContentMap =
+      discussSource.kind === "calendar"
+        ? {
+            ...map,
+            calendar: map.calendar.map((item) =>
+              item.day === discussSource.day
+                ? {
+                    ...item,
+                    ...calendarAiDraft,
+                    day: item.day,
+                    date_label: item.date_label,
+                  }
+                : item
+            ),
+          }
+        : {
+            ...map,
+            nodes: map.nodes.map((node) =>
+              node.id === discussSource.nodeId
+                ? {
+                    ...node,
+                    title: calendarAiDraft.topic,
+                    description: calendarAiDraft.task,
+                    type: calendarAiDraft.format || node.type,
+                  }
+                : node
+            ),
+          };
 
     setMap(nextMap);
     await saveMapDraft(nextMap);
@@ -225,11 +271,12 @@ export default function ContentMapPage() {
             {map.nodes.map((node) => (
               <article
                 key={node.id}
-                className={`miro-node node-${node.type}`}
+                className={`miro-node node-${node.type} miro-node-clickable`}
                 style={{
                   left: `calc(50% + ${node.x}px)`,
                   top: `calc(42% + ${node.y}px)`,
                 }}
+                onClick={() => openNodeAi(node)}
               >
                 <span>{node.type}</span>
                 <h2>{node.title}</h2>
