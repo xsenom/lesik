@@ -761,7 +761,42 @@ export default function ProfilePage() {
               >
                 Запустить ИИ-интервью по аудитории
               </button>
+            </div>
 
+            <button type="button" className="modal-save-button" onClick={saveDetails} disabled={saving}>
+              {saving ? "Сохраняю..." : "Сохранить глубокий профиль"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {productOpen && (
+        <div className="profile-modal-backdrop" onClick={() => setProductOpen(false)}>
+          <div className="profile-modal profile-modal-large product-unpack-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="profile-modal-head">
+              <div>
+                <p className="eyebrow">Продукт</p>
+                <h2>Вопросы по продукту</h2>
+              </div>
+              <button type="button" onClick={() => setProductOpen(false)}>×</button>
+            </div>
+
+            <button type="button" className="modal-save-button" onClick={saveDetails} disabled={saving}>
+              {saving ? "Сохраняю..." : "Сохранить глубокий профиль"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {productOpen && (
+        <div className="profile-modal-backdrop" onClick={() => setProductOpen(false)}>
+          <div className="profile-modal profile-modal-large product-unpack-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="profile-modal-head">
+              <div>
+                <p className="eyebrow">Продукт</p>
+                <h2>Вопросы по продукту</h2>
+              </div>
+              <button type="button" onClick={() => setProductOpen(false)}>×</button>
             </div>
 
             <button type="button" className="modal-save-button" onClick={saveDetails} disabled={saving}>
