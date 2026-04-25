@@ -25,23 +25,27 @@ type CalendarDay = {
   tasks: { id: string; text: string }[];
 };
 
-const videos = [
-  {
-    title: "Как пользоваться ЛЕСik",
-    text: "Короткое видео: как идти маленькими шагами и не терять фокус.",
-    locked: false,
-  },
-  {
-    title: "Как продавать через контент",
-    text: "Почему контент должен вести к цели, а не просто заполнять ленту.",
-    locked: false,
-  },
-  {
-    title: "Mini App в Telegram",
-    text: "Кабинет, уведомления и ежедневные задачи.",
-    locked: true,
-  },
-];
+type VideoItem = {
+  id: number;
+  title: string;
+  description: string;
+  url: string;
+};
+
+function getYouTubeEmbed(url: string) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes("youtu.be")) {
+      const id = parsed.pathname.replace("/", "");
+      return id ? `https://www.youtube.com/embed/${id}?autoplay=1` : "";
+    }
+    if (parsed.hostname.includes("youtube.com")) {
+      const id = parsed.searchParams.get("v");
+      return id ? `https://www.youtube.com/embed/${id}?autoplay=1` : "";
+    }
+  } catch {}
+  return "";
+}
 
 const TELEGRAM_BOT_URL =
   process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL || "https://t.me/";
@@ -167,6 +171,8 @@ function buildCalendarDays(calendar: CalendarItem[], startDate: string): Calenda
 }
 
 export default function TrendsPage() {
+  const [videos, setVideos] = useState<VideoItem[]>([]);
+  const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [profileNiche, setProfileNiche] = useState("");
   const [profilePlatform, setProfilePlatform] = useState("");
   const [calendar, setCalendar] = useState<CalendarItem[]>([]);
@@ -252,6 +258,20 @@ export default function TrendsPage() {
     };
 
     load();
+  }, []);
+
+  useEffect(() => {
+    const loadVideos = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/videos");
+        const data = await res.json();
+        setVideos(data.videos || []);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    loadVideos();
   }, []);
 
   useEffect(() => {
@@ -501,20 +521,66 @@ export default function TrendsPage() {
 
         <SwipeRow className="video-row">
           {videos.map((video) => (
-            <article className="video-card" key={video.title}>
+            <article className="video-card" key={video.id}>
               <div className="video-preview">
-                {video.locked ? <span>🔒</span> : <span>▶</span>}
-                {video.locked && <b>PRO</b>}
+                <span>▶</span>
+                <b>Бесплатно</b>
               </div>
               <h3>{video.title}</h3>
-              <p>{video.text}</p>
-              <button type="button">
-                {video.locked ? "🔒 Доступ по подписке" : "▶ Смотреть"}
+              <p>{video.description}</p>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await fetch(`http://localhost:8000/videos/${video.id}/view`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email }),
+                    });
+                  } catch (e) {
+                    console.error(e);
+                  }
+                  setActiveVideo(video);
+                }}
+              >
+                ▶ Смотреть
               </button>
             </article>
           ))}
         </SwipeRow>
       </section>
+
+      {activeVideo && (
+        <div className="profile-modal-backdrop" onClick={() => setActiveVideo(null)}>
+          <div className="profile-modal profile-modal-large" onClick={(e) => e.stopPropagation()}>
+            <div className="profile-modal-head">
+              <div>
+                <p className="eyebrow">Видеоурок</p>
+                <h2>{activeVideo.title}</h2>
+              </div>
+              <button type="button" onClick={() => setActiveVideo(null)}>×</button>
+            </div>
+
+            {getYouTubeEmbed(activeVideo.url) ? (
+              <iframe
+                title={activeVideo.title}
+                src={getYouTubeEmbed(activeVideo.url)}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+                style={{ width: "100%", minHeight: 420, border: 0, borderRadius: 18 }}
+              />
+            ) : (
+              <video
+                controls
+                autoPlay
+                src={activeVideo.url}
+                style={{ width: "100%", borderRadius: 18, background: "#000" }}
+              />
+            )}
+          </div>
+        </div>
+      )}
 
 
       {instaCalendarOpen && (
