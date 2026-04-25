@@ -27,7 +27,11 @@ app = FastAPI(title="LESik API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1):3000",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,6 +48,17 @@ class ProfileIn(BaseModel):
 
 class EmailIn(BaseModel):
     email: EmailStr
+
+
+class ContentMapSaveIn(BaseModel):
+    email: EmailStr
+    map: dict
+
+
+class ContentMapDiscussIn(BaseModel):
+    email: EmailStr
+    item: dict
+    question: str
 
 
 class AudienceAnalysisIn(BaseModel):
@@ -64,6 +79,21 @@ class ProfileDetailsIn(BaseModel):
     why_buy: str = ""
     why_not_buy: str = ""
     product_ideas_request: str = ""
+    tariff_plan: str = "free"
+    pro_paid_until: str = ""
+
+
+class PaymentIn(BaseModel):
+    email: EmailStr
+    amount: float = 0
+    status: str = "paid"
+
+
+class VideoIn(BaseModel):
+    title: str
+    description: str = ""
+    url: str
+    is_active: bool = True
 
 def db():
     conn = sqlite3.connect(DB_PATH)
@@ -105,12 +135,159 @@ def init_db():
         )
         """)
 
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS payments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL,
+            amount REAL NOT NULL DEFAULT 0,
+            status TEXT NOT NULL DEFAULT 'paid',
+            paid_at TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+        """)
+
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS videos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            url TEXT NOT NULL,
+            is_active INTEGER NOT NULL DEFAULT 1,
+            created_at TEXT NOT NULL
+        )
+        """)
+
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS video_views (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            video_id INTEGER NOT NULL,
+            email TEXT,
+            viewed_at TEXT NOT NULL
+        )
+        """)
+
 @app.on_event("startup")
 def startup():
     init_db()
+    with db() as conn:
+        count = conn.execute("SELECT COUNT(*) AS c FROM videos").fetchone()["c"]
+        if count == 0:
+            now = datetime.utcnow().isoformat()
+            conn.executemany(
+                """
+                INSERT INTO videos (title, description, url, is_active, created_at)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                [
+                    ("Как пользоваться ЛЕСik", "Короткое видео: как идти маленькими шагами и не терять фокус.", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", 1, now),
+                    ("Как продавать через контент", "Почему контент должен вести к цели, а не просто заполнять ленту.", "https://www.youtube.com/watch?v=ysz5S6PUM-U", 1, now),
+                    ("Mini App в Telegram", "Кабинет, уведомления и ежедневные задачи.", "https://www.youtube.com/watch?v=jNQXAC9IVRw", 1, now),
+                ],
+            )
 
 @app.get("/health")
 def health():
+    return {"ok": True}
+
+
+@app.get("/videos")
+def get_videos():
+    with db() as conn:
+        rows = conn.execute(
+            """
+            SELECT id, title, description, url, is_active, created_at
+            FROM videos
+            WHERE is_active = 1
+            ORDER BY id DESC
+            """
+        ).fetchall()
+    return {"videos": [dict(r) for r in rows]}
+
+
+@app.get("/admin/videos")
+def admin_get_videos():
+    with db() as conn:
+        rows = conn.execute(
+            """
+            SELECT id, title, description, url, is_active, created_at
+            FROM videos
+            ORDER BY id DESC
+            """
+        ).fetchall()
+        views = conn.execute(
+            """
+            SELECT video_id, COUNT(*) AS views
+            FROM video_views
+            GROUP BY video_id
+            """
+        ).fetchall()
+
+    view_map = {v["video_id"]: int(v["views"]) for v in views}
+    result = []
+    for row in rows:
+        item = dict(row)
+        item["views"] = view_map.get(item["id"], 0)
+        result.append(item)
+    return {"videos": result}
+
+
+@app.post("/admin/videos")
+def admin_create_video(data: VideoIn):
+    with db() as conn:
+        conn.execute(
+            """
+            INSERT INTO videos (title, description, url, is_active, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                data.title.strip(),
+                data.description.strip(),
+                data.url.strip(),
+                1 if data.is_active else 0,
+                datetime.utcnow().isoformat(),
+            ),
+        )
+    return {"ok": True}
+
+
+@app.put("/admin/videos/{video_id}")
+def admin_update_video(video_id: int, data: VideoIn):
+    with db() as conn:
+        conn.execute(
+            """
+            UPDATE videos
+            SET title = ?, description = ?, url = ?, is_active = ?
+            WHERE id = ?
+            """,
+            (
+                data.title.strip(),
+                data.description.strip(),
+                data.url.strip(),
+                1 if data.is_active else 0,
+                video_id,
+            ),
+        )
+    return {"ok": True}
+
+
+@app.delete("/admin/videos/{video_id}")
+def admin_delete_video(video_id: int):
+    with db() as conn:
+        conn.execute("DELETE FROM videos WHERE id = ?", (video_id,))
+    return {"ok": True}
+
+
+@app.post("/videos/{video_id}/view")
+def add_video_view(video_id: int, data: EmailIn | None = None):
+    email = str(data.email).strip().lower() if data else ""
+    with db() as conn:
+        conn.execute(
+            """
+            INSERT INTO video_views (video_id, email, viewed_at)
+            VALUES (?, ?, ?)
+            """,
+            (video_id, email, datetime.utcnow().isoformat()),
+        )
     return {"ok": True}
 
 @app.post("/profiles")
@@ -150,6 +327,111 @@ def get_profile_by_email(email: str):
         ).fetchone()
 
     return {"profile": dict(row) if row else None}
+
+
+def _count_since(table: str, date_col: str, since: datetime | None = None) -> int:
+    with db() as conn:
+        if since is None:
+            row = conn.execute(f"SELECT COUNT(*) AS c FROM {table}").fetchone()
+        else:
+            row = conn.execute(
+                f"SELECT COUNT(*) AS c FROM {table} WHERE {date_col} >= ?",
+                (since.isoformat(),),
+            ).fetchone()
+    return int(row["c"] if row else 0)
+
+
+@app.get("/admin/dashboard")
+def get_admin_dashboard():
+    now = datetime.utcnow()
+    day_start = datetime(now.year, now.month, now.day)
+    week_start = day_start - timedelta(days=6)
+
+    registrations = {
+        "today": _count_since("profiles", "created_at", day_start),
+        "week": _count_since("profiles", "created_at", week_start),
+        "total": _count_since("profiles", "created_at"),
+    }
+
+    payments = {
+        "today": _count_since("payments", "paid_at", day_start),
+        "week": _count_since("payments", "paid_at", week_start),
+        "total": _count_since("payments", "paid_at"),
+    }
+
+    with db() as conn:
+        video_total = conn.execute("SELECT COUNT(*) AS c FROM video_views").fetchone()
+        by_video = conn.execute(
+            """
+            SELECT v.id, v.title, COUNT(vv.id) AS views
+            FROM videos v
+            LEFT JOIN video_views vv ON vv.video_id = v.id
+            GROUP BY v.id, v.title
+            ORDER BY views DESC, v.id DESC
+            """
+        ).fetchall()
+
+    return {
+        "registrations": registrations,
+        "payments": payments,
+        "video_views": {
+            "total": int(video_total["c"] if video_total else 0),
+            "by_video": [dict(r) for r in by_video],
+        },
+    }
+
+
+@app.get("/admin/profiles")
+def get_admin_profiles():
+    with db() as conn:
+        profiles = conn.execute(
+            """
+            SELECT p.id, p.name, p.email, p.client_type, p.niche, p.platform, p.monthly_goal, p.blocker, p.created_at
+            FROM profiles p
+            ORDER BY p.id DESC
+            """
+        ).fetchall()
+        details = conn.execute(
+            """
+            SELECT email, details_json, MAX(id) AS max_id
+            FROM profile_details
+            GROUP BY email
+            """
+        ).fetchall()
+
+    details_map = {}
+    for row in details:
+        try:
+            details_map[row["email"]] = json.loads(row["details_json"])
+        except Exception:
+            details_map[row["email"]] = {}
+
+    result = []
+    for p in profiles:
+        item = dict(p)
+        item["details"] = details_map.get(item["email"], {})
+        result.append(item)
+    return {"profiles": result}
+
+
+@app.post("/admin/payments")
+def add_payment(data: PaymentIn):
+    email = str(data.email).strip().lower()
+    with db() as conn:
+        conn.execute(
+            """
+            INSERT INTO payments (email, amount, status, paid_at, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                email,
+                float(data.amount or 0),
+                data.status.strip() or "paid",
+                datetime.utcnow().isoformat(),
+                datetime.utcnow().isoformat(),
+            ),
+        )
+    return {"ok": True}
 
 @app.get("/content-map/by-email")
 def get_content_map_by_email(email: str):
@@ -235,6 +517,112 @@ def generate_content_map(data: EmailIn):
         )
 
     return {"ok": True, "map": result}
+
+
+@app.post("/content-map/save")
+def save_content_map(data: ContentMapSaveIn):
+    email = str(data.email).strip().lower()
+
+    with db() as conn:
+        row = conn.execute(
+            """
+            SELECT profile_id
+            FROM content_maps
+            WHERE email = ?
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (email,),
+        ).fetchone()
+
+        conn.execute(
+            """
+            INSERT INTO content_maps (email, profile_id, map_json, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (
+                email,
+                row["profile_id"] if row else None,
+                json.dumps(data.map, ensure_ascii=False),
+                datetime.utcnow().isoformat(),
+            ),
+        )
+
+    return {"ok": True}
+
+
+@app.post("/content-map/discuss-item")
+def discuss_content_map_item(data: ContentMapDiscussIn):
+    item = data.item or {}
+    question = (data.question or "").strip()
+    email = str(data.email).strip().lower()
+
+    if not question:
+        raise HTTPException(status_code=400, detail="question_required")
+
+    fallback = {
+        "topic": str(item.get("topic", "")),
+        "platform": str(item.get("platform", "")),
+        "format": str(item.get("format", "")),
+        "task": str(item.get("task", "")),
+        "goal": str(item.get("goal", "")),
+        "comment": "Добавьте конкретики в тезисы и призыв к действию, чтобы пост лучше конвертировал.",
+    }
+
+    if not OPENAI_API_KEY or OPENAI_API_KEY.startswith("вставь"):
+        return {"ok": True, "email": email, "updated_item": fallback, "comment": fallback["comment"]}
+
+    system_prompt = """
+Ты — редактор контент-плана. Пользователь присылает карточку поста и вопрос.
+Верни только JSON с ключами:
+topic, platform, format, task, goal, comment.
+Сделай формулировки яснее и практичнее, сохрани общий смысл.
+"""
+
+    client = OpenAI(api_key=OPENAI_API_KEY.strip())
+    model = os.getenv("OPENAI_MODEL", OPENAI_MODEL).strip()
+
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            temperature=0.4,
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {
+                    "role": "user",
+                    "content": json.dumps(
+                        {"item": item, "question": question},
+                        ensure_ascii=False
+                    ),
+                },
+            ],
+        )
+
+        raw = response.choices[0].message.content or "{}"
+
+        try:
+            result = json.loads(raw)
+        except Exception:
+            result = fallback
+    except Exception as e:
+        print("DISCUSS_ITEM_ERROR:", repr(e))
+        result = fallback
+
+    updated_item = {
+        "topic": str(result.get("topic", fallback["topic"])),
+        "platform": str(result.get("platform", fallback["platform"])),
+        "format": str(result.get("format", fallback["format"])),
+        "task": str(result.get("task", fallback["task"])),
+        "goal": str(result.get("goal", fallback["goal"])),
+    }
+
+    return {
+        "ok": True,
+        "email": email,
+        "updated_item": updated_item,
+        "comment": str(result.get("comment", fallback["comment"])),
+    }
 
 @app.get("/content-map/ics")
 def download_ics(email: str):
