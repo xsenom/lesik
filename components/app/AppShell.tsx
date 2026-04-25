@@ -53,9 +53,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="wave-layer wave-one" />
       <div className="wave-layer wave-two" />
-      <div className="clean-leaf leaf-a" />
-      <div className="clean-leaf leaf-b" />
-      <div className="clean-leaf leaf-c" />
 
       <aside className="lesik-sidebar">
         <div className="lesik-logo">ЛЕС<span>ik</span></div>
@@ -89,7 +86,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-
 
 
 
