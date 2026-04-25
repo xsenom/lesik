@@ -51,17 +51,6 @@ const emptyDetails: ProfileDetails = {
   product_ideas_request: "",
 };
 
-const platforms = [
-  "Telegram",
-  "Instagram",
-  "VK",
-  "YouTube",
-  "TikTok",
-  "Сайт",
-  "Pinterest",
-  "Другое",
-];
-
 const basicQuestions = [
   { key: "name", title: "Как вас зовут?", placeholder: "Например: Илья" },
   { key: "client_type", title: "Кто вы?", placeholder: "Эксперт, блогер, школа, предприниматель..." },
@@ -191,20 +180,6 @@ export default function ProfilePage() {
 
     saveBasic();
   };
-
-  const togglePlatform = (platform: string) => {
-    setDetails((prev) => {
-      const exists = prev.platforms.includes(platform);
-
-      return {
-        ...prev,
-        platforms: exists
-          ? prev.platforms.filter((item) => item !== platform)
-          : [...prev.platforms, platform],
-      };
-    });
-  };
-
 
   const uploadAudienceAnalysisFile = async (file?: File) => {
     if (!file) return;
@@ -737,32 +712,24 @@ export default function ProfilePage() {
               >
                 Запустить ИИ-интервью по аудитории
               </button>
-
             </div>
 
-            <div className="profile-form-block">
-              <h3>2. Площадки развития</h3>
-              <p>Выберите каналы, где хотите развивать контент и продажи.</p>
-              <div className="product-status-row">
-                {platforms.map((platform) => (
-                  <button
-                    key={platform}
-                    type="button"
-                    className={details.platforms.includes(platform) ? "selected" : ""}
-                    onClick={() => togglePlatform(platform)}
-                  >
-                    {platform}
-                  </button>
-                ))}
+            <button type="button" className="modal-save-button" onClick={saveDetails} disabled={saving}>
+              {saving ? "Сохраняю..." : "Сохранить глубокий профиль"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {productOpen && (
+        <div className="profile-modal-backdrop" onClick={() => setProductOpen(false)}>
+          <div className="profile-modal profile-modal-large product-unpack-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="profile-modal-head">
+              <div>
+                <p className="eyebrow">Продукт</p>
+                <h2>Вопросы по продукту</h2>
               </div>
-            </div>
-
-            <div className="profile-form-block">
-              <h3>3. Продукт — в отдельном окне</h3>
-              <p>Вопросы по продукту теперь вынесены в отдельное окно для удобства.</p>
-              <button type="button" className="product-open-button" onClick={() => setProductOpen(true)}>
-                Открыть вопросы по продукту
-              </button>
+              <button type="button" onClick={() => setProductOpen(false)}>×</button>
             </div>
 
             <button type="button" className="modal-save-button" onClick={saveDetails} disabled={saving}>
