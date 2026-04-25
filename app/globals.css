@@ -2070,6 +2070,17 @@ button { font: inherit; }
   font-weight: 800;
 }
 
+.calendar-ai-inline-button {
+  margin-top: 12px;
+  min-height: 38px;
+  border: 1px solid rgba(186,255,88,.24);
+  border-radius: 12px;
+  background: rgba(186,255,88,.08);
+  color: #e5ffd2;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
 @media (max-width: 760px) {
   .map-page {
     padding: 18px;

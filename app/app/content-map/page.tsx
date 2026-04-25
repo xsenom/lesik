@@ -40,6 +40,10 @@ type AiRole = {
   file: string;
 };
 
+type DiscussSource =
+  | { kind: "calendar"; day: number }
+  | { kind: "node"; nodeId: string };
+
 export default function ContentMapPage() {
   const [email, setEmail] = useState("");
   const [profileExists, setProfileExists] = useState<boolean | null>(null);
@@ -325,6 +329,9 @@ export default function ContentMapPage() {
                   <p><b>{item.platform}</b> · {item.format}</p>
                   <p>{item.task}</p>
                   <small>{item.goal}</small>
+                  <button type="button" className="calendar-ai-inline-button">
+                    Обсудить с ИИ
+                  </button>
                 </article>
               ))}
             </div>
