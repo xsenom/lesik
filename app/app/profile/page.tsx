@@ -349,6 +349,10 @@ export default function ProfilePage() {
     details.product_status === "Есть продукт"
       ? Boolean(details.product_name.trim() && details.product_description.trim())
       : Boolean(details.product_ideas_request.trim());
+  const openBasicQuestion = (questionIndex: number) => {
+    setStep(questionIndex);
+    setBasicDone(false);
+  };
 
   if (!introAccepted && !basicDone) {
     return (
@@ -436,21 +440,73 @@ export default function ProfilePage() {
 
         <div className="client-status-grid">
           <div className="client-status">
+            <div className="client-status-actions">
+              <button
+                type="button"
+                className="status-help"
+                data-tooltip="Это нужно для точного позиционирования клиента. Заполните роль в базовых ответах: эксперт, предприниматель, школа и т.д."
+                aria-label="Как заполнить поле кто клиент"
+              >
+                ?
+              </button>
+              <button type="button" className="status-edit" onClick={() => openBasicQuestion(1)} aria-label="Редактировать кто клиент">
+                ✎
+              </button>
+            </div>
             <span>Кто клиент</span>
             <b>{answers.client_type}</b>
           </div>
 
           <div className="client-status">
+            <div className="client-status-actions">
+              <button
+                type="button"
+                className="status-help"
+                data-tooltip="Ниша нужна, чтобы ЛЕСik предлагал релевантные идеи и темы. Впишите конкретную специализацию клиента."
+                aria-label="Как заполнить поле ниша"
+              >
+                ?
+              </button>
+              <button type="button" className="status-edit" onClick={() => openBasicQuestion(2)} aria-label="Редактировать нишу">
+                ✎
+              </button>
+            </div>
             <span>Ниша</span>
             <b>{answers.niche}</b>
           </div>
 
           <div className="client-status">
+            <div className="client-status-actions">
+              <button
+                type="button"
+                className="status-help"
+                data-tooltip="Площадки показывают, где уже есть трафик. Укажите текущие каналы в базовых ответах: Telegram, Instagram, сайт и т.д."
+                aria-label="Как заполнить поле площадки сейчас"
+              >
+                ?
+              </button>
+              <button type="button" className="status-edit" onClick={() => openBasicQuestion(3)} aria-label="Редактировать площадки сейчас">
+                ✎
+              </button>
+            </div>
             <span>Площадки сейчас</span>
             <b>{answers.platform}</b>
           </div>
 
           <div className="client-status">
+            <div className="client-status-actions">
+              <button
+                type="button"
+                className="status-help"
+                data-tooltip="Это нужно, чтобы не пропускать напоминания и отчёты. Выберите каналы получения уведомлений в настройках."
+                aria-label="Как заполнить уведомления"
+              >
+                ?
+              </button>
+              <button type="button" className="status-edit" onClick={() => setNotifyOpen(true)} aria-label="Редактировать уведомления">
+                ✎
+              </button>
+            </div>
             <span>Уведомления</span>
             <b>
               {[
@@ -461,6 +517,19 @@ export default function ProfilePage() {
           </div>
 
           <div className="client-status">
+            <div className="client-status-actions">
+              <button
+                type="button"
+                className="status-help"
+                data-tooltip="Тариф влияет на доступные функции. Выберите FREE или PRO и для PRO укажите оплаченный период."
+                aria-label="Как заполнить тариф"
+              >
+                ?
+              </button>
+              <button type="button" className="status-edit" onClick={() => setDetailsOpen(true)} aria-label="Редактировать тариф">
+                ✎
+              </button>
+            </div>
             <span>Тариф</span>
             <b>
               {details.tariff_plan === "pro"
@@ -472,6 +541,24 @@ export default function ProfilePage() {
 
         <div className="profile-readiness-grid">
           <article className={audienceReady ? "readiness-card done" : "readiness-card danger"}>
+            <div className="readiness-card-actions">
+              <button
+                type="button"
+                className="readiness-help"
+                title="Заполните анализ аудитории вручную или загрузите файл в блоке «Аудитория и площадки»."
+                aria-label="Как заполнить анализ аудитории"
+              >
+                ?
+              </button>
+              <button
+                type="button"
+                className="readiness-edit"
+                onClick={() => setDetailsOpen(true)}
+                aria-label="Редактировать анализ аудитории"
+              >
+                ✎
+              </button>
+            </div>
             <span>01</span>
             <h2>Анализ аудитории</h2>
             <p>
@@ -482,6 +569,24 @@ export default function ProfilePage() {
           </article>
 
           <article className={platformsReady ? "readiness-card done" : "readiness-card danger"}>
+            <div className="readiness-card-actions">
+              <button
+                type="button"
+                className="readiness-help"
+                title="Откройте «Аудитория и площадки» и выберите платформы, где будете развиваться."
+                aria-label="Как заполнить площадки развития"
+              >
+                ?
+              </button>
+              <button
+                type="button"
+                className="readiness-edit"
+                onClick={() => setDetailsOpen(true)}
+                aria-label="Редактировать площадки развития"
+              >
+                ✎
+              </button>
+            </div>
             <span>02</span>
             <h2>Площадки развития</h2>
             <p>
@@ -492,6 +597,24 @@ export default function ProfilePage() {
           </article>
 
           <article className={productReady ? "readiness-card done" : "readiness-card danger"}>
+            <div className="readiness-card-actions">
+              <button
+                type="button"
+                className="readiness-help"
+                title="В блоке «Вопросы по продукту» выберите статус продукта и заполните поля."
+                aria-label="Как заполнить продукт"
+              >
+                ?
+              </button>
+              <button
+                type="button"
+                className="readiness-edit"
+                onClick={() => setProductOpen(true)}
+                aria-label="Редактировать продукт"
+              >
+                ✎
+              </button>
+            </div>
             <span>03</span>
             <h2>Продукт</h2>
             <p>
@@ -551,17 +674,6 @@ export default function ProfilePage() {
           >
             Построить карту контента
           </Link>
-
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => {
-              setBasicDone(false);
-              setStep(0);
-            }}
-          >
-            Изменить базовые ответы
-          </button>
         </div>
       </div>
 
