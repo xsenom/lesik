@@ -472,6 +472,24 @@ export default function ProfilePage() {
 
         <div className="profile-readiness-grid">
           <article className={audienceReady ? "readiness-card done" : "readiness-card danger"}>
+            <div className="readiness-card-actions">
+              <button
+                type="button"
+                className="readiness-help"
+                title="Заполните анализ аудитории вручную или загрузите файл в блоке «Аудитория и площадки»."
+                aria-label="Как заполнить анализ аудитории"
+              >
+                ?
+              </button>
+              <button
+                type="button"
+                className="readiness-edit"
+                onClick={() => setDetailsOpen(true)}
+                aria-label="Редактировать анализ аудитории"
+              >
+                ✎
+              </button>
+            </div>
             <span>01</span>
             <h2>Анализ аудитории</h2>
             <p>
@@ -482,6 +500,24 @@ export default function ProfilePage() {
           </article>
 
           <article className={platformsReady ? "readiness-card done" : "readiness-card danger"}>
+            <div className="readiness-card-actions">
+              <button
+                type="button"
+                className="readiness-help"
+                title="Откройте «Аудитория и площадки» и выберите платформы, где будете развиваться."
+                aria-label="Как заполнить площадки развития"
+              >
+                ?
+              </button>
+              <button
+                type="button"
+                className="readiness-edit"
+                onClick={() => setDetailsOpen(true)}
+                aria-label="Редактировать площадки развития"
+              >
+                ✎
+              </button>
+            </div>
             <span>02</span>
             <h2>Площадки развития</h2>
             <p>
@@ -492,6 +528,24 @@ export default function ProfilePage() {
           </article>
 
           <article className={productReady ? "readiness-card done" : "readiness-card danger"}>
+            <div className="readiness-card-actions">
+              <button
+                type="button"
+                className="readiness-help"
+                title="В блоке «Вопросы по продукту» выберите статус продукта и заполните поля."
+                aria-label="Как заполнить продукт"
+              >
+                ?
+              </button>
+              <button
+                type="button"
+                className="readiness-edit"
+                onClick={() => setProductOpen(true)}
+                aria-label="Редактировать продукт"
+              >
+                ✎
+              </button>
+            </div>
             <span>03</span>
             <h2>Продукт</h2>
             <p>
@@ -551,17 +605,6 @@ export default function ProfilePage() {
           >
             Построить карту контента
           </Link>
-
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => {
-              setBasicDone(false);
-              setStep(0);
-            }}
-          >
-            Изменить базовые ответы
-          </button>
         </div>
       </div>
 
