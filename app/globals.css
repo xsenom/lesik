@@ -1390,10 +1390,63 @@ button { font: inherit; }
 }
 
 .client-status {
+  position: relative;
   border-radius: 20px;
   border: 1px solid rgba(186,255,88,.22);
   background: rgba(0, 12, 6, .44);
   padding: 18px;
+}
+
+.client-status-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  gap: 8px;
+}
+
+.status-help,
+.status-edit {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid rgba(186,255,88,.38);
+  background: rgba(2, 26, 13, .9);
+  color: #ecffe0;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.status-help::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 260px;
+  border-radius: 12px;
+  background: rgba(3, 18, 9, .98);
+  border: 1px solid rgba(186,255,88,.35);
+  color: rgba(248, 255, 241, .9);
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: left;
+  padding: 10px 12px;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, .35);
+  opacity: 0;
+  transform: translateY(-3px);
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+  z-index: 4;
+}
+
+.status-help:hover::after,
+.status-help:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .client-status span {

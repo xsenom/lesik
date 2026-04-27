@@ -349,6 +349,10 @@ export default function ProfilePage() {
     details.product_status === "Есть продукт"
       ? Boolean(details.product_name.trim() && details.product_description.trim())
       : Boolean(details.product_ideas_request.trim());
+  const openBasicQuestion = (questionIndex: number) => {
+    setStep(questionIndex);
+    setBasicDone(false);
+  };
 
   if (!introAccepted && !basicDone) {
     return (
@@ -436,21 +440,73 @@ export default function ProfilePage() {
 
         <div className="client-status-grid">
           <div className="client-status">
+            <div className="client-status-actions">
+              <button
+                type="button"
+                className="status-help"
+                data-tooltip="Это нужно для точного позиционирования клиента. Заполните роль в базовых ответах: эксперт, предприниматель, школа и т.д."
+                aria-label="Как заполнить поле кто клиент"
+              >
+                ?
+              </button>
+              <button type="button" className="status-edit" onClick={() => openBasicQuestion(1)} aria-label="Редактировать кто клиент">
+                ✎
+              </button>
+            </div>
             <span>Кто клиент</span>
             <b>{answers.client_type}</b>
           </div>
 
           <div className="client-status">
+            <div className="client-status-actions">
+              <button
+                type="button"
+                className="status-help"
+                data-tooltip="Ниша нужна, чтобы ЛЕСik предлагал релевантные идеи и темы. Впишите конкретную специализацию клиента."
+                aria-label="Как заполнить поле ниша"
+              >
+                ?
+              </button>
+              <button type="button" className="status-edit" onClick={() => openBasicQuestion(2)} aria-label="Редактировать нишу">
+                ✎
+              </button>
+            </div>
             <span>Ниша</span>
             <b>{answers.niche}</b>
           </div>
 
           <div className="client-status">
+            <div className="client-status-actions">
+              <button
+                type="button"
+                className="status-help"
+                data-tooltip="Площадки показывают, где уже есть трафик. Укажите текущие каналы в базовых ответах: Telegram, Instagram, сайт и т.д."
+                aria-label="Как заполнить поле площадки сейчас"
+              >
+                ?
+              </button>
+              <button type="button" className="status-edit" onClick={() => openBasicQuestion(3)} aria-label="Редактировать площадки сейчас">
+                ✎
+              </button>
+            </div>
             <span>Площадки сейчас</span>
             <b>{answers.platform}</b>
           </div>
 
           <div className="client-status">
+            <div className="client-status-actions">
+              <button
+                type="button"
+                className="status-help"
+                data-tooltip="Это нужно, чтобы не пропускать напоминания и отчёты. Выберите каналы получения уведомлений в настройках."
+                aria-label="Как заполнить уведомления"
+              >
+                ?
+              </button>
+              <button type="button" className="status-edit" onClick={() => setNotifyOpen(true)} aria-label="Редактировать уведомления">
+                ✎
+              </button>
+            </div>
             <span>Уведомления</span>
             <b>
               {[
@@ -461,6 +517,19 @@ export default function ProfilePage() {
           </div>
 
           <div className="client-status">
+            <div className="client-status-actions">
+              <button
+                type="button"
+                className="status-help"
+                data-tooltip="Тариф влияет на доступные функции. Выберите FREE или PRO и для PRO укажите оплаченный период."
+                aria-label="Как заполнить тариф"
+              >
+                ?
+              </button>
+              <button type="button" className="status-edit" onClick={() => setDetailsOpen(true)} aria-label="Редактировать тариф">
+                ✎
+              </button>
+            </div>
             <span>Тариф</span>
             <b>
               {details.tariff_plan === "pro"
