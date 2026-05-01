@@ -1,13 +1,5 @@
-﻿import type { Metadata } from "next";
-import { Rubik } from "next/font/google";
+import type { Metadata } from "next";
 import "./globals.css";
-
-const rubik = Rubik({
-  subsets: ["latin", "cyrillic"],
-  weight: ["400"],
-  display: "swap",
-  variable: "--font-rubik",
-});
 
 export const metadata: Metadata = {
   title: "ЛЕСik",
@@ -20,7 +12,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" className={rubik.variable}>
+    <html lang="ru">
       <body>{children}</body>
     </html>
   );
