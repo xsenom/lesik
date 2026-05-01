@@ -40,10 +40,6 @@ type AiRole = {
   file: string;
 };
 
-type DiscussSource =
-  | { kind: "calendar"; day: number }
-  | { kind: "node"; nodeId: string };
-
 export default function ContentMapPage() {
   const [email, setEmail] = useState("");
   const [profileExists, setProfileExists] = useState<boolean | null>(null);

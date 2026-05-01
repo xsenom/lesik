@@ -875,7 +875,7 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            <button type="button" className="modal-save-button" onClick={saveDetails} disabled={saving}>
+            <button type="button" className="modal-save-button" onClick={() => void saveDetails()} disabled={saving}>
               {saving ? "Сохраняю..." : "Сохранить глубокий профиль"}
             </button>
           </div>
@@ -893,7 +893,7 @@ export default function ProfilePage() {
               <button type="button" onClick={() => setProductOpen(false)}>×</button>
             </div>
 
-            <button type="button" className="modal-save-button" onClick={saveDetails} disabled={saving}>
+            <button type="button" className="modal-save-button" onClick={() => void saveDetails()} disabled={saving}>
               {saving ? "Сохраняю..." : "Сохранить глубокий профиль"}
             </button>
           </div>
@@ -911,7 +911,7 @@ export default function ProfilePage() {
               <button type="button" onClick={() => setProductOpen(false)}>×</button>
             </div>
 
-            <button type="button" className="modal-save-button" onClick={saveDetails} disabled={saving}>
+            <button type="button" className="modal-save-button" onClick={() => void saveDetails()} disabled={saving}>
               {saving ? "Сохраняю..." : "Сохранить глубокий профиль"}
             </button>
           </div>
@@ -929,7 +929,7 @@ export default function ProfilePage() {
               <button type="button" onClick={() => setProductOpen(false)}>×</button>
             </div>
 
-            <button type="button" className="modal-save-button" onClick={saveDetails} disabled={saving}>
+            <button type="button" className="modal-save-button" onClick={() => void saveDetails()} disabled={saving}>
               {saving ? "Сохраняю..." : "Сохранить глубокий профиль"}
             </button>
           </div>
@@ -947,7 +947,7 @@ export default function ProfilePage() {
               <button type="button" onClick={() => setProductOpen(false)}>×</button>
             </div>
 
-            <button type="button" className="modal-save-button" onClick={saveDetails} disabled={saving}>
+            <button type="button" className="modal-save-button" onClick={() => void saveDetails()} disabled={saving}>
               {saving ? "Сохраняю..." : "Сохранить глубокий профиль"}
             </button>
           </div>
