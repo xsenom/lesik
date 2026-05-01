@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -170,8 +170,215 @@ function buildCalendarDays(calendar: CalendarItem[], startDate: string): Calenda
   });
 }
 
+type HeroIconName =
+  | "search"
+  | "map"
+  | "checklist"
+  | "growth"
+  | "user"
+  | "target"
+  | "instagram"
+  | "telegram"
+  | "youtube"
+  | "pinterest"
+  | "threads"
+  | "mail"
+  | "bot"
+  | "web"
+  | "crm"
+  | "card";
+
+function HeroSvgIcon({ name }: { name: HeroIconName }) {
+  if (name === "search") {
+    return (
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="28" cy="28" r="16" />
+        <path d="M40 40l13 13" />
+        <path d="M21 22a10 10 0 0 1 12-2" />
+      </svg>
+    );
+  }
+
+  if (name === "map") {
+    return (
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M10 18l14-7 16 7 14-7v35l-14 7-16-7-14 7z" />
+        <path d="M24 11v35" />
+        <path d="M40 18v35" />
+        <circle cx="43" cy="20" r="4" />
+      </svg>
+    );
+  }
+
+  if (name === "checklist") {
+    return (
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M18 14h28v38H18z" />
+        <path d="M25 14v-4h14v4" />
+        <path d="M25 27l4 4 8-9" />
+        <path d="M25 40h18" />
+        <path d="M25 47h14" />
+      </svg>
+    );
+  }
+
+  if (name === "growth") {
+    return (
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M12 50h40" />
+        <path d="M17 43v7" />
+        <path d="M27 34v16" />
+        <path d="M37 26v24" />
+        <path d="M47 17v33" />
+        <path d="M17 34l10-10 9 6 13-17" />
+        <path d="M45 13h8v8" />
+      </svg>
+    );
+  }
+
+  if (name === "user") {
+    return (
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="22" r="10" />
+        <path d="M14 52c3-12 12-18 18-18s15 6 18 18z" />
+      </svg>
+    );
+  }
+
+  if (name === "target") {
+    return (
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="22" />
+        <circle cx="32" cy="32" r="12" />
+        <circle cx="32" cy="32" r="4" />
+        <path d="M43 21l9-9" />
+        <path d="M48 12h8v8" />
+      </svg>
+    );
+  }
+
+  if (name === "instagram") {
+    return (
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="15" y="15" width="34" height="34" rx="10" />
+        <circle cx="32" cy="32" r="9" />
+        <circle cx="42" cy="22" r="2" />
+      </svg>
+    );
+  }
+
+  if (name === "telegram") {
+    return (
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M54 13L10 31l15 5 6 15 8-12 13-26z" />
+        <path d="M25 36l15-12" />
+      </svg>
+    );
+  }
+
+  if (name === "youtube") {
+    return (
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="11" y="20" width="42" height="25" rx="8" />
+        <path d="M29 27l12 6-12 7z" />
+      </svg>
+    );
+  }
+
+  if (name === "mail") {
+    return (
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="12" y="18" width="40" height="28" rx="4" />
+        <path d="M14 21l18 15 18-15" />
+      </svg>
+    );
+  }
+
+  if (name === "bot") {
+    return (
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="16" y="22" width="32" height="24" rx="8" />
+        <path d="M32 22v-8" />
+        <circle cx="25" cy="34" r="3" />
+        <circle cx="39" cy="34" r="3" />
+        <path d="M25 44h14" />
+        <path d="M10 34h6" />
+        <path d="M48 34h6" />
+      </svg>
+    );
+  }
+
+  if (name === "web") {
+    return (
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="12" y="16" width="40" height="34" rx="4" />
+        <path d="M12 25h40" />
+        <path d="M20 21h2" />
+        <path d="M27 21h2" />
+      </svg>
+    );
+  }
+
+  if (name === "card") {
+    return (
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="11" y="18" width="42" height="30" rx="5" />
+        <path d="M11 28h42" />
+        <path d="M20 40h10" />
+        <path d="M38 40h7" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <text x="32" y="39" textAnchor="middle" className="hero-svg-text">
+        {name === "pinterest" ? "P" : name === "threads" ? "@" : "CRM"}
+      </text>
+    </svg>
+  );
+}
+
+const heroFeatures: { icon: HeroIconName; title: string }[] = [
+  { icon: "search", title: "Анализ\nпрофиля" },
+  { icon: "map", title: "Карта\nсмыслов" },
+  { icon: "checklist", title: "Ежедневные\nдействия" },
+  { icon: "growth", title: "Результат:\nклиенты и доход" },
+];
+
+const heroChannels: { icon: HeroIconName; title: string; className: string }[] = [
+  { icon: "instagram", title: "Соцсети", className: "social-instagram" },
+  { icon: "telegram", title: "Telegram", className: "social-telegram" },
+  { icon: "youtube", title: "YouTube", className: "social-youtube" },
+  { icon: "pinterest", title: "Pinterest", className: "social-pinterest" },
+  { icon: "threads", title: "Threads", className: "social-threads" },
+];
+
+const heroOutputs: { icon: HeroIconName; title: string }[] = [
+  { icon: "mail", title: "Рассылки" },
+  { icon: "bot", title: "Чат-боты" },
+  { icon: "web", title: "Сайт / Лендинг" },
+  { icon: "crm", title: "CRM / Системы" },
+  { icon: "card", title: "Оплата" },
+];
+
+const clientPath = [
+  ["1", "Касание", "Видит ваш контент"],
+  ["2", "Интерес", "Переходит в бота\nили канал"],
+  ["3", "Доверие", "Получает пользу,\nвовлекается"],
+  ["4", "Решение", "Выбирает решение"],
+  ["5", "Оплата", "Становится клиентом"],
+];
+
 export default function TrendsPage() {
-  const [videos, setVideos] = useState<VideoItem[]>([]);
+    const socialLinks: Record<string, string> = {
+    "Соцсети": "https://www.instagram.com/",
+    "Telegram": "https://t.me/",
+    "YouTube": "https://www.youtube.com/",
+    "Pinterest": "https://www.pinterest.com/",
+    "Threads": "https://www.threads.net/",
+  };
+const [videos, setVideos] = useState<VideoItem[]>([]);
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [profileNiche, setProfileNiche] = useState("");
   const [profilePlatform, setProfilePlatform] = useState("");
@@ -363,31 +570,78 @@ export default function TrendsPage() {
 
   return (
     <section className="lesik-home-screen">
-      <header className="home-hero-ios">
-        <div className="home-hero-text">
-          <label className="home-avatar uploadable-avatar">
-            {avatar ? <img src={avatar} alt="" /> : null}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => uploadAvatar(e.target.files?.[0])}
-            />
-          </label>
 
-          <div>
-            <p className="home-welcome">Привет, {name}</p>
-            <h1>Система маленьких шагов</h1>
-            <p className="home-subtitle">
-              Твоя помощь в продажах через контент. ЛЕСik собирает профиль,
-              строит карту смыслов и превращает цель в ежедневные действия.
-            </p>
+      <header className="sales-game-hero sales-game-hero-final">
+  <div className="sales-hero-noise" />
+  <div className="sales-hero-glow sales-hero-glow-left" />
+  <div className="sales-hero-glow sales-hero-glow-right" />
+
+  <div className="sales-hero-layout">
+    <div className="sales-hero-left">
+      <h1 className="sales-hero-title">
+        <span className="gold">ПРЕВРАТИ ПРОДАЖИ</span>
+        <span>В ЕЖЕДНЕВНУЮ ИГРУ</span>
+      </h1>
+
+      <p className="sales-hero-lead">
+        <span>Система, которая превращает контент в клиентов:</span>
+        <span>
+          от <mark>анализа профиля</mark> → к <mark>ежедневным действиям</mark>
+        </span>
+      </p>
+
+      <Link href="/app/content-map" className="sales-hero-main-button sales-hero-main-button-left">
+        Построить карту
+      </Link>
+
+      <p className="sales-hero-after-button">Собери свою стратегию продаж</p>
+    </div>
+
+    <div className="sales-hero-center">
+      <div className="sales-channel-list">
+        {heroChannels.map((item) => (
+          <a
+            key={item.title}
+            href={socialLinks[item.title] ?? "#"}
+            target="_blank"
+            rel="noreferrer"
+            className={item.className}
+            aria-label={item.title}
+          >
+            <i>
+              <HeroSvgIcon name={item.icon} />
+            </i>
+            <span>{item.title}</span>
+          </a>
+        ))}
+      </div>
+
+      <div className="sales-hero-phone-wrap">
+        <div className="sales-phone-light" />
+        <img
+          src="/trends/phone-ref.png"
+          alt="Путь клиента"
+          className="sales-hero-phone-image"
+          draggable={false}
+        />
+      </div>
+    </div>
+
+    <div className="sales-hero-right">
+      <div className="sales-output-list">
+        {heroOutputs.map((item) => (
+          <div key={item.title}>
+            <i>
+              <HeroSvgIcon name={item.icon} />
+            </i>
+            <span>{item.title}</span>
           </div>
-        </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</header>
 
-        <Link href="/app/content-map" className="hero-primary-button">
-          Построить карту
-        </Link>
-      </header>
 
       <div className="home-main-grid-ios">
         <section className="ios-glass-card goals-ios-card">
@@ -772,3 +1026,4 @@ export default function TrendsPage() {
     </section>
   );
 }
+
