@@ -1,48 +1,58 @@
-﻿import Link from "next/link";
+import Image from "next/image";
+import Link from "next/link";
+
+type Channel = { label: string; icon: string };
+
+const leftChannels: Channel[] = [
+  { label: "Telegram", icon: "✈" },
+  { label: "YouTube", icon: "▶" },
+  { label: "Pinterest", icon: "P" },
+  { label: "Threads", icon: "@" },
+];
+
+const rightChannels: Channel[] = [
+  { label: "Рассылки", icon: "✉" },
+  { label: "Чат-боты", icon: "⚙" },
+  { label: "Сайт / Лендинг", icon: "▭" },
+  { label: "CRM / Системы", icon: "CRM" },
+  { label: "Оплата", icon: "◫" },
+];
 
 export default function LandingPage() {
   return (
     <main className="landing-page">
       <section className="landing-hero">
-        <div className="landing-badge">ЛЕСik · лес переходов</div>
-
-        <h1>
-          Преврати ежедневные продажи в игру и расти через контент, цели и действия
-        </h1>
-
-        <p>
-          ЛЕСik собирает профиль клиента, понимает нишу, цели и препятствия,
-          а затем помогает построить карту контента, идеи, квесты и план движения.
-        </p>
-
-        <div className="landing-actions">
-          <Link href="/login" className="landing-primary">
-            Войти в личный кабинет
-          </Link>
-          <a href="#features" className="landing-secondary">
-            Что умеет ЛЕСik
-          </a>
+        <div className="landing-copy">
+          <h1>
+            <span>ПРЕВРАТИ ПРОДАЖИ</span>
+            <br />В ЕЖЕДНЕВНУЮ ИГРУ
+          </h1>
+          <p>
+            Система, которая превращает контент
+            <br />в клиентов: от анализа профиля →
+            <br />к ежедневным действиям
+          </p>
+          <Link href="/login" className="landing-primary">Построить карту</Link>
+          <small>Собери свою стратегию продаж</small>
         </div>
-      </section>
 
-      <section className="landing-features" id="features">
-        <article>
-          <span>01</span>
-          <h2>Профиль клиента</h2>
-          <p>Собирает email, имя, нишу, площадки, цель и главное препятствие.</p>
-        </article>
+        <div className="landing-visual" aria-hidden>
+          <ul className="landing-rail landing-rail-left">
+            {leftChannels.map((channel) => (
+              <li key={channel.label}><span>{channel.icon}</span>{channel.label}</li>
+            ))}
+          </ul>
 
-        <article>
-          <span>02</span>
-          <h2>Карта контента</h2>
-          <p>Помогает разложить продвижение на направления, рубрики и действия.</p>
-        </article>
+          <div className="landing-phone">
+            <Image src="/trends/phone-ref.png" alt="Путь клиента" width={360} height={720} priority />
+          </div>
 
-        <article>
-          <span>03</span>
-          <h2>Квесты роста</h2>
-          <p>Превращает цель на месяц в понятные ежедневные шаги.</p>
-        </article>
+          <ul className="landing-rail landing-rail-right">
+            {rightChannels.map((channel) => (
+              <li key={channel.label}><span>{channel.icon}</span>{channel.label}</li>
+            ))}
+          </ul>
+        </div>
       </section>
     </main>
   );
