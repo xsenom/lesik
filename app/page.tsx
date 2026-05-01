@@ -1,7 +1,21 @@
 import Link from "next/link";
 
-const leftChannels = ["Telegram", "YouTube", "Pinterest", "Threads"];
-const rightChannels = ["Рассылки", "Чат-боты", "Сайт / Лендинг", "CRM / Системы", "Оплата"];
+type Channel = { label: string; icon: string };
+
+const leftChannels: Channel[] = [
+  { label: "Telegram", icon: "✈" },
+  { label: "YouTube", icon: "▶" },
+  { label: "Pinterest", icon: "P" },
+  { label: "Threads", icon: "@" },
+];
+
+const rightChannels: Channel[] = [
+  { label: "Рассылки", icon: "✉" },
+  { label: "Чат-боты", icon: "⚙" },
+  { label: "Сайт / Лендинг", icon: "▭" },
+  { label: "CRM / Системы", icon: "CRM" },
+  { label: "Оплата", icon: "◫" },
+];
 
 export default function LandingPage() {
   return (
@@ -12,26 +26,23 @@ export default function LandingPage() {
             <span>ПРЕВРАТИ ПРОДАЖИ</span>
             <br />В ЕЖЕДНЕВНУЮ ИГРУ
           </h1>
-
           <p>
-            Система, которая превращает контент
-            <br />в клиентов: от анализа профиля →
-            <br />к ежедневным действиям
+            Система, которая превращает контент в клиентов:
+            <br />от анализа профиля → к ежедневным действиям
           </p>
-
-          <div className="landing-actions">
-            <Link href="/login" className="landing-primary">
-              Построить карту
-            </Link>
-          </div>
-
+          <Link href="/login" className="landing-primary">
+            Построить карту
+          </Link>
           <small>Собери свою стратегию продаж</small>
         </div>
 
         <div className="landing-visual" aria-hidden>
           <ul className="landing-rail landing-rail-left">
             {leftChannels.map((channel) => (
-              <li key={channel}>{channel}</li>
+              <li key={channel.label}>
+                <span>{channel.icon}</span>
+                {channel.label}
+              </li>
             ))}
           </ul>
 
@@ -45,13 +56,16 @@ export default function LandingPage() {
                 <li>Решение</li>
                 <li>Оплата</li>
               </ol>
-              <p>✓ Клиент с нами!</p>
+              <p>Клиент с нами!</p>
             </div>
           </div>
 
           <ul className="landing-rail landing-rail-right">
             {rightChannels.map((channel) => (
-              <li key={channel}>{channel}</li>
+              <li key={channel.label}>
+                <span>{channel.icon}</span>
+                {channel.label}
+              </li>
             ))}
           </ul>
         </div>
