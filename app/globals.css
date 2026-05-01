@@ -1654,64 +1654,32 @@ button { font: inherit; }
 .login-page {
   min-height: 100vh;
   background:
-    radial-gradient(circle at 18% 10%, rgba(95,255,85,.16), transparent 28%),
-    radial-gradient(circle at 80% 82%, rgba(255,147,0,.12), transparent 30%),
-    linear-gradient(135deg, #00170b, #001006);
+    radial-gradient(circle at 72% 50%, rgba(255, 170, 0, .18), transparent 30%),
+    radial-gradient(circle at 20% 80%, rgba(95,255,85,.12), transparent 32%),
+    linear-gradient(120deg, #001008, #001b0d 45%, #000f08 100%);
   color: #f7fff1;
-  padding: 34px;
+  padding: 22px;
   overflow: hidden;
 }
 
 .landing-hero {
-  min-height: 58vh;
-  border-radius: 34px;
-  border: 1px solid rgba(150,255,80,.32);
-  background: rgba(0, 30, 14, .62);
-  backdrop-filter: blur(14px);
-  padding: 58px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  box-shadow: 0 0 54px rgba(90,255,80,.12);
+  min-height: calc(100vh - 44px);
+  border-radius: 28px;
+  border: 1px solid rgba(209, 255, 130, .24);
+  background: radial-gradient(circle at 58% 42%, rgba(255, 175, 0, .16), transparent 34%), rgba(0, 20, 12, .76);
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 20px;
+  padding: clamp(26px, 4vw, 58px);
+  align-items: center;
 }
 
-.landing-badge {
-  width: fit-content;
-  margin-bottom: 18px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(186,255,88,.1);
-  border: 1px solid rgba(186,255,88,.32);
-  color: #baff58;
-  font-size: 13px;
-  font-weight: 950;
-  letter-spacing: .04em;
-}
+.landing-copy h1 { margin: 0; font-size: clamp(44px, 5vw, 92px); line-height: .95; font-weight: 900; letter-spacing: -2px; }
+.landing-copy h1 span { color: #ffc743; }
+.landing-copy p { margin: 30px 0 0; font-size: clamp(21px, 2vw, 45px); line-height: 1.26; color: rgba(247,255,241,.92); }
+.landing-copy small { display: block; margin-top: 22px; color: rgba(247,255,241,.82); font-size: 22px; }
 
-.landing-hero h1 {
-  max-width: 980px;
-  margin: 0;
-  font-size: clamp(38px, 5vw, 74px);
-  line-height: .96;
-  letter-spacing: -3px;
-  font-weight: 950;
-}
-
-.landing-hero p {
-  max-width: 760px;
-  margin: 22px 0 0;
-  color: rgba(240,255,230,.68);
-  font-size: 20px;
-  line-height: 1.5;
-  font-weight: 650;
-}
-
-.landing-actions {
-  display: flex;
-  gap: 14px;
-  margin-top: 34px;
-}
-
+.landing-actions { margin-top: 34px; }
 .landing-primary,
 .landing-secondary,
 .login-card button {
@@ -1720,54 +1688,73 @@ button { font: inherit; }
   align-items: center;
   justify-content: center;
   border-radius: 18px;
-  padding: 0 24px;
-  font-size: 16px;
-  font-weight: 950;
+  padding: 0 40px;
+  font-size: 42px;
+  font-weight: 900;
 }
 
 .landing-primary,
 .login-card button {
-  background: linear-gradient(180deg, #ff9300, #d86a00);
-  color: #111a08;
-  box-shadow: 0 0 28px rgba(255,137,0,.28);
+  background: linear-gradient(180deg, #ffcb4d, #ff9a00);
+  color: #1d1300;
+  box-shadow: 0 0 28px rgba(255,137,0,.4);
   border: 0;
   cursor: pointer;
 }
 
-.landing-secondary {
-  color: #dfffbc;
-  border: 1px solid rgba(186,255,88,.28);
-  background: rgba(120,255,80,.08);
+.landing-visual { display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: center; }
+.landing-rail { list-style: none; margin: 0; padding: 0; display: grid; gap: 24px; }
+.landing-rail li {
+  color: rgba(247,255,241,.9);
+  font-size: clamp(15px, 1.3vw, 36px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.landing-rail li::before {
+  content: "";
+  width: 42px;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 193, 54, .72);
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(255, 173, 40, .28);
 }
 
-.landing-features {
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+.landing-phone {
+  width: clamp(180px, 17vw, 360px);
+  border-radius: 42px;
+  padding: 10px;
+  background: linear-gradient(165deg, #1e1e1e, #525252);
+  box-shadow: 0 0 60px rgba(255, 180, 44, .26);
+}
+.landing-phone-screen {
+  min-height: clamp(380px, 54vh, 620px);
+  border-radius: 32px;
+  border: 1px solid rgba(104, 255, 127, .42);
+  background: linear-gradient(180deg, #001f13, #00120b);
+  padding: 26px 20px;
+}
+.landing-phone-screen h2 { margin: 0 0 16px; font-size: clamp(20px, 1.7vw, 34px); }
+.landing-phone-screen ol { margin: 0; padding-left: 20px; display: grid; gap: 10px; color: rgba(229,255,215,.95); font-size: clamp(14px, 1vw, 24px); }
+.landing-phone-screen p { margin: 18px 0 0; color: #63f386; font-size: clamp(14px, 1vw, 22px); font-weight: 700; }
+
+@media (max-width: 1100px) {
+  .landing-hero { grid-template-columns: 1fr; }
+  .landing-visual { grid-template-columns: 1fr; }
+  .landing-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-.landing-features article {
-  border-radius: 26px;
-  border: 1px solid rgba(150,255,80,.24);
-  background: rgba(0, 28, 13, .58);
-  padding: 26px;
-}
-
-.landing-features span {
-  color: #ff9300;
-  font-weight: 950;
-}
-
-.landing-features h2 {
-  margin: 12px 0 8px;
-  font-size: 24px;
-}
-
-.landing-features p {
-  margin: 0;
-  color: rgba(240,255,230,.66);
-  line-height: 1.45;
+@media (max-width: 760px) {
+  .landing-page,
+  .login-page { padding: 12px; }
+  .landing-hero { min-height: auto; padding: 22px; border-radius: 22px; }
+  .landing-copy h1 { font-size: 34px; }
+  .landing-copy p { font-size: 20px; }
+  .landing-copy small { font-size: 16px; }
+  .landing-primary,
+  .landing-secondary,
+  .login-card button { min-height: 52px; font-size: 26px; width: 100%; }
+  .landing-rail { grid-template-columns: 1fr; }
 }
 
 /* LOGIN */
@@ -1815,35 +1802,6 @@ button { font: inherit; }
 .login-card button {
   width: 100%;
   margin-top: 8px;
-}
-
-@media (max-width: 760px) {
-  .landing-page,
-  .login-page {
-    padding: 14px;
-  }
-
-  .landing-hero {
-    padding: 28px;
-    border-radius: 26px;
-  }
-
-  .landing-hero h1 {
-    font-size: 38px;
-    letter-spacing: -1px;
-  }
-
-  .landing-hero p {
-    font-size: 16px;
-  }
-
-  .landing-actions {
-    flex-direction: column;
-  }
-
-  .landing-features {
-    grid-template-columns: 1fr;
-  }
 }
 
 .profile-intro-card p {
