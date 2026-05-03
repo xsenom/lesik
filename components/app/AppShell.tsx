@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import NeuroBackdrop from "@/components/background/NeuroBackdrop";
 
 const nav = [
-  { href: "/app/trends", label: "Главная", icon: "home" },
+  { href: "/app/main", label: "Главная", icon: "home" },
   { href: "/app/profile", label: "Профиль", icon: "profile" },
   { href: "/app/content-map", label: "Карта контента", icon: "map" },
   { href: "/app/admin", label: "Админ", icon: "shield" },
