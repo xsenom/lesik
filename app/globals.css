@@ -6558,3 +6558,33 @@ b {
 /* final overrides */
 .lesik-main { padding-top: 8px; }
 .lesik-home-screen { padding-top: 8px; }
+
+/* main hero hotfix */
+.lesik-promo-hero {
+  display: grid;
+  grid-template-columns: 1.15fr .9fr .8fr;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid rgba(161,255,101,.22);
+  border-radius: 26px;
+  background: rgba(0,20,10,.72);
+  margin-bottom: 18px;
+}
+.lesik-promo-copy h1 { margin: 8px 0 12px; font-size: clamp(30px,3.2vw,54px); line-height: .95; }
+.lesik-promo-copy h1 span { display:block; }
+.lesik-promo-kicker { color:#d7ff95; font-size:12px; text-transform: uppercase; }
+.lesik-promo-lead { color: rgba(238,255,228,.9); }
+.lesik-promo-steps { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:10px; }
+.lesik-promo-steps article { display:flex; gap:8px; align-items:center; }
+.lesik-phone { border:1px solid rgba(186,255,88,.35); border-radius:24px; padding:12px; background:rgba(2,26,12,.88); }
+.lesik-phone h2 { margin: 8px 0 10px; }
+.lesik-phone-row { display:flex; gap:8px; margin-bottom:8px; }
+.lesik-left-socials,.lesik-right-socials { display:grid; gap:8px; }
+.lesik-left-socials div,.lesik-right-socials div { display:flex; gap:8px; align-items:center; }
+.lesik-promo-cta { display:inline-flex; padding:12px 18px; border-radius:12px; background:linear-gradient(180deg,#ffb03b,#f08b00); color:#1d1305; font-weight:800; }
+@media (max-width: 1200px){ .lesik-promo-hero { grid-template-columns: 1fr; } }
+
+/* icon fallback in profile */
+.status-help,.readiness-help,.status-edit,.readiness-edit { font-size: 0 !important; }
+.status-help::before,.readiness-help::before { content: "i"; font-size: 14px; font-weight: 800; }
+.status-edit::before,.readiness-edit::before { content: "✎"; font-size: 14px; }
