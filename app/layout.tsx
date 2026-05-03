@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import SiteFooter from "@/components/app/SiteFooter";
 
 export const metadata: Metadata = {
   title: "ЛЕСik",
@@ -13,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body>{children}</body>
+      <body>{children}<SiteFooter /></body>
     </html>
   );
 }

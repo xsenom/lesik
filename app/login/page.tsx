@@ -1,5 +1,6 @@
-﻿"use client";
+"use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -14,7 +15,7 @@ export default function LoginPage() {
 
     localStorage.setItem("lesik_auth", "yes");
     localStorage.setItem("lesik_email", email.trim().toLowerCase());
-    router.push("/app/trends");
+    router.push("/app/main");
   };
 
   return (
@@ -28,8 +29,8 @@ export default function LoginPage() {
         <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Пароль" type="password" />
 
         <button type="button" onClick={submit}>Войти</button>
+        <Link className="login-forgot" href="mailto:support@lesik.ai?subject=Восстановление%20пароля">Забыли пароль?</Link>
       </section>
     </main>
   );
 }
-
