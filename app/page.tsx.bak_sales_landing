@@ -1,0 +1,125 @@
+import Link from "next/link";
+
+const contentSources = [
+  { label: "Telegram", icon: "✈" },
+  { label: "YouTube", icon: "▶" },
+  { label: "Pinterest", icon: "P" },
+  { label: "Threads", icon: "@" },
+  { label: "Instagram", icon: "◎" },
+];
+
+const salesSystem = [
+  { label: "Рассылки", icon: "✉" },
+  { label: "Чат-боты", icon: "AI" },
+  { label: "Сайт / лендинг", icon: "▣" },
+  { label: "CRM", icon: "CRM" },
+  { label: "Оплата", icon: "₽" },
+];
+
+const steps = [
+  "Разбирает профиль и оффер",
+  "Собирает карту смыслов",
+  "Строит путь клиента",
+  "Выдает ежедневные действия",
+];
+
+const cards = [
+  {
+    title: "Профиль",
+    text: "ЛЕСik смотрит, как сейчас упакован эксперт: ниша, продукт, тон, аудитория и точки доверия.",
+  },
+  {
+    title: "Карта смыслов",
+    text: "Из разрозненных идей собирается понятная система тем: что говорить, зачем и к какой продаже вести.",
+  },
+  {
+    title: "Контент-календарь",
+    text: "Каждый день превращается в небольшую задачу: пост, сторис, письмо, прогрев, касание или оффер.",
+  },
+];
+
+export default function LandingPage() {
+  return (
+    <main className="landing-page landing-page-v2">
+      <section className="landing-hero-v2">
+        <div className="landing-copy-v2">
+          <p className="landing-kicker-v2">ЛЕСik · продажи через контент</p>
+
+          <h1>
+            <span>Преврати продажи</span>
+            <span>в ежедневную игру</span>
+          </h1>
+
+          <p className="landing-lead-v2">
+            Карманная система для экспертов и малого бизнеса: анализирует профиль,
+            строит карту смыслов и превращает цель в ежедневные действия, которые
+            ведут клиента от первого касания до оплаты.
+          </p>
+
+          <div className="landing-actions-v2">
+            <Link href="/login" className="landing-primary-v2">
+              Войти в кабинет
+            </Link>
+            <Link href="/app/main" className="landing-secondary-v2">
+              Смотреть главную
+            </Link>
+          </div>
+
+          <div className="landing-proof-v2">
+            <b>4 шага</b>
+            <span>от хаотичного контента к управляемому потоку клиентов</span>
+          </div>
+        </div>
+
+        <div className="landing-visual-v2" aria-hidden="true">
+          <div className="landing-socials-v2 landing-socials-left-v2">
+            {contentSources.map((item) => (
+              <div className="landing-social-pill-v2" key={item.label}>
+                <b>{item.icon}</b>
+                <span>{item.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="landing-phone-v2">
+            <div className="landing-phone-speaker-v2" />
+            <div className="landing-phone-top-v2">
+              <span>ЛЕСik</span>
+              <b>Сегодня</b>
+            </div>
+            <div className="landing-phone-card-v2 active">
+              <small>Задача дня</small>
+              <strong>Сделать первое касание</strong>
+              <span>Пост → сторис → бот → оффер</span>
+            </div>
+            {steps.map((item, index) => (
+              <div className="landing-phone-row-v2" key={item}>
+                <b>{index + 1}</b>
+                <span>{item}</span>
+              </div>
+            ))}
+            <div className="landing-phone-bottom-v2">✓ маршрут к продаже собран</div>
+          </div>
+
+          <div className="landing-socials-v2 landing-socials-right-v2">
+            {salesSystem.map((item) => (
+              <div className="landing-social-pill-v2" key={item.label}>
+                <b>{item.icon}</b>
+                <span>{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-sections-v2">
+        {cards.map((card) => (
+          <article key={card.title}>
+            <h2>{card.title}</h2>
+            <p>{card.text}</p>
+          </article>
+        ))}
+      </section>
+    </main>
+  );
+}
