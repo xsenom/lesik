@@ -195,7 +195,7 @@ export default function ContentMapPage() {
       setCalendarAiComment(data.comment || "Готово. Вы можете применить изменения.");
     } catch (e) {
       console.error(e);
-      alert("Не удалось обсудить пост с ИИ.");
+      alert("Не удалось обсудить пост.");
     } finally {
       setCalendarAiLoading(false);
     }
@@ -278,7 +278,7 @@ export default function ContentMapPage() {
       {!map && (
         <div className="map-start">
           <h2>Профиль найден</h2>
-          <p>Нажмите кнопку, и ЛЕСik отправит данные в GPT, соберёт карту и календарь.</p>
+          <p>Нажмите кнопку, и ЛЕСik соберёт карту и календарь.</p>
         </div>
       )}
 
@@ -340,7 +340,7 @@ export default function ContentMapPage() {
           <div className="profile-modal profile-modal-large" onClick={(e) => e.stopPropagation()}>
             <div className="profile-modal-head">
               <div>
-                <p className="eyebrow">ИИ-редактор контента</p>
+                <p className="eyebrow">Редактор контента</p>
                 <h2>{selectedItem.date_label}: {selectedItem.topic}</h2>
               </div>
               <button type="button" onClick={() => setCalendarAiOpen(false)}>×</button>
@@ -379,7 +379,7 @@ export default function ContentMapPage() {
 
             {calendarAiComment && (
               <div className="profile-form-block">
-                <h3>Комментарий ИИ</h3>
+                <h3>Комментарий</h3>
                 <p>{calendarAiComment}</p>
               </div>
             )}

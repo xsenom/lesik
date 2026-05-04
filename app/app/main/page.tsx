@@ -177,131 +177,166 @@ function buildCalendarDays(calendar: CalendarItem[], startDate: string): Calenda
 }
 
 function PromoHero() {
+  const featureCards = [
+    { icon: "⌕", title: "Анализ\nпрофиля" },
+    { icon: "◇", title: "Карта\nсмыслов" },
+    { icon: "☑", title: "Ежедневные\nдействия" },
+    { icon: "↗", title: "Результат:\nклиенты и доход" },
+  ];
+
   const leftChannels = [
-    { label: "Соцсети", icon: "◎" },
-    { label: "Telegram", icon: "✈" },
-    { label: "YouTube", icon: "▶" },
-    { label: "Pinterest", icon: "P" },
-    { label: "Threads", icon: "@" },
+    { key: "instagram", label: "Соцсети" },
+    { key: "telegram", label: "Telegram" },
+    { key: "youtube", label: "YouTube" },
+    { key: "pinterest", label: "Pinterest" },
+    { key: "threads", label: "Threads" },
   ];
 
   const rightChannels = [
-    { label: "Рассылки", icon: "✉" },
-    { label: "Чат-боты", icon: "AI" },
-    { label: "Сайт / Лендинг", icon: "▣" },
-    { label: "CRM / Системы", icon: "CRM" },
-    { label: "Оплата", icon: "₽" },
+    { key: "mail", label: "Рассылки" },
+    { key: "bot", label: "Чат-боты" },
+    { key: "site", label: "Сайт / Лендинг" },
+    { key: "crm", label: "CRM / Системы" },
+    { key: "pay", label: "Оплата" },
   ];
 
-  const phoneSteps = [
-    ["1", "Касание", "Видит ваш контент"],
-    ["2", "Интерес", "Переходит в бота или канал"],
-    ["3", "Доверие", "Получает пользу, вовлекается"],
-    ["4", "Решение", "Выбирает решение"],
-    ["5", "Оплата", "Становится клиентом"],
-  ];
+  const renderIcon = (key: string) => {
+    switch (key) {
+      case "instagram":
+        return (
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="4" width="16" height="16" rx="5" />
+            <circle cx="12" cy="12" r="3.5" />
+            <circle cx="17.2" cy="6.8" r="1" className="hero-final-svg-fill" />
+          </svg>
+        );
+
+      case "telegram":
+        return (
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 5L4 11.2L10.2 13.3L12.7 19L20 5Z" />
+            <path d="M10.2 13.3L20 5" />
+          </svg>
+        );
+
+      case "youtube":
+        return (
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3.5" y="6.5" width="17" height="11" rx="4" />
+            <path d="M10 9.2L15 12L10 14.8Z" className="hero-final-svg-fill" />
+          </svg>
+        );
+
+      case "pinterest":
+        return <span className="hero-final-icon-letter">P</span>;
+
+      case "threads":
+        return <span className="hero-final-icon-letter">@</span>;
+
+      case "mail":
+        return (
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="6" width="16" height="12" rx="2.5" />
+            <path d="M5 8L12 13L19 8" />
+          </svg>
+        );
+
+      case "bot":
+        return (
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="6" y="7" width="12" height="10" rx="3" />
+            <path d="M12 4V7" />
+            <path d="M8 18V20" />
+            <path d="M16 18V20" />
+            <circle cx="10" cy="12" r="1" className="hero-final-svg-fill" />
+            <circle cx="14" cy="12" r="1" className="hero-final-svg-fill" />
+          </svg>
+        );
+
+      case "site":
+        return (
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="5" width="16" height="14" rx="2.5" />
+            <path d="M4 9H20" />
+            <circle cx="7" cy="7" r="0.8" className="hero-final-svg-fill" />
+            <circle cx="9.5" cy="7" r="0.8" className="hero-final-svg-fill" />
+          </svg>
+        );
+
+      case "crm":
+        return <span className="hero-final-icon-letter hero-final-icon-letter-small">CRM</span>;
+
+      case "pay":
+        return (
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="6.5" width="16" height="11" rx="2.5" />
+            <path d="M4 10H20" />
+            <path d="M8 14.2H11.8" />
+          </svg>
+        );
+
+      default:
+        return <span className="hero-final-icon-letter">•</span>;
+    }
+  };
 
   return (
-    <section className="lesik-promo-hero">
-      <div className="lesik-promo-copy">
-        <p className="lesik-promo-kicker">ЛЕСik · система маленьких шагов</p>
+    <section className="hero-final">
+      <div className="hero-final-copy">
+        <p className="hero-final-kicker">ЛЕСik · система маленьких шагов</p>
 
-        <h1>
-          <span>Преврати продажи</span>
-          <span>в ежедневную игру</span>
+                <h1 className="hero-final-title">
+          <span className="hero-final-title-gold">ПРЕВРАТИ ПРОДАЖИ</span>
         </h1>
 
-        <p className="lesik-promo-lead">
+
+
+        <h1 className="hero-final-title hero-final-title-second">
+          <span className="hero-final-title-white">В ЕЖЕДНЕВНУЮ ИГРУ</span>
+        </h1>
+
+        <p className="hero-final-subtitle">
           Система, которая превращает контент в клиентов:
           <br />
           от <mark>анализа профиля</mark> → к <mark>ежедневным действиям</mark>
         </p>
 
-        <div className="lesik-promo-steps">
-          <article>
-            <i>⌕</i>
-            <span>Анализ профиля</span>
-          </article>
+          <Link href="/app/content-map" className="hero-final-title-cta">
+              Построить карту
+          </Link>
 
-          <article>
-            <i>◇</i>
-            <span>Карта смыслов</span>
-          </article>
 
-          <article>
-            <i>☑</i>
-            <span>Ежедневные действия</span>
-          </article>
 
-          <article>
-            <i>↗</i>
-            <span>Клиенты и доход</span>
-          </article>
-        </div>
-
-        <div className="lesik-promo-points">
-          <div>
-            <i>●</i>
-            <p>
-              Выстраивает <mark>путь клиента</mark> от первого касания до оплаты
-              через систему <mark>многоканальных касаний</mark>
-            </p>
-          </div>
-
-          <div>
-            <i>◎</i>
-            <p>
-              Чтобы вы не просто вели соцсети, а управляли{" "}
-              <mark>потоком клиентов и доходом</mark> каждый день
-            </p>
-          </div>
-        </div>
       </div>
 
-      <div className="lesik-promo-visual">
-        <div className="lesik-left-socials">
+      <div className="hero-final-center">
+        <div className="hero-final-socials hero-final-socials-left">
           {leftChannels.map((item) => (
-            <div key={item.label}>
-              <b>{item.icon}</b>
-              <span>{item.label}</span>
+            <div key={item.label} className="hero-final-pill">
+              <span className={`hero-final-pill-icon hero-final-pill-icon-${item.key}`}>
+                {renderIcon(item.key)}
+              </span>
+              <span className="hero-final-pill-text">{item.label}</span>
             </div>
           ))}
         </div>
 
-        <div className="lesik-phone">
-          <div className="lesik-phone-island" />
-          <div className="lesik-phone-time">9:41</div>
-
-          <h2>Путь клиента</h2>
-
-          <div className="lesik-phone-path">
-            {phoneSteps.map((item) => (
-              <div className="lesik-phone-row" key={item[0]}>
-                <b>{item[0]}</b>
-                <div>
-                  <strong>{item[1]}</strong>
-                  <span>{item[2]}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <p className="lesik-phone-finish">✓ Клиент с вами</p>
+        <div className="hero-final-phone-wrap">
+          <div className="hero-final-phone-glow" />
+          <img src="/main-phone1.png" alt="Путь клиента" className="hero-final-phone-image" />
         </div>
       </div>
 
-      <div className="lesik-promo-side">
-        <Link href="/app/content-map" className="lesik-promo-cta">
-          Построить карту
-        </Link>
+      <div className="hero-final-side">
+<p className="hero-final-side-subtitle">Собери свою стратегию продаж</p>
 
-        <p>Собери свою стратегию продаж</p>
-
-        <div className="lesik-right-socials">
+        <div className="hero-final-socials hero-final-socials-right">
           {rightChannels.map((item) => (
-            <div key={item.label}>
-              <b>{item.icon}</b>
-              <span>{item.label}</span>
+            <div key={item.label} className="hero-final-pill">
+              <span className={`hero-final-pill-icon hero-final-pill-icon-${item.key}`}>
+                {renderIcon(item.key)}
+              </span>
+              <span className="hero-final-pill-text">{item.label}</span>
             </div>
           ))}
         </div>
@@ -309,7 +344,6 @@ function PromoHero() {
     </section>
   );
 }
-
 export default function TrendsPage() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
@@ -544,47 +578,7 @@ export default function TrendsPage() {
           )}
         </section>
 
-        <section className="ios-glass-card expert-trends-card">
-          <div className="expert-trends-head">
-            <div>
-              <p className="home-kicker">Тренды</p>
-              <h2>Что сейчас работает в контенте</h2>
-            </div>
-            <span>AI</span>
-          </div>
 
-          <p className="expert-trends-subtitle">
-            {profileNiche
-              ? `Ориентиры для ниши: ${profileNiche}`
-              : "Тренды станут точнее после заполнения профиля."}
-          </p>
-
-          <div className="expert-trends-list">
-            <article>
-              <span>01</span>
-              <h3>Короткие экспертные разборы</h3>
-              <p>Аудитории легче заходят мини-разборы: ошибка, совет, вывод.</p>
-            </article>
-
-            <article>
-              <span>02</span>
-              <h3>Авторская позиция</h3>
-              <p>Сильнее работает не просто информация, а личное мнение и опыт.</p>
-            </article>
-
-            <article>
-              <span>03</span>
-              <h3>Квестовые форматы</h3>
-              <p>Людям проще вовлекаться, когда путь разбит на маленькие шаги.</p>
-            </article>
-          </div>
-
-          <div className="expert-trends-actions">
-            <Link href="/app/content-map" className="open-calendar-button">
-              Применить в карте
-            </Link>
-          </div>
-        </section>
       </div>
 
       {calendarDays.length > 0 && (
@@ -901,3 +895,17 @@ export default function TrendsPage() {
     </section>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

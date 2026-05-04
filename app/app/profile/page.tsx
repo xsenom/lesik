@@ -563,7 +563,7 @@ export default function ProfilePage() {
             <h2>Анализ аудитории</h2>
             <p>
               {audienceReady
-                ? "Анализ аудитории заполнен. Можно подключать ИИ-анализ."
+                ? "Анализ аудитории заполнен. Можно подключать анализ."
                 : "Обязательно заполните анализ аудитории или вставьте распаковку клиента."}
             </p>
           </article>
@@ -735,7 +735,7 @@ export default function ProfilePage() {
           <div className="profile-modal profile-modal-large audience-ai-modal" onClick={(e) => e.stopPropagation()}>
             <div className="profile-modal-head">
               <div>
-                <p className="eyebrow">ИИ-помощник</p>
+                <p className="eyebrow">Помощник</p>
                 <h2>Интервью по аудитории</h2>
               </div>
               <button type="button" onClick={() => setAudienceAiOpen(false)}>×</button>
@@ -871,7 +871,7 @@ export default function ProfilePage() {
                   runAudienceAiAnalysis([]);
                 }}
               >
-                Запустить ИИ-интервью по аудитории
+                Запустить интервью по аудитории
               </button>
             </div>
 
