@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Rubik } from "next/font/google";
 import styles from "./page.module.css";
 
@@ -60,17 +61,6 @@ const services = [
   },
 ];
 
-const clients = [
-  "Эксперты",
-  "Онлайн-школы",
-  "Астрологи",
-  "Психологи",
-  "Маркетологи",
-  "Магазины",
-  "Образовательные проекты",
-  "Сервисные бизнесы",
-];
-
 export default function LendPage() {
   return (
     <main className={`${styles.page} ${rubik.variable}`}>
@@ -99,7 +89,11 @@ export default function LendPage() {
           <a href="#reviews">Отзывы</a>
         </nav>
 
-        <a href="https://t.me/+-TzbYv73KbUxOWJi" className={styles.headerButton} target="_blank">
+        <a
+          href="https://t.me/+-TzbYv73KbUxOWJi"
+          className={styles.headerButton}
+          target="_blank"
+        >
           Связаться с Екатериной
         </a>
 
@@ -110,13 +104,21 @@ export default function LendPage() {
             </svg>
           </a>
 
-          <a href="https://t.me/+-TzbYv73KbUxOWJi" aria-label="Telegram" target="_blank">
+          <a
+            href="https://t.me/+-TzbYv73KbUxOWJi"
+            aria-label="Telegram"
+            target="_blank"
+          >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M21.7 4.3 18.5 19c-.2 1-.8 1.2-1.6.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.2 12.7 1.4 11.2c-1-.3-1-1 .2-1.5L20.4 2.4c.9-.3 1.7.2 1.3 1.9Z" />
             </svg>
           </a>
 
-          <a href="https://www.instagram.com/ekaterina_letsik" aria-label="Instagram" target="_blank">
+          <a
+            href="https://www.instagram.com/ekaterina_letsik"
+            aria-label="Instagram"
+            target="_blank"
+          >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M7.5 2h9A5.5 5.5 0 0 1 22 7.5v9a5.5 5.5 0 0 1-5.5 5.5h-9A5.5 5.5 0 0 1 2 16.5v-9A5.5 5.5 0 0 1 7.5 2Zm0 2A3.5 3.5 0 0 0 4 7.5v9A3.5 3.5 0 0 0 7.5 20h9a3.5 3.5 0 0 0 3.5-3.5v-9A3.5 3.5 0 0 0 16.5 4h-9ZM12 7.3A4.7 4.7 0 1 1 12 16.7 4.7 4.7 0 0 1 12 7.3Zm0 2A2.7 2.7 0 1 0 12 14.7 2.7 2.7 0 0 0 12 9.3Zm5-2.4a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2Z" />
             </svg>
@@ -131,8 +133,8 @@ export default function LendPage() {
           <h1>СХЕМА РОСТА</h1>
 
           <p className={styles.heroText}>
-            выстройте систему стабильного привлечения заявок и продаж
-            через контент, чат-ботов
+            выстройте систему стабильного привлечения заявок и продаж через
+            контент, чат-ботов
           </p>
 
           <div className={styles.heroButtons}>
@@ -140,68 +142,60 @@ export default function LendPage() {
               ПОЛУЧИТЬ РАБОЧУЮ ТЕТРАДЬ
             </a>
           </div>
-</div>
-          <div className={styles.heroVideoWrap}>
-            <video
-              className={styles.heroVideo}
-              src="/images/videos/ekaterina.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-            />
-          </div>
+        </div>
 
-
+        <div className={styles.heroVideoWrap}>
+          <video
+            className={styles.heroVideo}
+            src="/images/videos/ekaterina.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+          />
+        </div>
 
         <div className={styles.heroBottom}>
-          <div>Для экспертов, специалистов и предпринимателей, которые устали от хаотичного контента</div>
-          <div>От разовых заявок — к многоканальной системе привлечения клиентов</div>
+          <div>
+            Для экспертов, специалистов и предпринимателей, которые устали от
+            хаотичного контента
+          </div>
+          <div>
+            От разовых заявок — к многоканальной системе привлечения клиентов
+          </div>
           <div>Соберите собственную систему стабильных заявок и продаж</div>
         </div>
-</section>
+      </section>
 
       <section id="workbook" className={styles.section}>
         <div className={styles.sectionHead}>
           <p className={styles.eyebrow}>Рабочая тетрадь</p>
           <h2>Что внутри системы</h2>
           <p>
-            Это не просто гайд. Это маршрут, по которому можно разложить свою экспертность,
-            контент, офферы и техническую систему привлечения заявок.
+            Это не просто гайд. Это маршрут, по которому можно разложить свою
+            экспертность, контент, офферы и техническую систему привлечения
+            заявок.
           </p>
         </div>
 
         <div className={styles.systemGrid}>
-          <article className={styles.systemCard}>
-            <span>01</span>
-            <h3>Контент</h3>
-            <p>Что говорить в блоге, чтобы человек понимал вашу ценность и двигался к покупке.</p>
-          </article>
-
-          <article className={styles.systemCard}>
-            <span>02</span>
-            <h3>Логика воронки</h3>
-            <p>Как связать посты, сторис, лид-магнит, рабочую тетрадь, заявки и продажи.</p>
-          </article>
-
-          <article className={styles.systemCard}>
-            <span>03</span>
-            <h3>Чат-боты</h3>
-            <p>Как автоматизировать выдачу материалов, прогрев, сегментацию и дожим.</p>
-          </article>
-
-          <article className={styles.systemCard}>
-            <span>04</span>
-            <h3>Точки касания</h3>
-            <p>Как выстроить маршрут клиента от первого знакомства до заявки на продукт или услугу.</p>
-          </article>
+          {systemItems.map((item, index) => (
+            <article className={styles.systemCard} key={item.title}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </article>
+          ))}
         </div>
 
         <div className={styles.schemeBox}>
           <div className={styles.schemeInfo}>
             <strong>Карта системы</strong>
-            <p>Блог → лид-магнит → рабочая тетрадь → чат-бот → прогрев → заявка → продажа → повторные касания.</p>
+            <p>
+              Блог → лид-магнит → рабочая тетрадь → чат-бот → прогрев → заявка →
+              продажа → повторные касания.
+            </p>
           </div>
 
           <div className={styles.schemeOffer}>
@@ -214,11 +208,7 @@ export default function LendPage() {
               <span className={styles.newPrice}>2100 ₽</span>
             </div>
 
-            <a
-              href="/payment"
-              className={styles.primaryButton}
-              target="_blank"
-            >
+            <a href="/payment" className={styles.primaryButton} target="_blank">
               Приобрести за 2100
             </a>
           </div>
@@ -233,38 +223,47 @@ export default function LendPage() {
           </div>
 
           <div className={styles.trustRow}>
-<figure className={styles.trustPhoto}>
-                <div className={styles.trustPhotoRole}>Автор рабочей тетради</div>
-                <img
-                  src="/images/team/ekaterina-lecik.jpg"
-                  alt="Екатерина Лецик"
-                />
-                <figcaption>Екатерина Лецик</figcaption>
-              </figure>
+            <figure className={styles.trustPhoto}>
+              <div className={styles.trustPhotoRole}>Автор рабочей тетради</div>
+              <Image
+                src="/images/team/ekaterina-lecik.jpg"
+                alt="Екатерина Лецик"
+                width={1024}
+                height={1280}
+              />
+              <figcaption>Екатерина Лецик</figcaption>
+            </figure>
 
             <div className={styles.trustCopy}>
               <h3>ЗНАЮ О ВОРОНКАХ НЕ НА СЛОВАХ, А НА ПРАКТИКЕ</h3>
 
               <p>
-                Практикующий специалист по чат-ботам, автоматизации и системам продаж через соцсети
+                Практикующий специалист по чат-ботам, автоматизации и системам
+                продаж через соцсети
               </p>
 
               <p>
-                За последние 4 года реализовала более 500 чат-ботов и воронок для экспертов, онлайн-школ и бизнеса
+                За последние 4 года реализовала более 500 чат-ботов и воронок
+                для экспертов, онлайн-школ и бизнеса
               </p>
 
               <p>
-                Более 10 лет опыта в выстраивании процессов, автоматизации и внедрении систем — работала в Сбербанке
+                Более 10 лет опыта в выстраивании процессов, автоматизации и
+                внедрении систем — работала в Сбербанке
               </p>
 
               <ul>
-                <li>Работала с продвижением через VK, Facebook, Instagram, myTarget и SEO</li>
-                <li>Участвовала в запуске онлайн-школ и образовательных проектов в разных нишах</li>
+                <li>
+                  Работала с продвижением через VK, Facebook, Instagram,
+                  myTarget и SEO
+                </li>
+                <li>
+                  Участвовала в запуске онлайн-школ и образовательных проектов в
+                  разных нишах
+                </li>
                 <li>Работала на запуске 5 потока у Мари Афониной</li>
               </ul>
             </div>
-
-           
           </div>
         </div>
 
@@ -272,28 +271,38 @@ export default function LendPage() {
           <div className={styles.sectionHead}>
             <h2>ПОЧЕМУ НАМ ДОВЕРЯЮТ</h2>
           </div>
-<div className={`${styles.trustRow} ${styles.trustRowNoAside}`}>
+
+          <div className={`${styles.trustRow} ${styles.trustRowNoAside}`}>
             <figure className={styles.trustPhoto}>
-                <img
-                  src="/images/team/ilya.jpg"
-                  alt="Илья Лецик"
-                />
-                <figcaption>Илья Лецик</figcaption>
-              </figure>
+              <Image
+                src="/images/team/ilya.jpg"
+                alt="Илья Лецик"
+                width={1024}
+                height={1280}
+              />
+              <figcaption>Илья Лецик</figcaption>
+            </figure>
 
             <div className={styles.trustCopy}>
               <h3>РАЗРАБАТЫВАЮ ТО, ЧТО ДРУГИЕ СЧИТАЮТ НЕВОЗМОЖНЫМ</h3>
 
               <p>
-                Разработчик, разрабатываю и технически реализую проекты, которые становятся полноценными системами продаж
+                Разработчик, разрабатываю и технически реализую проекты, которые
+                становятся полноценными системами продаж
               </p>
 
               <ul>
-                <li>участвовал в разработке приложений для Сбербанка (Сбербанк - онлайн)</li>
+                <li>
+                  участвовал в разработке приложений для Сбербанка (Сбербанк -
+                  онлайн)
+                </li>
                 <li>разрабатывал сервисы для Роснефти</li>
                 <li>разрабатывал чат-ботов для сети «Магнит»</li>
                 <li>Создал и технически реализовал сервис для астрологов</li>
-                <li>специализируюсь на чат-ботах, автоворонках и системах автоматизации продаж</li>
+                <li>
+                  специализируюсь на чат-ботах, автоворонках и системах
+                  автоматизации продаж
+                </li>
               </ul>
             </div>
           </div>
@@ -358,16 +367,20 @@ export default function LendPage() {
             <p className={styles.eyebrow}>наши клиенты</p>
             <h2>Системы можно адаптировать под разные ниши</h2>
             <p>
-              Мы работаем с экспертами, онлайн-школами, астрологами, психологами,
-              маркетологами, магазинами, образовательными проектами и сервисными бизнесами.
+              Мы работаем с экспертами, онлайн-школами, астрологами,
+              психологами, маркетологами, магазинами, образовательными проектами
+              и сервисными бизнесами.
             </p>
           </div>
 
           <div className={styles.clientsCollageWrap}>
-            <img
+            <Image
               className={styles.clientsCollage}
               src="/images/clients-collage.png"
               alt="Примеры клиентов и проектов"
+              width={3000}
+              height={1688}
+              sizes="(max-width: 900px) 980px, 100vw"
             />
           </div>
 
@@ -387,15 +400,14 @@ export default function LendPage() {
         </div>
       </section>
 
-     
-
       <section id="payment" className={styles.paymentSection}>
         <div className={styles.paymentInner}>
           <div className={styles.sectionHead}>
             <p className={styles.eyebrow}>тарифы и оплата</p>
             <h2>Рабочая тетрадь — 2100 ₽</h2>
             <p>
-              Сейчас доступен один тариф: цифровая рабочая тетрадь «5 шагов к стабильным заявкам и продажам через чат-бота».
+              Сейчас доступен один тариф: цифровая рабочая тетрадь «5 шагов к
+              стабильным заявкам и продажам через чат-бота».
             </p>
           </div>
 
@@ -408,12 +420,19 @@ export default function LendPage() {
 
             <div className={styles.paymentCard}>
               <h3>Оплата</h3>
-              <p>100% предоплата в рублях РФ по ссылке, счету или платежному способу, направленному Исполнителем.</p>
+              <p>
+                100% предоплата в рублях РФ по ссылке, счету или платежному
+                способу, направленному Исполнителем.
+              </p>
             </div>
 
             <div className={styles.paymentCard}>
               <h3>Возврат</h3>
-              <p>Возврат возможен до предоставления доступа к цифровому материалу. После передачи доступа возврат не производится, если материал предоставлен надлежащим образом.</p>
+              <p>
+                Возврат возможен до предоставления доступа к цифровому
+                материалу. После передачи доступа возврат не производится, если
+                материал предоставлен надлежащим образом.
+              </p>
             </div>
 
             <div className={styles.paymentCard}>
@@ -425,8 +444,12 @@ export default function LendPage() {
           </div>
 
           <div className={styles.paymentActions}>
-            <a href="/payment" className={styles.secondaryButton}>Подробнее об оплате и возврате</a>
-            <a href="/payment" className={styles.primaryButton} target="_blank">Приобрести за 2100</a>
+            <a href="/payment" className={styles.secondaryButton}>
+              Подробнее об оплате и возврате
+            </a>
+            <a href="/payment" className={styles.primaryButton} target="_blank">
+              Приобрести за 2100
+            </a>
           </div>
         </div>
       </section>
@@ -438,10 +461,18 @@ export default function LendPage() {
         </div>
 
         <div className={styles.contactActions}>
-          <a href="https://t.me/+-TzbYv73KbUxOWJi" className={styles.primaryButton} target="_blank">
+          <a
+            href="https://t.me/+-TzbYv73KbUxOWJi"
+            className={styles.primaryButton}
+            target="_blank"
+          >
             Оставить заявку
           </a>
-          <a href="https://t.me/+-TzbYv73KbUxOWJi" className={styles.secondaryButton} target="_blank">
+          <a
+            href="https://t.me/+-TzbYv73KbUxOWJi"
+            className={styles.secondaryButton}
+            target="_blank"
+          >
             Написать в Telegram
           </a>
         </div>
@@ -464,7 +495,9 @@ export default function LendPage() {
 
         <div>
           <strong>Пользователям</strong>
-          <a href="/privacy">Политика в отношении обработки персональных данных</a>
+          <a href="/privacy">
+            Политика в отношении обработки персональных данных
+          </a>
           <a href="/payment">Тарифы, оплата и возврат</a>
           <a href="/oferta">Публичная оферта</a>
           <a href="/agreement">Пользовательское соглашение</a>
@@ -475,7 +508,8 @@ export default function LendPage() {
           <a href="mailto:info@ekaterinaletsik.ru">info@ekaterinaletsik.ru</a>
         </div>
         <div className={styles.metaDisclaimer}>
-          *Instagram принадлежит компании Meta Platforms Inc., которая признана на территории Российской Федерации экстремистской и запрещена.
+          *Instagram принадлежит компании Meta Platforms Inc., которая признана
+          на территории Российской Федерации экстремистской и запрещена.
         </div>
       </footer>
     </main>
