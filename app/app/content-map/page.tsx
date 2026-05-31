@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+
 type CalendarPlanItem = {
   day: number;
   date_label: string;
@@ -65,12 +67,12 @@ export default function ContentMapPage() {
     }
 
     const load = async () => {
-      const profileRes = await fetch(`http://localhost:8000/profiles/by-email?email=${encodeURIComponent(savedEmail)}`);
+      const profileRes = await fetch(`${API_BASE}/profiles/by-email?email=${encodeURIComponent(savedEmail)}`);
       const profileData = await profileRes.json();
 
       setProfileExists(Boolean(profileData.profile));
 
-      const mapRes = await fetch(`http://localhost:8000/content-map/by-email?email=${encodeURIComponent(savedEmail)}`);
+      const mapRes = await fetch(`${API_BASE}/content-map/by-email?email=${encodeURIComponent(savedEmail)}`);
       const mapData = await mapRes.json();
 
       if (mapData.content_map?.map) {
@@ -84,7 +86,7 @@ export default function ContentMapPage() {
   useEffect(() => {
     const loadRoles = async () => {
       try {
-        const res = await fetch("http://localhost:8000/ai/roles");
+        const res = await fetch(`${API_BASE}/ai/roles`);
         const data = await res.json();
         setAiRoles(data.roles || []);
       } catch (e) {
@@ -99,7 +101,7 @@ export default function ContentMapPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/content-map/generate", {
+      const res = await fetch(`${API_BASE}/content-map/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -117,7 +119,7 @@ export default function ContentMapPage() {
 
   const saveMapDraft = async (nextMap: ContentMap) => {
     try {
-      await fetch("http://localhost:8000/content-map/save", {
+      await fetch(`${API_BASE}/content-map/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -170,7 +172,7 @@ export default function ContentMapPage() {
     setCalendarAiLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/content-map/discuss-item", {
+      const res = await fetch(`${API_BASE}/content-map/discuss-item`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -268,7 +270,7 @@ export default function ContentMapPage() {
           </button>
 
           {map && (
-            <a href={`http://localhost:8000/content-map/ics?email=${encodeURIComponent(email)}`}>
+            <a href={`${API_BASE}/content-map/ics?email=${encodeURIComponent(email)}`}>
               Скачать .ics
             </a>
           )}

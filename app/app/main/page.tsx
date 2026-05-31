@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+
 type CalendarItem = {
   day?: number;
   date?: string;
@@ -176,174 +178,583 @@ function buildCalendarDays(calendar: CalendarItem[], startDate: string): Calenda
   });
 }
 
+
 function PromoHero() {
   const featureCards = [
-    { icon: "⌕", title: "Анализ\nпрофиля" },
-    { icon: "◇", title: "Карта\nсмыслов" },
-    { icon: "☑", title: "Ежедневные\nдействия" },
-    { icon: "↗", title: "Результат:\nклиенты и доход" },
+    { icon: "search", title: ["Анализ", "профиля"] },
+    { icon: "map", title: ["Карта", "смыслов"] },
+    { icon: "tasks", title: ["Ежедневные", "действия"] },
+    { icon: "result", title: ["Результат:", "клиенты и доход"] },
   ];
 
   const leftChannels = [
-    { key: "instagram", label: "Соцсети" },
-    { key: "telegram", label: "Telegram" },
-    { key: "youtube", label: "YouTube" },
-    { key: "pinterest", label: "Pinterest" },
-    { key: "threads", label: "Threads" },
+    { label: "Соцсети", icon: "instagram" },
+    { label: "Telegram", icon: "telegram" },
+    { label: "YouTube", icon: "youtube" },
+    { label: "Pinterest", icon: "pinterest" },
+    { label: "Threads", icon: "threads" },
   ];
 
   const rightChannels = [
-    { key: "mail", label: "Рассылки" },
-    { key: "bot", label: "Чат-боты" },
-    { key: "site", label: "Сайт / Лендинг" },
-    { key: "crm", label: "CRM / Системы" },
-    { key: "pay", label: "Оплата" },
+    { label: "Рассылки", icon: "mail" },
+    { label: "Чат-боты", icon: "bot" },
+    { label: "Сайт / Лендинг", icon: "site" },
+    { label: "CRM / Системы", icon: "crm" },
+    { label: "Оплата", icon: "pay" },
   ];
 
-  const renderIcon = (key: string) => {
-    switch (key) {
-      case "instagram":
-        return (
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="4" y="4" width="16" height="16" rx="5" />
-            <circle cx="12" cy="12" r="3.5" />
-            <circle cx="17.2" cy="6.8" r="1" className="hero-final-svg-fill" />
-          </svg>
-        );
-
-      case "telegram":
-        return (
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M20 5L4 11.2L10.2 13.3L12.7 19L20 5Z" />
-            <path d="M10.2 13.3L20 5" />
-          </svg>
-        );
-
-      case "youtube":
-        return (
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="3.5" y="6.5" width="17" height="11" rx="4" />
-            <path d="M10 9.2L15 12L10 14.8Z" className="hero-final-svg-fill" />
-          </svg>
-        );
-
-      case "pinterest":
-        return <span className="hero-final-icon-letter">P</span>;
-
-      case "threads":
-        return <span className="hero-final-icon-letter">@</span>;
-
-      case "mail":
-        return (
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="4" y="6" width="16" height="12" rx="2.5" />
-            <path d="M5 8L12 13L19 8" />
-          </svg>
-        );
-
-      case "bot":
-        return (
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="6" y="7" width="12" height="10" rx="3" />
-            <path d="M12 4V7" />
-            <path d="M8 18V20" />
-            <path d="M16 18V20" />
-            <circle cx="10" cy="12" r="1" className="hero-final-svg-fill" />
-            <circle cx="14" cy="12" r="1" className="hero-final-svg-fill" />
-          </svg>
-        );
-
-      case "site":
-        return (
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="4" y="5" width="16" height="14" rx="2.5" />
-            <path d="M4 9H20" />
-            <circle cx="7" cy="7" r="0.8" className="hero-final-svg-fill" />
-            <circle cx="9.5" cy="7" r="0.8" className="hero-final-svg-fill" />
-          </svg>
-        );
-
-      case "crm":
-        return <span className="hero-final-icon-letter hero-final-icon-letter-small">CRM</span>;
-
-      case "pay":
-        return (
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="4" y="6.5" width="16" height="11" rx="2.5" />
-            <path d="M4 10H20" />
-            <path d="M8 14.2H11.8" />
-          </svg>
-        );
-
-      default:
-        return <span className="hero-final-icon-letter">•</span>;
-    }
+  const renderIcon = (name: string) => {
+    if (name === "search") return (
+      <svg viewBox="0 0 64 64"><circle cx="27" cy="27" r="15" /><path d="M39 39L52 52" /></svg>
+    );
+    if (name === "map") return (
+      <svg viewBox="0 0 64 64"><path d="M10 18L24 11L40 18L54 11V47L40 54L24 47L10 54V18Z" /><path d="M24 11V47" /><path d="M40 18V54" /><circle cx="42" cy="18" r="4" /></svg>
+    );
+    if (name === "tasks") return (
+      <svg viewBox="0 0 64 64"><path d="M20 14H15C12.8 14 11 15.8 11 18V52C11 54.2 12.8 56 15 56H49C51.2 56 53 54.2 53 52V18C53 15.8 51.2 14 49 14H44" /><path d="M23 11H41V20H23V11Z" /><path d="M22 32L27 37L36 27" /><path d="M22 45L27 50L38 39" /></svg>
+    );
+    if (name === "result") return (
+      <svg viewBox="0 0 64 64"><path d="M12 52H54" /><path d="M17 52V37" /><path d="M29 52V28" /><path d="M41 52V20" /><path d="M50 13V25H38" /><path d="M19 34C29 29 38 23 50 13" /></svg>
+    );
+    if (name === "instagram") return (
+      <svg viewBox="0 0 64 64"><rect x="17" y="17" width="30" height="30" rx="10" /><circle cx="32" cy="32" r="8" /><circle cx="42" cy="22" r="2.4" /></svg>
+    );
+    if (name === "telegram") return (
+      <svg viewBox="0 0 64 64"><path d="M53 13L11 30L28 36L35 51L53 13Z" /><path d="M28 36L38 27" /></svg>
+    );
+    if (name === "youtube") return (
+      <svg viewBox="0 0 64 64"><rect x="12" y="21" width="40" height="24" rx="8" /><path d="M29 27L39 33L29 39V27Z" /></svg>
+    );
+    if (name === "pinterest") return (
+      <svg viewBox="0 0 64 64"><path d="M29 51C31 43 33 37 34 32" /><path d="M30 35C34 39 45 38 46 28C47 18 39 12 31 12C22 12 15 18 15 27C15 33 18 37 23 39" /><path d="M28 34C25 27 30 21 35 24C40 27 36 36 30 35Z" /></svg>
+    );
+    if (name === "threads") return (
+      <svg viewBox="0 0 64 64"><path d="M45 25C43 16 36 12 29 13C20 14 15 21 15 32C15 44 22 51 33 51C43 51 50 45 50 36C50 28 44 24 35 24C27 24 23 28 23 33C23 39 28 42 34 41C41 40 44 35 42 29" /></svg>
+    );
+    if (name === "mail") return (
+      <svg viewBox="0 0 64 64"><rect x="12" y="18" width="40" height="30" rx="4" /><path d="M14 21L32 35L50 21" /></svg>
+    );
+    if (name === "bot") return (
+      <svg viewBox="0 0 64 64"><rect x="16" y="22" width="32" height="25" rx="9" /><path d="M32 22V13" /><circle cx="25" cy="34" r="2.4" /><circle cx="39" cy="34" r="2.4" /><path d="M26 42H38" /></svg>
+    );
+    if (name === "site") return (
+      <svg viewBox="0 0 64 64"><rect x="12" y="17" width="40" height="32" rx="4" /><path d="M12 26H52" /><path d="M20 36H44" /></svg>
+    );
+    if (name === "crm") return <strong>CRM</strong>;
+    return (
+      <svg viewBox="0 0 64 64"><rect x="12" y="21" width="40" height="28" rx="4" /><path d="M12 29H52" /><path d="M20 40H29" /><path d="M35 40H44" /></svg>
+    );
   };
 
+  const sparks = Array.from({ length: 90 }).map((_, index) => (
+    <i
+      key={index}
+      style={{
+        left: `${40 + ((index * 31) % 24)}%`,
+        top: `${5 + ((index * 47) % 86)}%`,
+        width: `${2 + (index % 4)}px`,
+        height: `${2 + (index % 4)}px`,
+        animationDelay: `${(index % 13) * 0.12}s`,
+      }}
+    />
+  ));
+
   return (
-    <section className="hero-final">
-      <div className="hero-final-copy">
-        <p className="hero-final-kicker">ЛЕСik · система маленьких шагов</p>
-
-                <h1 className="hero-final-title">
-          <span className="hero-final-title-gold">ПРЕВРАТИ ПРОДАЖИ</span>
+    <section className="refHero">
+      <div className="refHeroCopy">
+        <p></p>
+        <p></p>
+        <h1>
+          <span>ПРЕВРАТИ ПРОДАЖИ</span>
+          <b>В ЕЖЕДНЕВНУЮ ИГРУ</b>
         </h1>
 
-
-
-        <h1 className="hero-final-title hero-final-title-second">
-          <span className="hero-final-title-white">В ЕЖЕДНЕВНУЮ ИГРУ</span>
-        </h1>
-
-        <p className="hero-final-subtitle">
-          Система, которая превращает контент в клиентов:
-          <br />
-          от <mark>анализа профиля</mark> → к <mark>ежедневным действиям</mark>
-        </p>
-
-          <Link href="/app/content-map" className="hero-final-title-cta">
-              Построить карту
-          </Link>
-
-
-
+        <div className="refHeroAction">
+          <Link href="/app/content-map">Построить карту</Link>
+          <p>Собери свою стратегию продаж</p>
+        </div>
       </div>
 
-      <div className="hero-final-center">
-        <div className="hero-final-socials hero-final-socials-left">
+      <div className="refHeroVisual">
+        <div className="refHeroSparks" aria-hidden="true">{sparks}</div>
+
+        <svg className="refHeroLines" viewBox="0 0 760 520" fill="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="refHeroLine" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#ff9f17" stopOpacity="0.16" />
+              <stop offset="50%" stopColor="#fff2a8" />
+              <stop offset="100%" stopColor="#ff9f17" />
+            </linearGradient>
+            <filter id="refHeroGlow" x="-80%" y="-80%" width="260%" height="260%">
+              <feGaussianBlur stdDeviation="4" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
+          <g filter="url(#refHeroGlow)" stroke="url(#refHeroLine)" strokeWidth="2.6" strokeLinecap="round">
+            <path d="M345 94 C280 68 205 56 95 62" />
+            <path d="M345 154 C278 137 205 134 95 135" />
+            <path d="M345 214 C278 208 205 210 95 210" />
+            <path d="M345 274 C278 290 205 292 95 286" />
+            <path d="M345 334 C282 372 205 376 95 360" />
+
+            <path d="M430 94 C500 70 570 64 672 82" />
+            <path d="M430 154 C508 138 585 138 678 150" />
+            <path d="M430 214 C508 210 585 212 678 220" />
+            <path d="M430 274 C508 296 585 302 678 296" />
+            <path d="M430 334 C504 370 575 386 672 374" />
+          </g>
+        </svg>
+
+        <div className="refHeroLeftChannels">
           {leftChannels.map((item) => (
-            <div key={item.label} className="hero-final-pill">
-              <span className={`hero-final-pill-icon hero-final-pill-icon-${item.key}`}>
-                {renderIcon(item.key)}
-              </span>
-              <span className="hero-final-pill-text">{item.label}</span>
+            <div key={item.label} className={`refHeroChannel ${item.icon}`}>
+              <span>{renderIcon(item.icon)}</span>
+              <em>{item.label}</em>
             </div>
           ))}
         </div>
 
-        <div className="hero-final-phone-wrap">
-          <div className="hero-final-phone-glow" />
-          <img src="/main-phone1.png" alt="Путь клиента" className="hero-final-phone-image" />
+        <div className="refHeroPhone">
+          <img src="/main-phone1.png" alt="Путь клиента" />
         </div>
-      </div>
 
-      <div className="hero-final-side">
-<p className="hero-final-side-subtitle">Собери свою стратегию продаж</p>
-
-        <div className="hero-final-socials hero-final-socials-right">
+        <div className="refHeroRightChannels">
           {rightChannels.map((item) => (
-            <div key={item.label} className="hero-final-pill">
-              <span className={`hero-final-pill-icon hero-final-pill-icon-${item.key}`}>
-                {renderIcon(item.key)}
-              </span>
-              <span className="hero-final-pill-text">{item.label}</span>
+            <div key={item.label} className="refHeroTool">
+              <span>{renderIcon(item.icon)}</span>
+              <em>{item.label}</em>
             </div>
           ))}
         </div>
       </div>
+
+
+
+      <style jsx global>{`
+        .lesik-home-screen {
+          width: 100%;
+          max-width: 100%;
+        }
+
+        .refHero {
+          position: relative;
+          isolation: isolate;
+          overflow: hidden;
+          width: 100%;
+          min-height: 520px;
+          margin: 0 auto 22px;
+          padding: 34px 34px 30px;
+          display: grid;
+          grid-template-columns: minmax(420px, 0.86fr) minmax(560px, 1.14fr);
+          gap: 24px;
+          border-radius: 28px;
+          border: 1px solid rgba(112, 255, 98, 0.30);
+          background:
+            radial-gradient(circle at 17% 17%, rgba(22, 162, 79, 0.24), transparent 36%),
+            radial-gradient(circle at 75% 44%, rgba(255, 169, 24, 0.12), transparent 34%),
+            linear-gradient(135deg, #06160f 0%, #03100c 52%, #020807 100%);
+          box-shadow: inset 0 0 0 1px rgba(255, 204, 83, 0.06), 0 24px 80px rgba(0, 0, 0, 0.30);
+        }
+
+        .refHero::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          z-index: -1;
+          background:
+            linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px),
+            linear-gradient(0deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+          background-size: 74px 74px;
+          opacity: 0.22;
+        }
+
+        .refHeroCopy {
+          position: relative;
+          z-index: 10;
+          min-width: 0;
+          padding-top: 26px;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .refHeroCopy h1 {
+          margin: 0 0 18px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          line-height: 0.93;
+          letter-spacing: -0.058em;
+          font-weight: 950;
+        }
+
+        .refHeroCopy h1 span,
+        .refHeroCopy h1 b {
+          display: block;
+          white-space: nowrap;
+        }
+
+        .refHeroCopy h1 span {
+          font-size: clamp(38px, 3.45vw, 62px);
+          background: linear-gradient(180deg, #fff4b8 0%, #ffc63d 48%, #bd7216 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+
+        .refHeroCopy h1 b {
+          font-size: clamp(36px, 3.2vw, 58px);
+          color: #f8fff3;
+          font-weight: 950;
+        }
+
+        .refHeroSubtitle {
+          margin: 0 0 22px;
+          color: rgba(255,255,255,0.92);
+          font-size: clamp(16px, 1.35vw, 21px);
+          line-height: 1.32;
+          letter-spacing: -0.035em;
+        }
+
+        .refHero mark {
+          color: #ffd766;
+          background: transparent;
+          font-weight: 850;
+        }
+
+        .refHeroFeatures {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 12px;
+          margin-bottom: 24px;
+        }
+
+        .refHeroFeatures article {
+          position: relative;
+          min-width: 0;
+        }
+
+        .refHeroFeatures article:not(:last-child)::after {
+          content: "";
+          position: absolute;
+          right: -6px;
+          top: 6px;
+          width: 1px;
+          height: 92px;
+          background: linear-gradient(180deg, transparent, rgba(147,255,114,0.42), transparent);
+        }
+
+        .refHeroFeatures article div {
+          width: 70px;
+          height: 60px;
+          margin-bottom: 10px;
+          display: grid;
+          place-items: center;
+          border-radius: 15px;
+          color: #ffc94d;
+          border: 1px solid rgba(106,255,101,0.36);
+          background: linear-gradient(180deg, rgba(5,66,39,0.82), rgba(2,25,18,0.92));
+          box-shadow: inset 0 0 18px rgba(83,255,98,0.13);
+        }
+
+        .refHeroFeatures svg,
+        .refHeroNotes svg,
+        .refHeroChannel svg,
+        .refHeroTool svg {
+          width: 30px;
+          height: 30px;
+          stroke: currentColor;
+          fill: none;
+          stroke-width: 3.2;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+        }
+
+        .refHeroFeatures p {
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          color: rgba(255,255,255,0.92);
+          font-size: 17px;
+          line-height: 1.08;
+          letter-spacing: -0.04em;
+        }
+
+        .refHeroNotes {
+          display: grid;
+          gap: 15px;
+        }
+
+        .refHeroNotes > div {
+          display: grid;
+          grid-template-columns: 48px 1fr;
+          gap: 14px;
+          align-items: center;
+        }
+
+        .refHeroNotes > div > span {
+          width: 46px;
+          height: 46px;
+          display: grid;
+          place-items: center;
+          border-radius: 50%;
+          color: #62ff74;
+          border: 1px solid rgba(82,255,96,0.66);
+          background: radial-gradient(circle at 50% 30%, rgba(98,255,116,0.26), rgba(2,38,22,0.86) 66%);
+          box-shadow: 0 0 18px rgba(56,255,80,0.24);
+        }
+
+        .refHeroNotes p {
+          margin: 0;
+          color: rgba(255,255,255,0.92);
+          font-size: 16px;
+          line-height: 1.34;
+        }
+
+        .refHeroVisual {
+          position: relative;
+          z-index: 8;
+          height: 450px;
+          min-width: 0;
+        }
+
+        .refHeroPhone {
+          position: absolute;
+          z-index: 12;
+          left: 50%;
+          top: 50%;
+          width: clamp(270px, 19vw, 330px);
+          transform: translate(-50%, -50%) rotate(7deg);
+          filter: drop-shadow(22px 30px 34px rgba(0,0,0,0.58));
+        }
+
+        .refHeroPhone img {
+          display: block;
+          width: 100%;
+          height: auto;
+        }
+
+        .refHeroLines {
+          position: absolute;
+          inset: 0;
+          z-index: 8;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+        }
+
+        .refHeroSparks {
+          position: absolute;
+          inset: 0;
+          z-index: 7;
+          pointer-events: none;
+          filter: drop-shadow(0 0 7px rgba(255,167,31,0.8));
+        }
+
+        .refHeroSparks i {
+          position: absolute;
+          display: block;
+          border-radius: 999px;
+          background: radial-gradient(circle, #fff8bf 0%, #ffc13a 35%, #ff7a00 68%, transparent 72%);
+          opacity: 0;
+          animation: refSpark 2.1s infinite ease-out;
+        }
+
+        @keyframes refSpark {
+          0% { opacity: 0; transform: translate3d(0,0,0) scale(0.35); }
+          22% { opacity: 1; }
+          100% { opacity: 0; transform: translate3d(18px,-18px,0) scale(1.1); }
+        }
+
+        .refHeroLeftChannels,
+        .refHeroRightChannels {
+          position: absolute;
+          z-index: 18;
+          display: grid;
+        }
+
+        .refHeroLeftChannels {
+          left: 0;
+          top: 28px;
+          width: 104px;
+          gap: 9px;
+        }
+
+        .refHeroRightChannels {
+          right: 0;
+          top: 70px;
+          width: 245px;
+          gap: 14px;
+        }
+
+        .refHeroChannel {
+          width: 100px;
+          display: grid;
+          grid-template-rows: 52px auto;
+          justify-items: center;
+          color: rgba(255,255,255,0.92);
+        }
+
+        .refHeroChannel > span,
+        .refHeroTool > span {
+          width: 52px;
+          height: 52px;
+          display: grid;
+          place-items: center;
+          border-radius: 999px;
+          color: #fff0a5;
+          border: 1px solid rgba(117,255,91,0.62);
+          background: radial-gradient(circle at 50% 35%, rgba(112,255,91,0.18), rgba(2,33,22,0.94) 68%);
+          box-shadow: inset 0 0 14px rgba(117,255,91,0.14), 0 0 17px rgba(117,255,91,0.30);
+        }
+
+        .refHeroChannel em,
+        .refHeroTool em {
+          margin-top: 3px;
+          color: rgba(255,255,255,0.92);
+          font-style: normal;
+          font-size: 12px;
+          font-weight: 800;
+          line-height: 1;
+          text-shadow: 0 2px 12px rgba(0,0,0,0.65);
+        }
+
+        .refHeroTool {
+          min-width: 240px;
+          display: grid;
+          grid-template-columns: 52px 1fr;
+          align-items: center;
+          gap: 12px;
+          padding: 5px 14px 5px 5px;
+          border: 1px solid rgba(255,190,35,0.58);
+          border-radius: 999px;
+          background: linear-gradient(90deg, rgba(4,42,25,0.94), rgba(4,37,23,0.78));
+          box-shadow: inset 0 0 18px rgba(87,255,88,0.06), 0 0 18px rgba(0,0,0,0.22);
+        }
+
+        .refHeroTool em {
+          margin: 0;
+          font-size: 15px;
+          text-align: left;
+        }
+
+        .refHeroTool strong {
+          font-size: 17px;
+          color: #ffd866;
+        }
+
+        .refHeroAction {
+          position: relative;
+          z-index: 30;
+          width: min(100%, 300px);
+          margin: clamp(84px, 8vw, 130px) auto 0;
+          text-align: center;
+        }
+
+        .refHeroAction a {
+          min-height: 62px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          text-decoration: none;
+          color: #241500;
+          font-size: 19px;
+          font-weight: 950;
+          background: linear-gradient(180deg, #ffdc67 0%, #ffad19 52%, #e98709 100%);
+          box-shadow: inset 0 2px 0 rgba(255,255,255,0.42), inset 0 -4px 12px rgba(143,77,0,0.24), 0 0 32px rgba(255,175,23,0.38);
+        }
+
+        .refHeroAction p {
+          margin: 10px 0 0;
+          color: rgba(255,255,255,0.78);
+          font-size: 13px;
+        }
+
+        @media (max-width: 1180px) {
+          .refHero {
+            grid-template-columns: 1fr;
+          }
+
+          .refHeroAction {
+            width: min(100%, 300px);
+            margin: 36px auto 0;
+            order: 2;
+          }
+
+          .refHeroVisual {
+            order: 3;
+            width: min(100%, 760px);
+            margin: 0 auto;
+          }
+        }
+
+        @media (max-width: 720px) {
+          .refHero {
+            padding: 24px 16px;
+            border-radius: 22px;
+          }
+
+          .refHeroCopy h1 span,
+          .refHeroCopy h1 b {
+            white-space: normal;
+          }
+
+          .refHeroFeatures {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          .refHeroFeatures article::after {
+            display: none;
+          }
+
+          .refHeroVisual {
+            height: 760px;
+          }
+
+          .refHeroLines {
+            display: none;
+          }
+
+          .refHeroLeftChannels,
+          .refHeroRightChannels {
+            position: relative;
+            left: auto;
+            right: auto;
+            top: auto;
+            width: 100%;
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          .refHeroRightChannels {
+            margin-top: 440px;
+          }
+
+          .refHeroTool {
+            min-width: 0;
+            width: 100%;
+          }
+
+          .refHeroPhone {
+            top: 310px;
+            width: 185px;
+          }
+
+          .refHeroAction {
+            width: min(100%, 280px);
+            margin: 28px auto 0;
+          }
+        }
+      `}</style>
     </section>
   );
 }
+
+
+
 export default function TrendsPage() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
@@ -393,7 +804,7 @@ export default function TrendsPage() {
     const load = async () => {
       try {
         const profileRes = await fetch(
-          `http://localhost:8000/profiles/by-email?email=${encodeURIComponent(savedEmail)}`
+          `${API_BASE}/profiles/by-email?email=${encodeURIComponent(savedEmail)}`
         );
         const profileData = await profileRes.json();
 
@@ -406,7 +817,7 @@ export default function TrendsPage() {
         }
 
         const mapRes = await fetch(
-          `http://localhost:8000/content-map/by-email?email=${encodeURIComponent(savedEmail)}`
+          `${API_BASE}/content-map/by-email?email=${encodeURIComponent(savedEmail)}`
         );
         const mapData = await mapRes.json();
 
@@ -432,7 +843,7 @@ export default function TrendsPage() {
   useEffect(() => {
     const loadVideos = async () => {
       try {
-        const res = await fetch("http://localhost:8000/videos");
+        const res = await fetch(`${API_BASE}/videos`);
         const data = await res.json();
         setVideos(data.videos || []);
       } catch (e) {
@@ -633,7 +1044,7 @@ export default function TrendsPage() {
                 type="button"
                 onClick={async () => {
                   try {
-                    await fetch(`http://localhost:8000/videos/${video.id}/view`, {
+                    await fetch(`${API_BASE}/videos/${video.id}/view`, {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ email }),

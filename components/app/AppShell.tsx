@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import NeuroBackdrop from "@/components/background/NeuroBackdrop";
 
@@ -45,6 +46,13 @@ function NavIcon({ name }: { name: "profile" | "home" | "map" | "shield" }) {
 }
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
+  const [isAdminUser, setIsAdminUser] = useState(false);
+
+  useEffect(() => {
+    const email = (localStorage.getItem("lesik_email") || "").trim().toLowerCase();
+    setIsAdminUser(email === "csenom@gmail.com");
+  }, []);
+
   const pathname = usePathname();
 
   return (

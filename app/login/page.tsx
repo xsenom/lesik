@@ -92,7 +92,7 @@ export default function LoginPage() {
       router.push("/app/profile");
     } catch (e) {
       console.error(e);
-      alert("Не удалось создать профиль. Проверь, что backend запущен на http://localhost:8000");
+      alert("Не удалось создать профиль. Проверь, что backend запущен на ${API_BASE}");
     } finally {
       setCreatingProfile(false);
     }

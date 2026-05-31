@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+
 type DashboardStats = {
   registrations: { today: number; week: number; total: number };
   payments: { today: number; week: number; total: number };
@@ -75,9 +77,9 @@ export default function AdminPage() {
     setLoading(true);
     try {
       const [statsRes, profilesRes, videosRes] = await Promise.all([
-        fetch("http://localhost:8000/admin/dashboard"),
-        fetch("http://localhost:8000/admin/profiles"),
-        fetch("http://localhost:8000/admin/videos"),
+        fetch(`${API_BASE}/admin/dashboard`),
+        fetch(`${API_BASE}/admin/profiles`),
+        fetch(`${API_BASE}/admin/videos`),
       ]);
 
       const statsData = await statsRes.json();
@@ -105,7 +107,7 @@ export default function AdminPage() {
       return;
     }
 
-    await fetch("http://localhost:8000/profile-details", {
+    await fetch(`${API_BASE}/profile-details`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -122,7 +124,7 @@ export default function AdminPage() {
   const addPayment = async () => {
     if (!paymentEmail.trim()) return;
 
-    await fetch("http://localhost:8000/admin/payments", {
+    await fetch(`${API_BASE}/admin/payments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -139,7 +141,7 @@ export default function AdminPage() {
 
   const createVideo = async () => {
     if (!newVideo.title.trim() || !newVideo.url.trim()) return;
-    await fetch("http://localhost:8000/admin/videos", {
+    await fetch(`${API_BASE}/admin/videos`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newVideo),
@@ -149,7 +151,7 @@ export default function AdminPage() {
   };
 
   const updateVideo = async (video: VideoItem) => {
-    await fetch(`http://localhost:8000/admin/videos/${video.id}`, {
+    await fetch(`${API_BASE}/admin/videos/${video.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -163,7 +165,7 @@ export default function AdminPage() {
   };
 
   const deleteVideo = async (id: number) => {
-    await fetch(`http://localhost:8000/admin/videos/${id}`, { method: "DELETE" });
+    await fetch(`${API_BASE}/admin/videos/${id}`, { method: "DELETE" });
     load();
   };
 

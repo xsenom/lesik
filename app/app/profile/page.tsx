@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+
 type Answers = {
   name: string;
   email: string;
@@ -57,6 +59,7 @@ const emptyDetails: ProfileDetails = {
 
 const basicQuestions = [
   { key: "name", title: "Как вас зовут?", placeholder: "Например: Илья" },
+  { key: "email", title: "Ваш email?", placeholder: "Например: name@email.com" },
   { key: "client_type", title: "Кто вы?", placeholder: "Эксперт, блогер, школа, предприниматель..." },
   { key: "niche", title: "Ваша ниша?", placeholder: "Например: чат-боты, психология, английский..." },
   { key: "platform", title: "Где уже есть аудитория?", placeholder: "Telegram, Instagram, сайт..." },
@@ -95,7 +98,7 @@ export default function ProfilePage() {
 
     const load = async () => {
       try {
-        const profileRes = await fetch(`http://localhost:8000/profiles/by-email?email=${encodeURIComponent(email)}`);
+        const profileRes = await fetch(`${API_BASE}/profiles/by-email?email=${encodeURIComponent(email)}`);
         const profileData = await profileRes.json();
 
         if (profileData.profile) {
@@ -113,7 +116,7 @@ export default function ProfilePage() {
           setIntroAccepted(true);
         }
 
-        const detailsRes = await fetch(`http://localhost:8000/profile-details/by-email?email=${encodeURIComponent(email)}`);
+        const detailsRes = await fetch(`${API_BASE}/profile-details/by-email?email=${encodeURIComponent(email)}`);
         const detailsData = await detailsRes.json();
 
         if (detailsData.details) {
@@ -133,7 +136,11 @@ export default function ProfilePage() {
 
   const current = basicQuestions[step];
   const currentValue = answers[current.key];
-  const canGoNext = Boolean(currentValue.trim());
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const isEmailStep = current.key === "email";
+  const isEmailValid = emailRegex.test(currentValue.trim().toLowerCase());
+  const canGoNext = isEmailStep ? isEmailValid : Boolean(currentValue.trim());
 
   const uploadAvatar = (file?: File) => {
     if (!file) return;
@@ -148,15 +155,28 @@ export default function ProfilePage() {
   };
 
   const saveBasic = async () => {
+    const normalizedEmail = answers.email.trim().toLowerCase();
+
+    if (!normalizedEmail || !normalizedEmail.includes("@")) {
+      alert("Введите корректный email. Он нужен, чтобы сохранить профиль.");
+      const emailStep = basicQuestions.findIndex((item) => item.key === "email");
+      if (emailStep >= 0) {
+        setStep(emailStep);
+      }
+      return;
+    }
+
+    localStorage.setItem("lesik_email", normalizedEmail);
+
     setSaving(true);
 
     try {
       const payload = {
         ...answers,
-        email: answers.email.trim().toLowerCase(),
+        email: normalizedEmail,
       };
 
-      const res = await fetch("http://localhost:8000/profiles", {
+      const res = await fetch(`${API_BASE}/profiles`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -175,7 +195,12 @@ export default function ProfilePage() {
   };
 
   const nextBasic = () => {
-    if (!canGoNext) return;
+    if (!canGoNext) {
+      if (current.key === "email") {
+        alert("Введите корректный email, например name@email.com");
+      }
+      return;
+    }
 
     if (step < basicQuestions.length - 1) {
       setStep(step + 1);
@@ -201,7 +226,7 @@ export default function ProfilePage() {
       form.append("email", email);
       form.append("file", file);
 
-      const res = await fetch("http://localhost:8000/audience-analysis/upload", {
+      const res = await fetch(`${API_BASE}/audience-analysis/upload`, {
         method: "POST",
         body: form,
       });
@@ -237,7 +262,7 @@ export default function ProfilePage() {
     setAudienceAiLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/audience-analysis/analyze", {
+      const res = await fetch(`${API_BASE}/audience-analysis/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -313,7 +338,7 @@ export default function ProfilePage() {
         email: answers.email || localStorage.getItem("lesik_email") || "",
       };
 
-      const res = await fetch("http://localhost:8000/profile-details", {
+      const res = await fetch(`${API_BASE}/profile-details`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -395,6 +420,7 @@ export default function ProfilePage() {
 
           <input
             autoFocus
+            type={current.key === "email" ? "email" : "text"}
             value={currentValue}
             placeholder={current.placeholder}
             onChange={(e) =>
@@ -407,6 +433,12 @@ export default function ProfilePage() {
               if (e.key === "Enter") nextBasic();
             }}
           />
+
+          {current.key === "email" && currentValue.trim() && !isEmailValid && (
+            <p className="profile-email-error">
+              Введите email в формате name@email.com
+            </p>
+          )}
 
           <button type="button" onClick={nextBasic} disabled={!canGoNext || saving}>
             {step === basicQuestions.length - 1 ? saving ? "Сохраняю..." : "Сохранить" : "Дальше"}
@@ -449,7 +481,7 @@ export default function ProfilePage() {
               >
                 ?
               </button>
-              <button type="button" className="status-edit" onClick={() => openBasicQuestion(1)} aria-label="Редактировать кто клиент">
+              <button type="button" className="status-edit" onClick={() => openBasicQuestion(2)} aria-label="Редактировать кто клиент">
                 ✎
               </button>
             </div>
@@ -467,7 +499,7 @@ export default function ProfilePage() {
               >
                 ?
               </button>
-              <button type="button" className="status-edit" onClick={() => openBasicQuestion(2)} aria-label="Редактировать нишу">
+              <button type="button" className="status-edit" onClick={() => openBasicQuestion(3)} aria-label="Редактировать нишу">
                 ✎
               </button>
             </div>
@@ -485,7 +517,7 @@ export default function ProfilePage() {
               >
                 ?
               </button>
-              <button type="button" className="status-edit" onClick={() => openBasicQuestion(3)} aria-label="Редактировать площадки сейчас">
+              <button type="button" className="status-edit" onClick={() => openBasicQuestion(4)} aria-label="Редактировать площадки сейчас">
                 ✎
               </button>
             </div>

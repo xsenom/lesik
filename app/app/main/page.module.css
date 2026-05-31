@@ -1,0 +1,422 @@
+.page {
+  min-height: 100vh;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(0, 155, 70, 0.18), transparent 34%),
+    radial-gradient(circle at 90% 25%, rgba(255, 153, 0, 0.12), transparent 30%),
+    #001b0d;
+  color: #f7fff6;
+  font-family: var(--font-rubik), Rubik, Arial, sans-serif;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 28px;
+  align-items: stretch;
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  width: fit-content;
+  margin: 0 0 14px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: #ffb22c;
+  background: rgba(255, 153, 0, 0.12);
+  border: 1px solid rgba(255, 153, 0, 0.34);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.hero > div:first-child,
+.progressCard,
+.currentStep,
+.stepCard,
+.logicCard,
+.futureBlock {
+  background: linear-gradient(145deg, rgba(1, 47, 22, 0.96), rgba(0, 28, 13, 0.96));
+  border: 1px solid rgba(58, 196, 74, 0.36);
+  border-radius: 34px;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
+}
+
+.hero > div:first-child {
+  padding: 46px;
+}
+
+.hero h1 {
+  max-width: 920px;
+  margin: 0;
+  color: #fff7df;
+  font-size: clamp(42px, 6vw, 82px);
+  line-height: 0.94;
+  letter-spacing: -0.07em;
+  font-weight: 800;
+}
+
+.lead {
+  max-width: 760px;
+  margin: 24px 0 0;
+  color: rgba(247, 255, 246, 0.72);
+  font-size: 20px;
+  line-height: 1.42;
+}
+
+.progressCard {
+  padding: 34px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.progressTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.progressTop span {
+  color: rgba(247, 255, 246, 0.62);
+  font-size: 15px;
+}
+
+.progressTop strong {
+  color: #ffb22c;
+  font-size: 42px;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.progressTrack {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.progressTrack div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #00a64a, #ff9f0a);
+}
+
+.progressCard p {
+  margin: 18px 0 0;
+  color: rgba(247, 255, 246, 0.68);
+  line-height: 1.35;
+}
+
+.currentStep {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 34px;
+  margin-bottom: 28px;
+}
+
+.currentCopy span {
+  color: #ffb22c;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.currentCopy h2 {
+  margin: 10px 0 12px;
+  color: #ffffff;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.currentCopy p {
+  max-width: 760px;
+  margin: 0;
+  color: rgba(247, 255, 246, 0.68);
+  font-size: 18px;
+  line-height: 1.42;
+}
+
+.mainButton,
+.stepButton,
+.stepButtonLocked {
+  min-height: 52px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0 26px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 178, 44, 0.42);
+  background: linear-gradient(180deg, #ffbd35, #f28a00);
+  color: #101608;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 14px 34px rgba(255, 153, 0, 0.18);
+}
+
+.stepButtonLocked {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(247, 255, 246, 0.42);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.stepCard {
+  min-height: 390px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.stepCurrent {
+  border-color: rgba(255, 178, 44, 0.58);
+  box-shadow: 0 28px 80px rgba(255, 153, 0, 0.08);
+}
+
+.stepLocked {
+  opacity: 0.68;
+}
+
+.stepHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.stepHead span {
+  color: #ffb22c;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.stepHead b {
+  color: rgba(247, 255, 246, 0.48);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.stepCard h3 {
+  margin: 0 0 14px;
+  color: #ffffff;
+  font-size: 24px;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+}
+
+.stepCard > p {
+  margin: 0;
+  color: rgba(247, 255, 246, 0.64);
+  font-size: 15px;
+  line-height: 1.42;
+}
+
+.stepResult {
+  margin-top: auto;
+  padding-top: 22px;
+}
+
+.stepResult small {
+  display: block;
+  margin-bottom: 8px;
+  color: #ffb22c;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.stepResult p {
+  margin: 0 0 18px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  line-height: 1.36;
+}
+
+.logicSection {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 28px;
+  margin-bottom: 28px;
+}
+
+.logicCard {
+  padding: 36px;
+}
+
+.logicCard h2,
+.futureBlock h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(32px, 4vw, 56px);
+  line-height: 0.96;
+  letter-spacing: -0.06em;
+}
+
+.logicCard > p,
+.futureBlock p {
+  margin: 20px 0 0;
+  color: rgba(247, 255, 246, 0.68);
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.tags span {
+  padding: 12px 16px;
+  border-radius: 999px;
+  background: rgba(0, 166, 74, 0.14);
+  border: 1px solid rgba(58, 196, 74, 0.32);
+  color: #c7ffd5;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.questionList {
+  display: grid;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.questionList div {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 14px;
+  align-items: start;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(0, 17, 8, 0.52);
+  border: 1px solid rgba(58, 196, 74, 0.18);
+}
+
+.questionList span {
+  color: #ffb22c;
+  font-weight: 900;
+}
+
+.questionList p {
+  margin: 0;
+  color: rgba(247, 255, 246, 0.74);
+  line-height: 1.35;
+}
+
+.futureBlock {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 34px;
+  align-items: center;
+  padding: 40px;
+}
+
+.futureList {
+  display: grid;
+  gap: 12px;
+}
+
+.futureList div {
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: rgba(0, 17, 8, 0.52);
+  border: 1px solid rgba(58, 196, 74, 0.18);
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.metaNote {
+  margin: 22px 0 0;
+  color: rgba(247, 255, 246, 0.48);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+@media (max-width: 1280px) {
+  .stepsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .logicSection,
+  .futureBlock {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 820px) {
+  .page {
+    padding: 16px;
+  }
+
+  .hero,
+  .currentStep {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    display: grid;
+  }
+
+  .currentStep {
+    display: grid;
+  }
+
+  .hero > div:first-child,
+  .progressCard,
+  .currentStep,
+  .logicCard,
+  .futureBlock {
+    padding: 26px;
+    border-radius: 28px;
+  }
+
+  .stepsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .stepCard {
+    min-height: auto;
+  }
+
+  .mainButton,
+  .stepButton,
+  .stepButtonLocked {
+    width: 100%;
+  }
+
+  .hero h1 {
+    font-size: 44px;
+  }
+
+  .lead,
+  .currentCopy p,
+  .logicCard > p,
+  .futureBlock p {
+    font-size: 16px;
+  }
+}
