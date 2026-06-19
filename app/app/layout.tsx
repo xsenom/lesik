@@ -5,5 +5,6 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <AppShell>{children}</AppShell>;
+  return <AppShell>{children}
+      </AppShell>;
 }

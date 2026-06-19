@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Response
+﻿from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from pathlib import Path
@@ -52,6 +52,7 @@ class ProfileIn(BaseModel):
     client_type: str
     niche: str
     platform: str
+    primary_platform: str = ""
     monthly_goal: str
     blocker: str
 
@@ -91,6 +92,7 @@ class ProfileDetailsIn(BaseModel):
     product_ideas_request: str = ""
     tariff_plan: str = "free"
     pro_paid_until: str = ""
+    social_links: str = "{}"
 
 
 class PaymentIn(BaseModel):
@@ -327,8 +329,8 @@ def create_profile(data: ProfileIn):
         conn.execute(
             """
             INSERT INTO profiles (
-                name, email, client_type, niche, platform, monthly_goal, blocker, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                name, email, client_type, niche, platform, primary_platform, monthly_goal, blocker, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 data.name.strip(),
@@ -336,6 +338,7 @@ def create_profile(data: ProfileIn):
                 data.client_type.strip(),
                 data.niche.strip(),
                 data.platform.strip(),
+                data.primary_platform.strip(),
                 data.monthly_goal.strip(),
                 data.blocker.strip(),
                 datetime.utcnow().isoformat(),
@@ -348,7 +351,7 @@ def get_profile_by_email(email: str):
     with db() as conn:
         row = conn.execute(
             """
-            SELECT id, name, email, client_type, niche, platform, monthly_goal, blocker, created_at
+            SELECT id, name, email, client_type, niche, platform, primary_platform, monthly_goal, blocker, created_at
             FROM profiles
             WHERE email = ?
             ORDER BY id DESC
@@ -417,7 +420,7 @@ def get_admin_profiles():
     with db() as conn:
         profiles = conn.execute(
             """
-            SELECT p.id, p.name, p.email, p.client_type, p.niche, p.platform, p.monthly_goal, p.blocker, p.created_at
+            SELECT p.id, p.name, p.email, p.client_type, p.niche, p.platform, p.primary_platform, p.monthly_goal, p.blocker, p.created_at
             FROM profiles p
             ORDER BY p.id DESC
             """
@@ -492,7 +495,7 @@ def generate_content_map(data: EmailIn):
     with db() as conn:
         profile = conn.execute(
             """
-            SELECT id, name, email, client_type, niche, platform, monthly_goal, blocker, created_at
+            SELECT id, name, email, client_type, niche, platform, primary_platform, monthly_goal, blocker, created_at
             FROM profiles
             WHERE email = ?
             ORDER BY id DESC
@@ -508,8 +511,34 @@ def generate_content_map(data: EmailIn):
 
     profile_dict = dict(profile)
 
+    details_dict = {}
+    with db() as conn:
+        details_row = conn.execute(
+            """
+            SELECT details_json
+            FROM profile_details
+            WHERE email = ?
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (email,),
+        ).fetchone()
+    if details_row:
+        try:
+            details_dict = json.loads(details_row["details_json"])
+        except Exception:
+            details_dict = {}
+
     user_payload = {
-        "profile": profile_dict
+        "profile": profile_dict,
+        "audience_analysis": details_dict.get("audience_analysis", ""),
+        "product_status": details_dict.get("product_status", ""),
+        "product_name": details_dict.get("product_name", ""),
+        "product_description": details_dict.get("product_description", ""),
+        "why_buy": details_dict.get("why_buy", ""),
+        "why_not_buy": details_dict.get("why_not_buy", ""),
+        "social_links": details_dict.get("social_links", ""),
+        "platforms": details_dict.get("platforms", []),
     }
 
     if OPENAI_API_KEY and not OPENAI_API_KEY.startswith("вставь"):
@@ -604,10 +633,17 @@ def discuss_content_map_item(data: ContentMapDiscussIn):
         return {"ok": True, "email": email, "updated_item": fallback, "comment": fallback["comment"]}
 
     base_prompt = """
-Ты — редактор контент-плана. Пользователь присылает карточку поста и вопрос.
-Верни только JSON с ключами:
-topic, platform, format, task, goal, comment.
-Сделай формулировки яснее и практичнее, сохрани общий смысл.
+Ты — копирайтер и контент-стратег. Пользователь присылает карточку поста и вопрос или запрос.
+Верни только JSON с ключами: topic, platform, format, task, goal, comment.
+
+В поле comment напиши ГОТОВЫЙ пост для публикации в соцсети по этой структуре:
+1. Цепляющий первый абзац (1-2 предложения) — чтобы остановили скролл
+2. Основная мысль — конкретно, без воды, 2-3 абзаца
+3. Призыв к действию в конце — написать слово в директ, задать вопрос или сохранить
+
+Пиши живым языком, от первого лица, без канцелярита.
+Объём — 150-250 слов.
+topic, task, goal — обнови если нужно, сохрани смысл.
 """
     role_prompt = load_ai_role_prompt(data.agent)
     system_prompt = f"{role_prompt}\n\n{base_prompt}".strip() if role_prompt else base_prompt
@@ -713,6 +749,207 @@ def download_ics(email: str):
 
 def escape_ics(value: str) -> str:
     return str(value).replace("\\", "\\\\").replace("\n", "\\n").replace(",", "\\,").replace(";", "\\;")
+
+@app.get("/content-map/pdf")
+def download_content_map_pdf(email: str):
+    with db() as conn:
+        row = conn.execute(
+            "SELECT map_json FROM content_maps WHERE email = ? ORDER BY id DESC LIMIT 1",
+            (email.strip().lower(),),
+        ).fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="content_map_not_found")
+    
+    data = json.loads(row["map_json"])
+    summary = data.get("summary", "")
+    nodes = data.get("nodes", [])
+    calendar = data.get("calendar", [])
+
+    node_items = [n for n in nodes if n.get("type") != "core"]
+    nodes_html = '<table width="100%" cellspacing="0" cellpadding="0"><tr>'
+    for i, node in enumerate(node_items):
+        if i > 0 and i % 2 == 0:
+            nodes_html += '</tr><tr>'
+        nodes_html += f'''<td width="50%" style="padding:0 6px 10px 0; vertical-align:top;">
+            <div class="node"><h3>{node.get("title","")}</h3><p>{node.get("description","")}</p></div>
+        </td>'''
+    if len(node_items) % 2 != 0:
+        nodes_html += '<td width="50%"></td>'
+    nodes_html += '</tr></table>'
+
+
+    import re as _re
+    calendar_html = ""
+    for idx, item in enumerate(calendar, 1):
+        tasks = item.get("tasks", [])
+        tasks_html = ""
+        day_num = item.get('day', idx)
+        if not day_num and tasks:
+            m = _re.search(r'day-(\d+)', tasks[0].get('id', ''))
+            if m:
+                day_num = m.group(1)
+        platform = item.get('platform', '')
+        title = item.get('title', item.get('topic', ''))
+        desc = item.get('description', item.get('task', ''))
+        calendar_html += f'''<div class="cal-item"><div class="cal-day">День {day_num} · {platform}</div><div class="cal-title">{title}</div><div class="cal-desc">{desc}</div><ul class="cal-tasks">{tasks_html}</ul></div>'''
+
+
+    html = f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{ font-family: Arial, sans-serif; background: #fff; color: #111; padding: 32px; font-size: 13px; }}
+  h1 {{ font-size: 24px; font-weight: 800; margin-bottom: 12px; color: #1a5c35; }}
+  .summary {{ background: #f3eee4; border-left: 4px solid #009b46; padding: 14px 18px; margin-bottom: 28px; font-size: 14px; line-height: 1.6; }}
+  h2 {{ font-size: 17px; font-weight: 800; margin-bottom: 14px; color: #1a5c35; border-bottom: 2px solid #009b46; padding-bottom: 6px; }}
+  .node {{ margin-bottom: 8px; padding: 10px 14px; background: #f9f9f6; border-left: 3px solid #009b46; page-break-inside: avoid; }}
+  .node h3 {{ font-size: 13px; font-weight: 700; margin-bottom: 3px; }}
+  .node p {{ font-size: 12px; color: #555; line-height: 1.5; }}
+  .section {{ margin-bottom: 28px; }}
+  .cal-item {{ display: table; width: 100%; margin-bottom: 12px; padding: 10px 14px; background: #f9f9f6; border-left: 3px solid #009b46; }}
+  .cal-day {{ font-size: 11px; color: #009b46; font-weight: 700; margin-bottom: 2px; }}
+  .cal-title {{ font-size: 13px; font-weight: 700; margin-bottom: 3px; }}
+  .cal-desc {{ font-size: 12px; color: #555; margin-bottom: 5px; line-height: 1.5; }}
+  .cal-tasks {{ list-style: none; padding: 0; margin: 0; }}
+  .cal-tasks li {{ font-size: 11px; color: #333; line-height: 1.5; padding-left: 12px; position: relative; margin-bottom: 1px; }}
+  .cal-tasks li::before {{ content: "·"; position: absolute; left: 2px; color: #009b46; font-weight: 700; }}
+</style>
+</head>
+<body>
+  <h1>Карта контента</h1>
+  <div class="summary">{summary}</div>
+  <div class="section">
+    <h2>Блоки стратегии</h2>
+    {nodes_html}
+  </div>
+  <div class="section">
+    <h2>Календарь публикаций — 14 дней</h2>
+    {calendar_html}
+  </div>
+</body>
+</html>"""
+
+    from weasyprint import HTML
+    pdf_bytes = HTML(string=html).write_pdf()
+    
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=content-map.pdf"}
+    )
+
+
+
+
+@app.post("/content-map/slide-download")
+async def download_slide(request: Request):
+    body = await request.json()
+    data_url = body.get("data_url", "")
+    idx = body.get("idx", 1)
+    
+    if not data_url.startswith("data:image/png;base64,"):
+        raise HTTPException(status_code=400, detail="invalid_data")
+    
+    import base64
+    img_data = base64.b64decode(data_url.split(",")[1])
+    
+    return Response(
+        content=img_data,
+        media_type="image/png",
+        headers={"Content-Disposition": f"attachment; filename=slide-{idx}.png"}
+    )
+
+
+class SlideIn(BaseModel):
+    text: str
+    idx: int
+    total: int
+    gradient: str = "beige"
+
+@app.get("/content-map/slide-png")
+def generate_slide_png_get(text: str, idx: int, total: int, gradient: str = "beige"):
+    from PIL import Image, ImageDraw, ImageFont
+    import io, textwrap
+
+    class _D:
+        pass
+    data = _D()
+    data.text = text
+    data.idx = idx
+    data.total = total
+    data.gradient = gradient
+    return _generate_slide(data)
+
+@app.post("/content-map/slide-png")
+def generate_slide_png(data: SlideIn):
+    return _generate_slide(data)
+
+def _generate_slide(data):
+    from PIL import Image, ImageDraw, ImageFont
+    import io, textwrap
+
+    W, H = 1080, 1080
+    gradients = {
+        "beige": ((243, 238, 228), (232, 224, 208)),
+        "green": ((26, 92, 53), (0, 155, 70)),
+        "dark": ((17, 17, 17), (34, 34, 34)),
+        "blue": ((26, 42, 74), (42, 74, 138)),
+        "pink": ((74, 26, 42), (138, 42, 74)),
+    }
+    c1, c2 = gradients.get(data.gradient, gradients["beige"])
+    is_dark = data.gradient in ["green", "dark", "blue", "pink"]
+    text_color = (255, 255, 255) if is_dark else (26, 26, 26)
+    accent = (255, 255, 255, 60) if is_dark else (0, 155, 70, 60)
+    logo_color = (255, 255, 255, 180) if is_dark else (0, 155, 70, 255)
+
+    img = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(img, "RGBA")
+
+    # Градиент
+    for y in range(H):
+        r = int(c1[0] + (c2[0] - c1[0]) * y / H)
+        g = int(c1[1] + (c2[1] - c1[1]) * y / H)
+        b = int(c1[2] + (c2[2] - c1[2]) * y / H)
+        draw.line([(0, y), (W, y)], fill=(r, g, b))
+
+    # Полоса слева
+    draw.rectangle([0, 0, 10, H], fill=(0, 155, 70) if not is_dark else (255, 255, 255, 60))
+
+    # Номер слайда большой
+    try:
+        font_big = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 180)
+        font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 58 if data.idx == 0 else 48)
+        font_logo = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 32)
+    except:
+        font_big = ImageFont.load_default()
+        font_title = font_big
+        font_logo = font_big
+
+    num_color = (*([255,255,255] if is_dark else [0,155,70]), 50)
+    draw.text((850, 30), str(data.idx + 1), font=font_big, fill=num_color)
+
+    # Основной текст с переносом
+    lines = textwrap.wrap(data.text, width=28)
+    y_start = 180 if data.idx > 0 else 420
+    for line in lines[:8]:
+        draw.text((80, y_start), line, font=font_title, fill=text_color)
+        y_start += 65
+
+    # Логотип
+    draw.text((80, 1030), "ЛЕСik", font=font_logo, fill=(*([255,255,255] if is_dark else [0,155,70]), 200))
+    draw.text((900, 1030), f"{data.idx+1}/{data.total}", font=font_logo, fill=(*([255,255,255] if is_dark else [0,0,0]), 120))
+
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+
+    return Response(
+        content=buf.read(),
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f"attachment; filename=slide-{data.idx+1}.png"}
+    )
 
 def build_fallback_map(profile):
     name = profile.get("name", "Клиент")

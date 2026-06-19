@@ -103,7 +103,7 @@ export default function LoginPage() {
       <section className="login-v2-shell">
         <div className="login-v2-card">
           <Link href="/" className="login-v2-logo">
-            ЛЕСik
+            ЛЕС<span className="brand-ik">ik</span>
           </Link>
 
           <p className="login-v2-kicker">Личный кабинет</p>
@@ -111,7 +111,7 @@ export default function LoginPage() {
           <h1>Войдите в систему продаж через контент</h1>
 
           <p className="login-v2-subtitle">
-            Email нужен, чтобы ЛЕСik нашёл ваш профиль, карту смыслов,
+            Email нужен, чтобы ЛЕС<span className="brand-ik">ik</span> нашёл ваш профиль, карту смыслов,
             календарь и ежедневные задачи.
           </p>
 
@@ -189,7 +189,7 @@ export default function LoginPage() {
           </div>
 
           <div className="login-v2-note">
-            <strong>ЛЕСik</strong>
+            <strong>ЛЕС<span className="brand-ik">ik</span></strong>
             <p>Система, которая продаёт через маленькие ежедневные действия.</p>
           </div>
         </aside>

@@ -1,5 +1,9 @@
 ﻿"use client";
 
+import { Rubik } from "next/font/google";
+
+const rubik = Rubik({ subsets: ["cyrillic", "latin"], weight: ["400","700","800","900"], display: "swap", variable: "--font-rubik" });
+
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -756,9 +760,270 @@ function PromoHero() {
 
 
 export default function TrendsPage() {
+
+  // LESIK_RESULT_CARD_AFTER_NOTIFICATIONS_FORCE_FINAL
+  useEffect(() => {
+    const escapeHtml = (value: unknown) =>
+      String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+    const buildResultHtml = () => {
+      let result: any = null;
+
+      try {
+        const raw = window.localStorage.getItem("lesik_test_result");
+        result = raw ? JSON.parse(raw) : null;
+      } catch {
+        result = null;
+      }
+
+      const hasResult = Boolean(result?.label);
+
+      const label = hasResult ? result.label : "Тест ещё не пройден";
+      const desc = hasResult
+        ? result.desc
+        : "После прохождения теста здесь появится результат и акценты для карты контента.";
+
+      const score = hasResult ? result.score ?? 0 : 0;
+      const maxScore = hasResult ? result.maxScore ?? 50 : 50;
+      const days = hasResult ? result.days ?? "—" : "—";
+      const focus = Array.isArray(result?.focus) ? result.focus : [];
+
+      return `
+        <div style="
+          display:flex;
+          align-items:center;
+          gap:10px;
+          margin-bottom:12px;
+        ">
+          <img src="/leaf-icon.png" alt="" style="width:18px;height:18px;object-fit:contain;" />
+          <strong style="font-size:18px;font-weight:900;color:#0a2e18;">Результат теста</strong>
+        </div>
+
+        <div style="
+          border-radius:18px;
+          background:rgba(10,92,58,0.07);
+          padding:14px 16px;
+          margin-bottom:12px;
+        ">
+          <div style="font-size:19px;font-weight:900;color:#0a2e18;margin-bottom:5px;">
+            ${escapeHtml(label)}
+          </div>
+          <div style="font-size:14px;line-height:1.5;color:#395444;">
+            ${escapeHtml(desc)}
+          </div>
+        </div>
+
+        <div style="font-size:14px;line-height:1.5;color:#395444;margin-bottom:12px;">
+          ЛЕСik будет учитывать этот результат при построении профиля и карты контента.
+        </div>
+
+        ${
+          focus.length
+            ? `<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;">
+                ${focus
+                  .map(
+                    (item: string) =>
+                      `<span style="border-radius:999px;padding:8px 11px;background:#0a5c3a;color:#fff;font-size:12px;font-weight:800;">${escapeHtml(item)}</span>`
+                  )
+                  .join("")}
+              </div>`
+            : ""
+        }
+
+        <div style="font-size:12px;color:#6b766d;">
+          Счёт: ${escapeHtml(score)} из ${escapeHtml(maxScore)} · прогрев: ${escapeHtml(days)}
+        </div>
+      `;
+    };
+
+    const findNotificationsCard = () => {
+      const elements = Array.from(document.querySelectorAll("body *")) as HTMLElement[];
+
+      const candidates: HTMLElement[] = [];
+
+      for (const el of elements) {
+        const text = (el.textContent || "").replace(/\s+/g, " ").trim();
+
+        if (!text.includes("УВЕДОМЛЕНИЯ") || !text.includes("Email")) continue;
+        if (text.includes("КТО КЛИЕНТ")) continue;
+        if (text.includes("Результат теста")) continue;
+
+        const rect = el.getBoundingClientRect();
+
+        if (rect.width >= 250 && rect.width <= 700 && rect.height >= 60 && rect.height <= 220) {
+          candidates.push(el);
+        }
+      }
+
+      candidates.sort((a, b) => {
+        const ar = a.getBoundingClientRect();
+        const br = b.getBoundingClientRect();
+        return ar.width * ar.height - br.width * br.height;
+      });
+
+      return candidates[0] || null;
+    };
+
+    const mountResult = () => {
+      const pageText = document.body.innerText || "";
+
+      if (!pageText.includes("КТО КЛИЕНТ") || !pageText.includes("УВЕДОМЛЕНИЯ")) {
+        document.querySelectorAll("[data-lesik-profile-result-card='true']").forEach((el) => el.remove());
+        return;
+      }
+
+      const notificationsCard = findNotificationsCard();
+      if (!notificationsCard) return;
+
+      let holder = document.querySelector("[data-lesik-profile-result-card='true']") as HTMLElement | null;
+
+      if (!holder) {
+        holder = document.createElement("section");
+        holder.setAttribute("data-lesik-profile-result-card", "true");
+
+        holder.style.setProperty("border", "1px solid rgba(10, 92, 58, 0.16)", "important");
+        holder.style.setProperty("background", "rgba(255, 253, 248, 0.96)", "important");
+        holder.style.setProperty("border-radius", "22px", "important");
+        holder.style.setProperty("padding", "20px", "important");
+        holder.style.setProperty("margin", "14px 0 0", "important");
+        holder.style.setProperty("box-shadow", "0 14px 36px rgba(10, 92, 58, 0.12)", "important");
+        holder.style.setProperty("color", "#0a2e18", "important");
+        holder.style.setProperty("box-sizing", "border-box", "important");
+
+        notificationsCard.insertAdjacentElement("afterend", holder);
+      }
+
+      holder.innerHTML = buildResultHtml();
+    };
+
+    mountResult();
+
+    const timer = window.setInterval(mountResult, 300);
+
+    window.addEventListener("storage", mountResult);
+    window.addEventListener("focus", mountResult);
+
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("storage", mountResult);
+      window.removeEventListener("focus", mountResult);
+      document.querySelectorAll("[data-lesik-profile-result-card='true']").forEach((el) => el.remove());
+    };
+  }, []);
+
+
+  // LESIK_PROFILE_TEST_RESULT_UNDER_NOTIFICATIONS_DIRECT
+  useEffect(() => {
+    const renderTestResultCard = () => {
+      const pageText = document.body.innerText || "";
+
+      if (!pageText.includes("УВЕДОМЛЕНИЯ") || !pageText.includes("КТО КЛИЕНТ")) {
+        return;
+      }
+
+      let result: any = null;
+
+      try {
+        const raw = window.localStorage.getItem("lesik_test_result");
+        result = raw ? JSON.parse(raw) : null;
+      } catch {
+        result = null;
+      }
+
+      const old = document.querySelector("[data-lesik-profile-test-result='true']");
+      if (old) old.remove();
+
+      const all = Array.from(document.querySelectorAll("body *")) as HTMLElement[];
+
+      const title = all.find((el) => {
+        const text = (el.textContent || "").replace(/\s+/g, " ").trim();
+        return text === "УВЕДОМЛЕНИЯ";
+      });
+
+      if (!title) return;
+
+      let card: HTMLElement | null = title;
+
+      for (let i = 0; i < 10 && card; i += 1) {
+        const text = (card.textContent || "").replace(/\s+/g, " ").trim();
+        const rect = card.getBoundingClientRect();
+
+        if (
+          text.includes("УВЕДОМЛЕНИЯ") &&
+          text.includes("Email") &&
+          rect.width > 250 &&
+          rect.height > 60 &&
+          rect.height < 240
+        ) {
+          break;
+        }
+
+        card = card.parentElement;
+      }
+
+      if (!card) return;
+
+      const resultCard = document.createElement("section");
+      resultCard.setAttribute("data-lesik-profile-test-result", "true");
+      resultCard.className = "profile-test-result-card-inline";
+
+      const label = result?.label || "Тест ещё не пройден";
+      const desc = result?.desc || "После прохождения теста здесь появится результат и акценты для карты контента.";
+      const score = result?.score ?? 0;
+      const maxScore = result?.maxScore ?? 50;
+      const days = result?.days || "—";
+      const focus = Array.isArray(result?.focus) ? result.focus : [];
+
+      resultCard.innerHTML = `
+        <div class="profile-test-result-head">
+          <img src="/leaf-icon.png" alt="" />
+          <strong>Результат теста</strong>
+        </div>
+
+        <div class="profile-test-result-main">
+          <div class="profile-test-result-title">${label}</div>
+          <div class="profile-test-result-desc">${desc}</div>
+        </div>
+
+        <div class="profile-test-result-note">
+          ЛЕСik будет учитывать этот результат при построении профиля и карты контента.
+        </div>
+
+        ${
+          focus.length
+            ? `<div class="profile-test-result-tags">${focus.map((item: string) => `<span>${item}</span>`).join("")}</div>`
+            : ""
+        }
+
+        <div class="profile-test-result-score">
+          Счёт: ${score} из ${maxScore} · прогрев: ${days}
+        </div>
+      `;
+
+      card.insertAdjacentElement("afterend", resultCard);
+    };
+
+    renderTestResultCard();
+
+    const timer = window.setInterval(renderTestResultCard, 600);
+
+    return () => {
+      window.clearInterval(timer);
+      document.querySelectorAll("[data-lesik-profile-test-result='true']").forEach((el) => el.remove());
+    };
+  }, []);
+
+
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [profileNiche, setProfileNiche] = useState("");
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [hasProfile, setHasProfile] = useState(false);
   const [calendar, setCalendar] = useState<CalendarItem[]>([]);
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
   const [goalChecks, setGoalChecks] = useState<Record<string, string[]>>({});
@@ -814,7 +1079,9 @@ export default function TrendsPage() {
 
         if (profileData.profile) {
           setProfileNiche(profileData.profile.niche || "");
+          setHasProfile(true);
         }
+        setProfileLoaded(true);
 
         const mapRes = await fetch(
           `${API_BASE}/content-map/by-email?email=${encodeURIComponent(savedEmail)}`
@@ -890,6 +1157,12 @@ export default function TrendsPage() {
     calendarDays.find((item) => item.date === selectedDateKey) || null;
 
   const selectedDayTasks = selectedDay?.tasks || [];
+  const selectedDayIndex = selectedDay
+    ? calendarDays.findIndex((item) => item.date === selectedDay.date)
+    : -1;
+  const tomorrowDay =
+    selectedDayIndex >= 0 ? calendarDays[selectedDayIndex + 1] || null : null;
+  const tomorrowTasks = tomorrowDay?.tasks || [];
   const monthDays = useMemo(() => getMonthMatrix(calendarMonth), [calendarMonth]);
 
   const completedForDay = (date: string) => goalChecks[date] || [];
@@ -933,9 +1206,690 @@ export default function TrendsPage() {
     });
   }, []);
 
+
+  // Онбординг — если email не введён
+  const [onboardStep, setOnboardStep] = useState<"welcome"|"test"|"result">("welcome");
+  const [testStep, setTestStep] = useState(0);
+  const [testAnswerError, setTestAnswerError] = useState("");
+  const [testModalOpen, setTestModalOpen] = useState(false);
+  const [testAnswers, setTestAnswers] = useState<number[]>([0, 0, 0, 0, 0]);
+
+  const testQuestions = [
+    "Считывается ли в блоге ваша экспертность? Появляется ли у подписчиков чувство «если нужно — только к ней»?",
+    "Были ли уже упоминания о продукте или услуге?",
+    "Поступают ли вопросы от подписчиков «когда можно купить / заказать»?",
+    "Насколько интересно вас смотреть в сторис — реакции, ответы, вовлечённость?",
+    "Есть ли у вас понятная система публикаций прямо сейчас?",
+  ];
+
+  const testTotal = testAnswers.reduce((a, b) => a + b, 0);
+
+  const testResult = testTotal <= 20
+    ? {
+        days: "30+ дней",
+        label: "Нужен фундамент",
+        desc: "Сначала выстроим экспертность и доверие, потом продажи",
+        level: "foundation",
+        focus: ["экспертность", "доверие", "личные смыслы", "мягкие касания"]
+      }
+    : testTotal <= 35
+    ? {
+        days: "14–21 день",
+        label: "Почти готова",
+        desc: "Есть база — нужна система, регулярность и прогрев",
+        level: "warmup",
+        focus: ["регулярность", "прогрев", "снятие возражений", "кейсы"]
+      }
+    : {
+        days: "7–14 дней",
+        label: "Готова к продажам",
+        desc: "Аудитория прогрета — нужен чёткий план и инструменты",
+        level: "sales_ready",
+        focus: ["офферы", "заявки", "продающие посты", "бот-воронка"]
+      };
+
+  const saveLesikTestResult = () => {
+    if (typeof window === "undefined") return;
+
+    const payload = {
+      score: testTotal,
+      maxScore: 50,
+      answers: testAnswers,
+      days: testResult.days,
+      label: testResult.label,
+      desc: testResult.desc,
+      level: testResult.level,
+      focus: testResult.focus,
+      updatedAt: new Date().toISOString()
+    };
+
+    localStorage.setItem("lesik_test_result", JSON.stringify(payload));
+
+    if (email) {
+      localStorage.setItem(`lesik_test_result:${email}`, JSON.stringify(payload));
+    }
+  };
+
+  const showOnboarding = !email || (profileLoaded && !hasProfile);
+  if (false) {
+    return (
+      <section className="lesik-onboarding">
+        {onboardStep === "welcome" && (
+          <div className="onboard-welcome">
+            <div className="onboard-badge">ЛЕС<span>ik</span></div>
+            <h1>Система заявок через контент — без суеты и выгорания</h1>
+            <p>За 5 минут поймёшь где ты сейчас и что нужно чтобы клиенты приходили сами</p>
+            <div className="onboard-features">
+              <div className="onboard-feature">
+                <span>🗺</span>
+                <p>Карта контента под твою нишу и цель</p>
+              </div>
+              <div className="onboard-feature">
+                <span>📅</span>
+                <p>Календарь публикаций на 14 дней</p>
+              </div>
+              <div className="onboard-feature">
+                <span>🤖</span>
+                <p>ИИ пишет посты и карусели за тебя</p>
+              </div>
+            </div>
+            <button className="onboard-cta" onClick={() => setOnboardStep("test")}>
+              Пройти тест — узнать свой результат
+            </button>
+            <p className="onboard-note">Бесплатно · 5 вопросов · 2 минуты</p>
+          </div>
+        )}
+
+        {onboardStep === "test" && (
+          <div className="onboard-test">
+            <div className="onboard-badge">ЛЕС<span>ik</span></div>
+            <h2>Тест: сколько дней нужно на прогрев?</h2>
+            <p className="onboard-test-sub">Оцените каждый пункт от 1 до 10</p>
+            {testQuestions.map((q, i) => (
+              <div key={i} className="onboard-question">
+                <p>{q}</p>
+                <div className="onboard-slider-wrap">
+                  <span>1</span>
+                  <input
+                    type="range" min={1} max={10} value={testAnswers[i]}
+                    onChange={(e) => {
+                      const next = [...testAnswers];
+                      next[i] = Number(e.target.value);
+                      setTestAnswers(next);
+                    }}
+                  />
+                  <span>{testAnswers[i]}</span>
+                </div>
+              </div>
+            ))}
+            <button className="onboard-cta" onClick={() => setOnboardStep("result")}>
+              Узнать результат
+            </button>
+          </div>
+        )}
+
+        {onboardStep === "result" && (
+          <div className="onboard-result">
+            <div className="onboard-badge">ЛЕС<span>ik</span></div>
+            <div className="onboard-result-card">
+              <p className="onboard-result-days">{testResult.days}</p>
+              <h2>{testResult.label}</h2>
+              <p>{testResult.desc}</p>
+              <div className="onboard-result-score">Твой счёт: {testTotal} из 50</div>
+            </div>
+            <p className="onboard-result-cta-text">
+              ЛЕСik поможет выстроить систему — от стратегии до готовых постов
+            </p>
+            <Link href="/app/profile" className="onboard-cta">
+              Построить свою систему →
+            </Link>
+            <p className="onboard-note">Заполни профиль — и получишь карту контента под твою нишу</p>
+          </div>
+        )}
+
+        <style jsx>{`
+          .lesik-onboarding {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: linear-gradient(135deg, #f3eee4 0%, #e8f5ee 100%);
+          }
+          .onboard-welcome, .onboard-test, .onboard-result {
+            max-width: 560px;
+            width: 100%;
+            text-align: center;
+          }
+          .onboard-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            background: #009b46;
+            color: #fff;
+            border-radius: 999px;
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 24px;
+          }
+          .onboard-badge span { color: #ffc238; }
+          .onboard-welcome h1 {
+            font-size: clamp(24px, 5vw, 36px);
+            font-weight: 900;
+            color: #1a1a1a;
+            line-height: 1.2;
+            margin-bottom: 14px;
+          }
+          .onboard-welcome p, .onboard-test-sub {
+            color: #555;
+            font-size: 16px;
+            margin-bottom: 28px;
+            line-height: 1.6;
+          }
+          .onboard-features {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 32px;
+            text-align: left;
+          }
+          .onboard-feature {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid rgba(0,155,70,0.15);
+          }
+          .onboard-feature span { font-size: 28px; }
+          .onboard-feature p { margin: 0; font-size: 15px; color: #333; font-weight: 600; }
+          .onboard-cta {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: #009b46;
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            text-decoration: none;
+            margin-bottom: 12px;
+          }
+          .onboard-note {
+            color: #999;
+            font-size: 13px;
+            margin: 0;
+          }
+          .onboard-test h2 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+          }
+          .onboard-question {
+            text-align: left;
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(0,155,70,0.15);
+          }
+          .onboard-question p {
+            margin: 0 0 12px;
+            font-size: 15px;
+            color: #333;
+            font-weight: 600;
+            line-height: 1.5;
+          }
+          .onboard-slider-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          }
+          .onboard-slider-wrap span {
+            font-size: 13px;
+            color: #009b46;
+            font-weight: 700;
+            min-width: 20px;
+          }
+          .onboard-slider-wrap input[type=range] {
+            flex: 1;
+            accent-color: #009b46;
+          }
+          .onboard-result-card {
+            background: #fff;
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            border: 2px solid #009b46;
+          }
+          .onboard-result-days {
+            font-size: 48px;
+            font-weight: 900;
+            color: #009b46;
+            margin: 0 0 8px;
+          }
+          .onboard-result-card h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+          }
+          .onboard-result-card p {
+            color: #555;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+          }
+          .onboard-result-score {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(0,155,70,0.1);
+            color: #009b46;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 700;
+          }
+          .onboard-result-cta-text {
+            color: #555;
+            font-size: 15px;
+            margin-bottom: 16px;
+            line-height: 1.6;
+          }
+        `}</style>
+      </section>
+    );
+  }
+
   return (
-    <section className="lesik-home-screen">
-      <PromoHero />
+    <section className={"lesik-home-screen " + rubik.variable} style={{ fontFamily: "var(--font-rubik, Rubik, Arial, sans-serif)" }}>
+      {true && (
+        <div style={{
+          position: "relative",
+          borderRadius: 28,
+          background: "#f3efe6",
+          border: "1px solid rgba(0,100,50,0.1)",
+          padding: "36px 42px 30px",
+          marginBottom: 24,
+          display: "grid",
+          gridTemplateColumns: "minmax(430px, 0.78fr) minmax(650px, 1.22fr)",
+          gap: 54,
+          alignItems: "center",
+          minHeight: 660,
+          overflow: "hidden",
+          fontFamily: "var(--font-rubik, Rubik, Arial, sans-serif)"
+        }}>
+          {/* Фон деревьев */}
+          <img
+              src="/trees-bg.png"
+              alt=""
+              style={{
+                position:"absolute",
+                inset:0,
+                width:"100%",
+                height:"100%",
+                objectFit:"cover",
+                objectPosition:"right bottom",
+                opacity:0.52,
+                filter:"saturate(0.7) brightness(1.12) contrast(0.88)",
+                pointerEvents:"none",
+                zIndex:0
+              }}
+            />
+
+            <div
+              aria-hidden="true"
+              style={{
+                position:"absolute",
+                inset:0,
+                zIndex:1,
+                pointerEvents:"none",
+                background:"linear-gradient(90deg, rgba(247,241,229,0.96) 0%, rgba(247,241,229,0.88) 36%, rgba(247,241,229,0.44) 64%, rgba(247,241,229,0.16) 100%)"
+              }}
+            />
+
+            <div
+              aria-hidden="true"
+              style={{
+                position:"absolute",
+                right:"22%",
+                top:0,
+                width:"34%",
+                height:"100%",
+                zIndex:1,
+                pointerEvents:"none",
+                background:"rgba(247,241,229,0.36)",
+                transform:"skewX(-18deg)",
+                transformOrigin:"top right"
+              }}
+            />
+            <div aria-hidden="true" style={{ position:"absolute", inset:0, zIndex:1, pointerEvents:"none", background:"linear-gradient(90deg, rgba(255,250,240,0.92) 0%, rgba(255,250,240,0.82) 32%, rgba(255,250,240,0.36) 58%, rgba(255,250,240,0.08) 100%)" }} />
+            <div aria-hidden="true" style={{ position:"absolute", top:0, right:"20%", width:"34%", height:"100%", zIndex:1, pointerEvents:"none", background:"rgba(255,250,240,0.34)", transform:"skewX(-18deg)", transformOrigin:"top right" }} />
+
+          {/* Левая колонка */}
+          
+            <div
+              aria-hidden="true"
+              style={{
+                position:"absolute",
+                inset:0,
+                zIndex:1,
+                pointerEvents:"none",
+                background:"linear-gradient(90deg, rgba(246,239,224,0.98) 0%, rgba(246,239,224,0.92) 40%, rgba(246,239,224,0.42) 68%, rgba(246,239,224,0.18) 100%)"
+              }}
+            />
+
+<div style={{ position:"relative", zIndex:2, paddingBottom:0, paddingRight:0, paddingLeft:0 }}>
+            {/* Лого */}
+            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:28 }}>
+              <div style={{ width:50, height:50, borderRadius:18, background:"#1a3a2a", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <img src="/leaf-icon.png" style={{ width:28, height:28, filter:"brightness(0) invert(1)" }} alt=""/>
+              </div>
+              <span style={{ fontSize:26, fontWeight:900, color:"#0a2e18", letterSpacing:"-0.02em" }}>ЛЕС<span style={{ color:"#009b46" }}>ik</span></span>
+              <span style={{ width:1, height:16, background:"rgba(0,0,0,0.2)", margin:"0 6px" }}/>
+              <span style={{ fontSize:18, fontWeight:500, color:"#aaa", letterSpacing:"0.06em", textTransform:"uppercase" }}>КЛИЕНТЫ ИЗ СОЦ СЕТЕЙ</span>
+            </div>
+
+            {/* Заголовок */}
+            <h1 style={{ fontSize:"54px", fontWeight:900, lineHeight:1.05, margin:"0 0 6px", letterSpacing:"-0.04em" }}>
+              <span style={{ color:"#0a2e18" }}>Собери свою</span><br/>
+              <span style={{ color:"#0a5c3a" }}>контент-воронку</span><br/>
+              <span style={{ color:"#0a2e18" }}>с ботом</span>
+            </h1>
+
+            {/* Волна */}
+            <svg style={{ margin:"4px 0 14px", display:"block" }} width="180" height="20" viewBox="0 0 180 20" fill="none">
+              <path d="M2 14 C15 4 28 18 45 10 C58 4 70 16 88 10 C102 5 115 15 130 9 C145 4 158 14 175 8" stroke="#0a5c3a" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.7"/>
+            </svg>
+
+            {/* Подзаголовок */}
+            <p style={{ fontSize:20, color:"#444", margin:"0 0 22px", lineHeight:1.5, maxWidth:"100%", fontWeight:500 }}>
+              Расскажи о себе и продукте —<br/><span style={{ whiteSpace:"nowrap" }}><strong style={{ color:"#0a5c3a", fontWeight:800 }}>получи готовую систему:</strong> что писать, куда вести людей</span><br/>и что делать каждый день
+            </p>
+
+            {/* Шаги */}
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:8, marginBottom:24 }}>
+              {([["1","Заполни профиль — расскажи о себе и цели"],["2","ИИ соберёт карту контента под твою нишу"],["3","Получи календарь постов и готовые тексты"]] as [string,string][]).map(([n,t]) => (
+                <div key={n} style={{ display:"inline-flex", alignItems:"center", gap:12, background:"rgba(220,232,222,0.15)", border:"1px solid rgba(10,92,58,0.15)", borderRadius:18, padding:"10px 18px", backdropFilter:"blur(8px)" }}>
+                  <b style={{ width:26, height:26, borderRadius:18, background:"#0a5c3a", color:"#fff", fontSize:13, fontWeight:900, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>{n}</b>
+                  <span className="step-item" style={{ fontSize:15, fontWeight:400, color:"#1a1a1a" }}>{t}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Кнопки */}
+            <div style={{ display:"flex", gap:10, flexWrap:"wrap", alignItems:"center", marginBottom:14 }}>
+              <Link href="/app/profile" style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"14px 24px", background:"#0a5c3a", borderRadius:18, fontSize:15, fontWeight:800, textDecoration:"none", boxShadow:"0 4px 16px rgba(10,92,58,0.35)" }}>
+                <img src="/leaf-icon.png" style={{ width:22, height:22, filter:"brightness(0) invert(1)", flexShrink:0 }} alt=""/>
+                <span style={{ color:"#ffffff", WebkitTextFillColor:"#ffffff" }}>Собрать свою воронку →</span>
+              </Link>
+              <button type="button" onClick={() => setTestModalOpen(true)}
+                style={{ padding:"14px 24px", background:"transparent", color:"#0a5c3a", border:"2px solid rgba(10,92,58,0.3)", borderRadius:18, fontSize:15, fontWeight:800, cursor:"pointer" }}>
+                Пройти тест
+              </button>
+            </div>
+
+            <p style={{ margin:0, fontSize:12, color:"#888", display:"flex", alignItems:"center", gap:5 }}>
+              <img src="/leaf-icon.png" style={{ width:20, height:20, flexShrink:0 }} alt=""/>
+              Без сложных настроек. Всё просто и понятно
+            </p>
+          </div>
+
+          {/* Правая колонка */}
+          <div style={{ position:"relative", zIndex:2, height:620, display:"flex", alignItems:"center", justifyContent:"flex-end", gap:0, paddingBottom:0, paddingRight:8, overflow:"visible" }}>
+            {/* Карточки */}
+            <div style={{ position:"absolute", left:86, top:"50%", transform:"translateY(-50%)", display:"flex", flexDirection:"column", justifyContent:"center", gap:22, paddingBottom:0, zIndex:8, overflow:"visible" }}>
+              {([
+                { icon: "clipboard", title: "Твой план контента" },
+                { icon: "calendar", title: "Календарь постов" },
+                { icon: "robot", title: "Бот-воронка,\nкоторая ведёт\nк заявке" },
+              ] as {icon:string,title:string}[]).map((card, i) => (
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:8, overflow:"visible", position:"relative", zIndex:8, transform: i === 2 ? "translateY(18px)" : "none" }}>
+                  <div style={{ background:"rgba(255,255,255,0.96)", borderRadius:18, padding:"10px 10px", boxShadow:"0 16px 34px rgba(20,40,25,0.10)", border:"1px solid rgba(180,210,180,0.45)", width:132, minHeight:112, textAlign:"center", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+                    <div style={{ marginBottom:8 }}>
+                      {card.icon === "clipboard" && <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0a5c3a" strokeWidth="2" strokeLinecap="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M8 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2h-2"/><path d="M9 12l2 2 4-4"/></svg>}
+                      {card.icon === "calendar" && <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0a5c3a" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="8" cy="15" r="1" fill="#0a5c3a"/><circle cx="12" cy="15" r="1" fill="#0a5c3a"/><circle cx="16" cy="15" r="1" fill="#0a5c3a"/></svg>}
+                      {card.icon === "robot" && <svg width="60" height="60" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+  <circle cx="32" cy="8" r="4" fill="#06452e"/>
+  <path d="M32 12V19" stroke="#06452e" strokeWidth="3.4" strokeLinecap="round"/>
+  <rect x="12" y="20" width="40" height="32" rx="12" fill="#06452e"/>
+  <rect x="18" y="25" width="28" height="22" rx="8" fill="#0f6b45" stroke="#ffffff" strokeWidth="2.4"/>
+  <circle cx="27" cy="35" r="3.2" fill="#ffffff"/>
+  <circle cx="37" cy="35" r="3.2" fill="#ffffff"/>
+  <path d="M25 40 Q32 47 39 40" stroke="#ffffff" strokeWidth="3.4" strokeLinecap="round" fill="none"/>
+  <path d="M12 35H7" stroke="#06452e" strokeWidth="4.4" strokeLinecap="round"/>
+  <path d="M57 35H52" stroke="#06452e" strokeWidth="4.4" strokeLinecap="round"/>
+</svg>}
+                    </div>
+                    <div style={{ fontSize:12, fontWeight:500, color:"#1a1a1a", lineHeight:1.2, whiteSpace:"pre-line" }}>{card.title}</div>
+                  </div>
+                    <svg width="58" height="32" viewBox="0 0 58 32" fill="none" style={{ flexShrink:0, marginLeft:8, marginRight:0, position:"relative", zIndex:9, overflow:"visible" }}>
+                      <path d="M4 20 C18 8 34 8 47 17" stroke="#06452e" strokeWidth="2.2" strokeLinecap="round" strokeDasharray="6 6" fill="none"/>
+                      <path d="M44 9L55 17L43 25" stroke="#06452e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                    </svg>
+
+                </div>
+              ))}
+            </div>
+
+            {/* Телефон */}
+            <div style={{ flexShrink:0, zIndex:3 }}>
+              <img src="/phone-mockup.png" alt="ЛЕСik"
+                style={{
+                  width:365,
+                  maxWidth:"none",
+                  display:"block",
+                  filter:"drop-shadow(0 24px 46px rgba(0,0,0,0.22)) contrast(1.08) saturate(1.04)",
+                  transform:"translateX(-42px) perspective(1400px) rotateY(-15deg) rotateZ(5deg) translateZ(0)",
+                  transformOrigin:"center bottom",
+                  imageRendering:"auto",
+                  backfaceVisibility:"hidden",
+                  WebkitBackfaceVisibility:"hidden",
+                  willChange:"transform",
+                  transformStyle:"preserve-3d",
+                  position:"relative",
+                  zIndex:3
+                }} />
+            </div>
+          </div>
+        </div>
+      )}
+      {testModalOpen && (
+        <div style={{ position:"fixed", inset:0, zIndex:1000, background:"rgba(0,0,0,0.5)", display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}
+          onClick={() => { setTestModalOpen(false); setOnboardStep("welcome"); setTestStep(0); }}>
+          <div style={{ position:"relative", width:"100%", maxWidth:700, borderRadius:18, background:"#f3efe6", overflow:"hidden", padding:"40px 44px 44px", backgroundImage:"url(/trees-bg.png)", backgroundSize:"cover", backgroundPosition:"right center", backgroundRepeat:"no-repeat" }}
+            onClick={(e) => e.stopPropagation()}>
+
+
+
+            {/* Листья слева */}
+            <svg style={{ position:"absolute", left:-10, bottom:20, width:120, pointerEvents:"none", opacity:0.6 }} viewBox="0 0 120 180" fill="none">
+              <path d="M30 170 C40 130 30 90 50 50 C65 20 100 15 105 55 C110 90 80 130 30 170Z" fill="#4a8a4a" opacity="0.5"/>
+              <path d="M30 170 C55 130 75 90 85 50" stroke="#3a7a3a" strokeWidth="1.5" fill="none" opacity="0.6"/>
+              <path d="M55 110 C45 100 40 85 50 75" stroke="#3a7a3a" strokeWidth="1" fill="none" opacity="0.5"/>
+              <path d="M70 85 C60 75 58 60 65 52" stroke="#3a7a3a" strokeWidth="1" fill="none" opacity="0.5"/>
+            </svg>
+
+            {/* Закрыть */}
+            <button type="button" onClick={() => { setTestModalOpen(false); setOnboardStep("welcome"); setTestStep(0); }}
+              style={{ position:"absolute", top:16, right:16, width:36, height:36, borderRadius:"50%", border:"none", background:"rgba(0,0,0,0.08)", fontSize:18, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#333" }}>×</button>
+
+            {/* Заголовок */}
+            
+            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
+              <h2 style={{ margin:0, fontSize:"clamp(28px,4vw,42px)", fontWeight:950, color:"#0a2e18", letterSpacing:"-0.04em" }}>
+                {onboardStep === "result" ? "Твой результат" : `Вопрос ${testStep + 1} из ${testQuestions.length}`}
+              </h2>
+              <span style={{fontSize:22, opacity:0.7}}>🌿</span>
+            </div>
+            <svg style={{ margin:"4px 0 24px", display:"block" }} width="100" height="12" viewBox="0 0 100 12" fill="none">
+              <path d="M2 8 C18 2 34 10 50 6 C66 2 82 9 98 5" stroke="#0a5c3a" strokeWidth="2.2" strokeLinecap="round" fill="none" opacity="0.5"/>
+            </svg>
+
+              {onboardStep !== "result" && (
+                <div style={{ position:"relative", background:"rgba(255,255,255,0.85)", borderRadius:18, padding:"28px 28px 24px", backdropFilter:"blur(8px)", border:"1px solid rgba(10,92,58,0.1)" }}>
+                  <div style={{ display:"flex", gap:6, marginBottom:22 }}>
+                    {testQuestions.map((_, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          flex:1,
+                          height:4,
+                          borderRadius:18,
+                          background: i <= testStep ? "#0a5c3a" : "rgba(0,0,0,0.1)",
+                          transition:"background 0.2s"
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  <p style={{ fontSize:16, fontWeight:600, color:"#1a1a1a", marginBottom:24, lineHeight:1.55 }}>
+                    {testQuestions[testStep]}
+                  </p>
+
+                  <div style={{ display:"flex", flexWrap:"nowrap", gap:4, marginBottom:28 }}>
+                    {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => {
+                          const next = [...testAnswers];
+                          next[testStep] = n;
+                          setTestAnswers(next);
+                          setTestAnswerError("");
+                        }}
+                        style={{
+                          width:54,
+                          height:54,
+                          borderRadius:18,
+                          border:"2px solid",
+                          flexShrink:0,
+                          borderColor: testAnswers[testStep] === n ? "#0a5c3a" : "rgba(0,0,0,0.12)",
+                          background: testAnswers[testStep] === n ? "#0a5c3a" : "rgba(255,255,255,0.9)",
+                          color: testAnswers[testStep] === n ? "#fff" : "#1a1a1a",
+                          fontSize:16,
+                          fontWeight:800,
+                          cursor:"pointer",
+                          transition:"all 0.15s ease",
+                          boxShadow: testAnswers[testStep] === n ? "0 4px 14px rgba(10,92,58,0.35)" : "0 2px 6px rgba(0,0,0,0.06)"
+                        }}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="modal-test-actions" style={{ display:"flex", gap:10 }}>
+                    {testStep > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTestAnswerError("");
+                          setTestStep((s) => s - 1);
+                        }}
+                        style={{
+                          flex:1,
+                          height:56,
+                          border:"2px solid rgba(10,92,58,0.25)",
+                          borderRadius:14,
+                          background:"rgba(255,255,255,0.85)",
+                          color:"#0a5c3a",
+                          fontSize:15,
+                          fontWeight:800,
+                          cursor:"pointer"
+                        }}
+                      >
+                        ← Назад
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      className="modal-test-next-btn"
+                      onClick={() => {
+                        if (!testAnswers[testStep] || testAnswers[testStep] < 1) {
+                          alert("Выберите честный ответ — иначе результат будет неточным, а продаж не будет 😈");
+                          return;
+                        }
+
+                        setTestAnswerError("");
+
+                        if (testStep < testQuestions.length - 1) {
+                          setTestStep((s) => s + 1);
+                        } else {
+                          if (typeof saveLesikTestResult === "function") {
+                            saveLesikTestResult();
+                          }
+                          setOnboardStep("result");
+                        }
+                      }}
+                      style={{
+                        flex:1,
+                        width:"100%",
+                        height:56,
+                        minHeight:56,
+                        maxHeight:56,
+                        display:"inline-flex",
+                        alignItems:"center",
+                        justifyContent:"center",
+                        gap:8,
+                        padding:"0 24px",
+                        background:"#0a5c3a",
+                        color:"#ffffff",
+                        border:"none",
+                        borderRadius:14,
+                        fontSize:15,
+                        fontWeight:800,
+                        cursor:"pointer",
+                        boxShadow:"0 4px 16px rgba(10,92,58,0.25)",
+                        visibility:"visible",
+                        opacity:1
+                      }}
+                    >
+                      <img
+                        src="/leaf-icon.png"
+                        alt=""
+                        style={{
+                          width:18,
+                          height:18,
+                          maxWidth:18,
+                          maxHeight:18,
+                          minWidth:18,
+                          minHeight:18,
+                          display:"inline-block",
+                          objectFit:"contain",
+                          filter:"brightness(0) invert(1)",
+                          flexShrink:0
+                        }}
+                      />
+                      <span style={{ color:"#ffffff", WebkitTextFillColor:"#ffffff" }}>
+                        {testStep < testQuestions.length - 1 ? "Следующий вопрос →" : "Узнать результат →"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {onboardStep === "result" && (
+              <div style={{ background:"#ffffff", borderRadius:18, padding:"28px", border:"1px solid rgba(10,92,58,0.1)", textAlign:"center" }}>
+                <p style={{ fontSize:56, fontWeight:950, color:"#0a5c3a", margin:"0 0 4px", letterSpacing:"-0.04em" }}>{testResult.days}</p>
+                <h3 style={{ fontSize:22, fontWeight:800, margin:"0 0 10px", color:"#0a2e18" }}>{testResult.label}</h3>
+                <p style={{ color:"#555", lineHeight:1.6, marginBottom:20 }}>{testResult.desc}</p>
+                <div style={{ display:"inline-block", padding:"6px 16px", background:"rgba(10,92,58,0.1)", color:"#0a5c3a", borderRadius:18, fontSize:14, fontWeight:700, marginBottom:24 }}>
+                  Твой счёт: {testTotal} из 50
+                </div>
+                <a href="/app/profile" onClick={() => setTestModalOpen(false)}
+                  style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:"16px", background:"#0a5c3a", borderRadius:18, textDecoration:"none", fontSize:16, fontWeight:800, boxShadow:"0 4px 18px rgba(10,92,58,0.4)" }}>
+                  <span style={{color:"#ffffff !important" as any, fontWeight:800, WebkitTextFillColor:"#ffffff"}}>Построить свою систему →</span>
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      
 
       <div className="home-main-grid-ios">
         <section className="ios-glass-card goals-ios-card">
@@ -954,7 +1908,7 @@ export default function TrendsPage() {
 
           {calendarDays.length === 0 ? (
             <div className="daily-goals-empty">
-              Сначала сформируйте карту контента. После этого ЛЕСik покажет цели
+              Сначала сформируйте карту контента. После этого ЛЕС<span className="brand-ik">ik</span> покажет цели
               на день, и они будут сформированы ИИ по каждому дню.
             </div>
           ) : !selectedDay ? (
@@ -962,9 +1916,11 @@ export default function TrendsPage() {
           ) : (
             <>
               <div className="insta-selected-day-card">
-                <div className="insta-selected-day-title">{selectedDay.title}</div>
+                <div className="insta-selected-day-title">
+                  {formatHumanDate(selectedDay.date)} · {selectedDay.title}
+                </div>
                 <div className="insta-selected-day-subtitle">
-                  {formatHumanDate(selectedDay.date)} · {selectedDay.description}
+                  {selectedDay.description.replace(/\.+$/, "")}
                 </div>
               </div>
 
@@ -985,33 +1941,57 @@ export default function TrendsPage() {
                   );
                 })}
               </div>
+              <button
+                type="button"
+                className="open-calendar-button"
+                style={{ marginTop: 16, width: "100%" }}
+                onClick={() => setInstaCalendarOpen(true)}
+              >
+                Открыть календарь
+              </button>
             </>
           )}
         </section>
 
 
+
+        {tomorrowDay && (
+          <section className="ios-glass-card goals-ios-card tomorrow-ios-card">
+            <div className="ios-card-head">
+              <div>
+                <p className="home-kicker">Завтра</p>
+                <h2>На следующий день</h2>
+              </div>
+            </div>
+
+            <div className="insta-selected-day-card">
+              <div className="insta-selected-day-title">
+                {formatHumanDate(tomorrowDay.date)} · {tomorrowDay.title}
+              </div>
+              <div className="insta-selected-day-subtitle">
+                {tomorrowDay.description.replace(/\.+$/, "")}
+              </div>
+            </div>
+
+            <div className="daily-goals-list">
+              {tomorrowTasks.map((task) => {
+                const done = completedForDay(tomorrowDay.date).includes(task.id);
+                return (
+                  <button
+                    key={task.id}
+                    type="button"
+                    className={done ? "daily-goal-item is-done" : "daily-goal-item"}
+                    onClick={() => toggleTask(tomorrowDay.date, task.id)}
+                  >
+                    <span className="daily-goal-check" />
+                    <span className="daily-goal-text">{task.text}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
       </div>
-
-      {calendarDays.length > 0 && (
-        <section className="ios-glass-card home-calendar-strip home-calendar-promo">
-          <div>
-            <p className="home-kicker">План публикаций</p>
-            <h2>Ближайшие дни</h2>
-            <p className="calendar-promo-text">
-              ЛЕСik уже разложил задачи по дням. Откройте календарь, чтобы видеть
-              план, выбирать дату и отмечать выполненные цели.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            className="open-calendar-button"
-            onClick={() => setInstaCalendarOpen(true)}
-          >
-            Открыть календарь
-          </button>
-        </section>
-      )}
 
       {!calendarDays.length && (
         <section className="ios-glass-card empty-calendar-card">
@@ -1166,7 +2146,7 @@ export default function TrendsPage() {
                   </div>
 
                   <div className="insta-selected-day-subtitle">
-                    {selectedDay.title} · {selectedDay.description}
+                    {selectedDay.title} · {selectedDay.description.replace(/\.+$/, "")}
                   </div>
 
                   <div className="insta-modal-day-tasks">
@@ -1283,7 +2263,7 @@ export default function TrendsPage() {
                   <div>
                     <strong>Подключите Telegram-бота</strong>
                     <p>
-                      Перейдите в бота и нажмите Start. После подключения ЛЕСik сможет
+                      Перейдите в бота и нажмите Start. После подключения ЛЕС<span className="brand-ik">ik</span> сможет
                       присылать напоминания по календарю в Telegram.
                     </p>
                   </div>

@@ -86,7 +86,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
         <div className="lesik-side-card">
           <span className="tree-emoji">🌲</span>
-          <p>Расти системно.<br />Достигай большего.</p>
+          <p>Расти системно<br />Достигай большего</p>
         </div>
       </aside>
 

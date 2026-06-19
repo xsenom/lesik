@@ -1,0 +1,66 @@
+"use client";
+
+import { useEffect } from "react";
+
+export default function HideGenerateMapBlock() {
+  useEffect(() => {
+    const hideGenerateBlock = () => {
+      const buttons = Array.from(document.querySelectorAll("button"));
+
+      for (const button of buttons) {
+        const text = (button.textContent || "").replace(/\s+/g, " ").trim();
+
+        if (!text.includes("Сформировать карту")) continue;
+
+        let node: HTMLElement | null = button as HTMLElement;
+
+        for (let i = 0; i < 12 && node; i += 1) {
+          const rect = node.getBoundingClientRect();
+          const nodeText = (node.textContent || "").replace(/\s+/g, " ").trim();
+
+          const looksLikeCard =
+            rect.width >= 500 &&
+            rect.height >= 90 &&
+            rect.height <= 360 &&
+            nodeText.includes("Сформировать карту") &&
+            !nodeText.includes("Видео от Кати");
+
+          if (looksLikeCard) {
+            node.style.setProperty("display", "none", "important");
+            node.style.setProperty("height", "0", "important");
+            node.style.setProperty("min-height", "0", "important");
+            node.style.setProperty("padding", "0", "important");
+            node.style.setProperty("margin", "0", "important");
+            node.style.setProperty("border", "0", "important");
+            node.style.setProperty("overflow", "hidden", "important");
+            node.setAttribute("data-lesik-hide-generate-map-block", "true");
+            return;
+          }
+
+          node = node.parentElement;
+        }
+
+        button.style.setProperty("display", "none", "important");
+      }
+    };
+
+    hideGenerateBlock();
+
+    const observer = new MutationObserver(hideGenerateBlock);
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+
+    const timer = window.setInterval(hideGenerateBlock, 300);
+
+    return () => {
+      observer.disconnect();
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  return null;
+}

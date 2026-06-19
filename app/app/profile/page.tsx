@@ -11,6 +11,7 @@ type Answers = {
   client_type: string;
   niche: string;
   platform: string;
+  primary_platform: string;
   monthly_goal: string;
   blocker: string;
 };
@@ -21,6 +22,7 @@ type ProfileDetails = {
   notify_telegram: boolean;
   platforms: string[];
   audience_analysis: string;
+  social_links: { telegram: string; instagram: string; youtube: string; vk: string; tiktok: string; site: string; other: string; };
   product_status: string;
   product_name: string;
   product_description: string;
@@ -37,6 +39,7 @@ const emptyAnswers: Answers = {
   client_type: "",
   niche: "",
   platform: "",
+  primary_platform: "",
   monthly_goal: "",
   blocker: "",
 };
@@ -47,6 +50,7 @@ const emptyDetails: ProfileDetails = {
   notify_telegram: false,
   platforms: [],
   audience_analysis: "",
+  social_links: { telegram: "", instagram: "", youtube: "", vk: "", tiktok: "", site: "", other: "" },
   product_status: "",
   product_name: "",
   product_description: "",
@@ -58,7 +62,7 @@ const emptyDetails: ProfileDetails = {
 };
 
 const basicQuestions = [
-  { key: "name", title: "Как вас зовут?", placeholder: "Например: Илья" },
+  { key: "name", title: "Как вас зовут?", placeholder: "Например: Катерина" },
   { key: "email", title: "Ваш email?", placeholder: "Например: name@email.com" },
   { key: "client_type", title: "Кто вы?", placeholder: "Эксперт, блогер, школа, предприниматель..." },
   { key: "niche", title: "Ваша ниша?", placeholder: "Например: чат-боты, психология, английский..." },
@@ -68,13 +72,47 @@ const basicQuestions = [
 ] as const;
 
 export default function ProfilePage() {
+
+  // LESIK_PROFILE_PAGE_LOAD_TEST_RESULT
+  useEffect(() => {
+    const loadProfileTestResult = () => {
+      try {
+        const raw = window.localStorage.getItem("lesik_test_result");
+        if (!raw) {
+          setProfileTestResult(null);
+          return;
+        }
+
+        const parsed = JSON.parse(raw);
+        setProfileTestResult(parsed?.label ? parsed : null);
+      } catch {
+        setProfileTestResult(null);
+      }
+    };
+
+    loadProfileTestResult();
+
+    window.addEventListener("focus", loadProfileTestResult);
+    window.addEventListener("storage", loadProfileTestResult);
+
+    return () => {
+      window.removeEventListener("focus", loadProfileTestResult);
+      window.removeEventListener("storage", loadProfileTestResult);
+    };
+  }, []);
+
   const [step, setStep] = useState(0);
+  const [profileTestResult, setProfileTestResult] = useState<any>(null);
   const [introAccepted, setIntroAccepted] = useState(false);
+  const [privacyChecked, setPrivacyChecked] = useState(false);
+  const [showPrimaryPlatform, setShowPrimaryPlatform] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [basicDone, setBasicDone] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [productOpen, setProductOpen] = useState(false);
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [socialOpen, setSocialOpen] = useState(false);
   const [audienceUploading, setAudienceUploading] = useState(false);
   const [audienceAiOpen, setAudienceAiOpen] = useState(false);
   const [audienceAiLoading, setAudienceAiLoading] = useState(false);
@@ -82,6 +120,15 @@ export default function ProfilePage() {
   const [audienceAiAnswer, setAudienceAiAnswer] = useState("");
   const [audienceAiAnswers, setAudienceAiAnswers] = useState<{ question: string; answer: string }[]>([]);
   const [audienceAiDraft, setAudienceAiDraft] = useState("");
+  const [audienceStep, setAudienceStep] = useState(0);
+  const [toastMsg, setToastMsg] = useState("");
+  const audienceQuestions = [
+    "Кому вы помогаете? Опишите своего клиента — кто это, чем занимается, в какой ситуации находится",
+    "Какую главную проблему или боль решает ваш продукт/экспертиза?",
+    "Какой конкретный результат получает клиент после работы с вами?",
+    "Почему клиенты выбирают именно вас, а не конкурентов?",
+    "Что чаще всего мешает клиенту купить или начать работу с вами?",
+  ];
   const [answers, setAnswers] = useState<Answers>(emptyAnswers);
   const [details, setDetails] = useState<ProfileDetails>(emptyDetails);
   const [avatar, setAvatar] = useState("");
@@ -110,6 +157,7 @@ export default function ProfilePage() {
             platform: profileData.profile.platform || "",
             monthly_goal: profileData.profile.monthly_goal || "",
             blocker: profileData.profile.blocker || "",
+            primary_platform: profileData.profile.primary_platform || "",
           });
 
           setBasicDone(true);
@@ -120,9 +168,20 @@ export default function ProfilePage() {
         const detailsData = await detailsRes.json();
 
         if (detailsData.details) {
+          const loadedDetails = detailsData.details;
+          // social_links может прийти как строка из JSON
+          let social_links = emptyDetails.social_links;
+          if (loadedDetails.social_links) {
+            if (typeof loadedDetails.social_links === "string") {
+              try { social_links = JSON.parse(loadedDetails.social_links); } catch {}
+            } else {
+              social_links = { ...emptyDetails.social_links, ...loadedDetails.social_links };
+            }
+          }
           setDetails({
             ...emptyDetails,
-            ...detailsData.details,
+            ...loadedDetails,
+            social_links,
             email,
           });
         }
@@ -140,7 +199,11 @@ export default function ProfilePage() {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const isEmailStep = current.key === "email";
   const isEmailValid = emailRegex.test(currentValue.trim().toLowerCase());
-  const canGoNext = isEmailStep ? isEmailValid : Boolean(currentValue.trim());
+  const PLATFORMS = ["Telegram", "Instagram", "YouTube", "ВКонтакте", "TikTok", "Facebook", "Сайт", "Email-рассылка"];
+  const platformLinkMap: Record<string, keyof typeof details.social_links> = { "Telegram": "telegram", "Instagram": "instagram", "YouTube": "youtube", "ВКонтакте": "vk", "TikTok": "tiktok", "Facebook": "other", "Сайт": "site", "Email-рассылка": "other" };
+  const selectedPlatforms = current.key === "platform" ? currentValue.split(",").map(s => s.trim()).filter(p => PLATFORMS.includes(p)) : [];
+  const allLinksfilled = selectedPlatforms.every(p => (details.social_links[platformLinkMap[p]] || "").trim().length > 3);
+  const canGoNext = isEmailStep ? isEmailValid : current.key === "platform" ? Boolean(currentValue.trim()) && allLinksfilled : current.key === "monthly_goal" || current.key === "blocker" ? currentValue.trim().length >= 20 : Boolean(currentValue.trim());
 
   const uploadAvatar = (file?: File) => {
     if (!file) return;
@@ -158,7 +221,7 @@ export default function ProfilePage() {
     const normalizedEmail = answers.email.trim().toLowerCase();
 
     if (!normalizedEmail || !normalizedEmail.includes("@")) {
-      alert("Введите корректный email. Он нужен, чтобы сохранить профиль.");
+      alert("Введите корректный email. Он нужен, чтобы сохранить профиль");
       const emailStep = basicQuestions.findIndex((item) => item.key === "email");
       if (emailStep >= 0) {
         setStep(emailStep);
@@ -181,19 +244,32 @@ export default function ProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
+      if (!res.ok) throw new Error(await res.text());
+      // Сохраняем social_links если они есть
+      const hasLinks = Object.values(details.social_links).some(v => v.trim().length > 3);
+      if (hasLinks) {
+        const detailsPayload = {
+          ...details,
+          email: normalizedEmail,
+          social_links: JSON.stringify(details.social_links),
+        };
+        await fetch(`${API_BASE}/profile-details`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(detailsPayload),
+        });
+      }
       if (!res.ok) throw new Error(await res.text());
 
       setBasicDone(true);
       setDetailsOpen(true);
     } catch (e) {
       console.error(e);
-      alert("Не удалось сохранить профиль. Проверь backend.");
+      alert("Не удалось сохранить профиль. Проверь backend");
     } finally {
       setSaving(false);
     }
   };
-
   const nextBasic = () => {
     if (!canGoNext) {
       if (current.key === "email") {
@@ -201,7 +277,17 @@ export default function ProfilePage() {
       }
       return;
     }
-
+    if (editMode) { saveBasic(); setEditMode(false); return; }
+    if (current.key === "platform") {
+      const selected = answers.platform.split(",").map(s => s.trim()).filter(Boolean);
+      if (selected.length >= 2) {
+        setShowPrimaryPlatform(true);
+        return;
+      }
+      if (selected.length === 1) {
+        setAnswers(prev => ({ ...prev, primary_platform: selected[0] }));
+      }
+    }
     if (step < basicQuestions.length - 1) {
       setStep(step + 1);
       return;
@@ -215,7 +301,7 @@ export default function ProfilePage() {
 
     const email = answers.email || localStorage.getItem("lesik_email") || "";
     if (!email) {
-      alert("Сначала укажите корректный email.");
+      alert("Сначала укажите корректный email");
       return;
     }
 
@@ -243,7 +329,7 @@ export default function ProfilePage() {
       }));
     } catch (e) {
       console.error(e);
-      alert("Не удалось разобрать файл. Проверьте backend и OPENAI_API_KEY.");
+      alert("Не удалось разобрать файл. Проверьте backend и OPENAI_API_KEY");
     } finally {
       setAudienceUploading(false);
     }
@@ -253,7 +339,7 @@ export default function ProfilePage() {
   const runAudienceAiAnalysis = async (nextAnswers?: { question: string; answer: string }[]) => {
     const email = answers.email || localStorage.getItem("lesik_email") || "";
     if (!email) {
-      alert("Сначала укажите корректный email.");
+      alert("Сначала укажите корректный email");
       return;
     }
 
@@ -285,7 +371,7 @@ export default function ProfilePage() {
       }
     } catch (e) {
       console.error(e);
-      alert("Не удалось запустить ИИ-анализ аудитории.");
+      alert("Не удалось запустить ИИ-анализ аудитории");
     } finally {
       setAudienceAiLoading(false);
     }
@@ -307,15 +393,39 @@ export default function ProfilePage() {
     await runAudienceAiAnalysis(next);
   };
 
-  const saveAudienceAiDraft = () => {
+  const saveAudienceAiDraft = async () => {
     if (!audienceAiDraft.trim()) return;
 
-    setDetails((prev) => ({
-      ...prev,
+    const updatedDetails = {
+      ...details,
       audience_analysis: audienceAiDraft,
-    }));
+      email: answers.email || localStorage.getItem("lesik_email") || "",
+    };
 
-    setAudienceAiOpen(false);
+    setDetails(updatedDetails);
+    setSaving(true);
+
+    try {
+      const payload = {
+        ...updatedDetails,
+        social_links: typeof updatedDetails.social_links === "object" ? JSON.stringify(updatedDetails.social_links) : updatedDetails.social_links,
+      };
+
+      const res = await fetch(`${API_BASE}/profile-details`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      setAudienceAiOpen(false);
+    } catch (e) {
+      console.error(e);
+      alert("Не удалось сохранить анализ аудитории. Попробуйте ещё раз.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const saveDetails = async ({
@@ -336,6 +446,7 @@ export default function ProfilePage() {
       const payload = {
         ...details,
         email: answers.email || localStorage.getItem("lesik_email") || "",
+        social_links: typeof details.social_links === "object" ? JSON.stringify(details.social_links) : details.social_links,
       };
 
       const res = await fetch(`${API_BASE}/profile-details`, {
@@ -344,9 +455,8 @@ export default function ProfilePage() {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error(await res.text());
+      setDetails({ ...details, email: answers.email || localStorage.getItem("lesik_email") || "" });
 
-      setDetails(payload);
       if (closeDetails) {
         setDetailsOpen(false);
       }
@@ -356,7 +466,7 @@ export default function ProfilePage() {
       return true;
     } catch (e) {
       console.error(e);
-      alert("Не удалось сохранить расширенный профиль.");
+      alert("Не удалось сохранить расширенный профиль");
       return false;
     } finally {
       setSaving(false);
@@ -369,33 +479,38 @@ export default function ProfilePage() {
   };
 
   const audienceReady = details.audience_analysis.trim().length > 20;
-  const platformsReady = details.platforms.length > 0;
+  const platformsReady = details.platforms.length > 0 || Boolean(answers.platform.trim());
   const productReady =
     details.product_status === "Есть продукт"
       ? Boolean(details.product_name.trim() && details.product_description.trim())
-      : Boolean(details.product_ideas_request.trim());
+      : Boolean(details.product_status.trim());
   const openBasicQuestion = (questionIndex: number) => {
     setStep(questionIndex);
     setBasicDone(false);
+    setEditMode(true);
   };
 
   if (!introAccepted && !basicDone) {
     return (
       <section className="profile-page profile-center">
         <div className="profile-question-card profile-intro-card">
-          <p className="eyebrow">Перед стартом</p>
-          <h1>Профиль нужен, чтобы ЛЕСik думал точнее</h1>
+          <h1>Профиль нужен, чтобы ЛЕС<span className="brand-ik">ik</span> думал точнее</h1>
           <p>
             Мы соберём базу: кто вы, какая ниша, цель, препятствие и где вы ведёте контент.
-            После этого можно будет перейти к аудитории, продукту и карте контента.
+            После этого можно будет перейти к аудитории, продукту и карте контента
           </p>
-
-          <label className="privacy-check">
-            <input type="checkbox" onChange={(e) => setIntroAccepted(e.target.checked)} />
-            <span>Я согласен с политикой конфиденциальности и обработкой данных</span>
-          </label>
-
-          <button type="button" disabled={!introAccepted}>
+          <div className="privacy-check">
+            <input
+              type="checkbox"
+              id="privacy-cb"
+              checked={privacyChecked}
+              onChange={(e) => setPrivacyChecked(e.target.checked)}
+            />
+            <label htmlFor="privacy-cb">
+              <span>Соглашаюсь с политикой конфиденциальности и обработкой данных</span>
+            </label>
+          </div>
+          <button type="button" disabled={!privacyChecked} onClick={() => setIntroAccepted(true)}>
             Начать заполнение
           </button>
         </div>
@@ -403,6 +518,39 @@ export default function ProfilePage() {
     );
   }
 
+  if (showPrimaryPlatform) {
+    const selectedList = answers.platform.split(",").map(s => s.trim()).filter(Boolean);
+    return (
+      <section className="profile-page profile-center">
+        <div className="profile-question-card">
+          <div className="profile-progress">
+            <span>Уточнение</span>
+            <b>⭐</b>
+          </div>
+          <h1>Какая площадка главная?</h1>
+          <div className="platform-grid">
+            {selectedList.map((pl) => (
+              <label key={pl} className="platform-pill">
+                <input
+                  type="radio"
+                  name="primary_platform"
+                  checked={answers.primary_platform === pl}
+                  onChange={() => setAnswers(prev => ({ ...prev, primary_platform: pl }))}
+                />
+                <span>{pl}</span>
+              </label>
+            ))}
+          </div>
+          <button type="button" disabled={!answers.primary_platform} onClick={() => { setShowPrimaryPlatform(false); setStep(step + 1); }}>
+            Дальше
+          </button>
+          <button className="back-button" type="button" onClick={() => setShowPrimaryPlatform(false)}>
+            Назад
+          </button>
+        </div>
+      </section>
+    );
+  }
   if (!basicDone) {
     return (
       <section className="profile-page profile-center">
@@ -418,21 +566,114 @@ export default function ProfilePage() {
 
           <h1>{current.title}</h1>
 
-          <input
-            autoFocus
-            type={current.key === "email" ? "email" : "text"}
-            value={currentValue}
-            placeholder={current.placeholder}
-            onChange={(e) =>
-              setAnswers((prev) => ({
-                ...prev,
-                [current.key]: e.target.value,
-              }))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "Enter") nextBasic();
-            }}
-          />
+          {current.key === "client_type" ? (
+            <div className="platform-grid">
+              {["Эксперт", "Блогер", "Онлайн-школа", "Предприниматель", "Фрилансер"].map((ct) => (
+                <label key={ct} className="platform-pill">
+                  <input
+                    type="checkbox"
+                    checked={currentValue === ct}
+                    onChange={() =>
+                      setAnswers((prev) => ({ ...prev, client_type: ct }))
+                    }
+                  />
+                  <span>{ct}</span>
+                </label>
+              ))}
+              <input
+                type="text"
+                placeholder="Другое..."
+                value={!["Эксперт", "Блогер", "Онлайн-школа", "Предприниматель", "Фрилансер"].includes(currentValue) ? currentValue : ""}
+                onChange={(e) =>
+                  setAnswers((prev) => ({ ...prev, client_type: e.target.value }))
+                }
+              />
+            </div>
+          ) : current.key === "niche" ? (
+            <div className="platform-grid">
+              {["Психология", "Английский язык", "Чат-боты", "Фитнес / здоровье", "Маркетинг", "Бизнес / финансы", "Красота / стиль"].map((n) => (
+                <label key={n} className="platform-pill">
+                  <input
+                    type="checkbox"
+                    checked={currentValue === n}
+                    onChange={() =>
+                      setAnswers((prev) => ({ ...prev, niche: n }))
+                    }
+                  />
+                  <span>{n}</span>
+                </label>
+              ))}
+              <input
+                type="text"
+                placeholder="Другое..."
+                value={!["Психология", "Английский язык", "Чат-боты", "Фитнес / здоровье", "Маркетинг", "Бизнес / финансы", "Красота / стиль"].includes(currentValue) ? currentValue : ""}
+                onChange={(e) =>
+                  setAnswers((prev) => ({ ...prev, niche: e.target.value }))
+                }
+              />
+            </div>
+          ) : current.key === "platform" ? (
+            <div className="platform-grid">
+              {["Telegram", "Instagram", "YouTube", "ВКонтакте", "TikTok", "Facebook", "Сайт", "Email-рассылка"].map((pl) => {
+                const PLATFORMS = ["Telegram", "Instagram", "YouTube", "ВКонтакте", "TikTok", "Facebook", "Сайт", "Email-рассылка"];
+                const selected = currentValue.split(",").map(s => s.trim()).filter(Boolean);
+                const isChecked = selected.includes(pl);
+                const linkKey = pl.toLowerCase().replace("вконтакте", "vk").replace("сайт", "site").replace("email-рассылка", "other") as keyof typeof details.social_links;
+                return (
+                  <div key={pl}>
+                    <label className="platform-pill">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={(e) => {
+                          const current_list = selected.filter(p => PLATFORMS.includes(p));
+                          const updated = e.target.checked ? [...current_list, pl] : current_list.filter(p => p !== pl);
+                          const custom = selected.filter(p => !PLATFORMS.includes(p)).join(", ");
+                          setAnswers((prev) => ({ ...prev, platform: [...updated, ...(custom ? [custom] : [])].join(", ") }));
+                        }}
+                      />
+                      <span>{pl}</span>
+                    </label>
+                    {isChecked && (
+                      <input
+                        type="url"
+                        className="platform-link-input"
+                        placeholder={`Ссылка на ${pl}...`}
+                        value={details.social_links[linkKey] || ""}
+                        onChange={(e) => setDetails((prev) => ({ ...prev, social_links: { ...prev.social_links, [linkKey]: e.target.value } }))}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+              <input
+                type="text"
+                placeholder="Другое..."
+                value={currentValue.split(",").map(s => s.trim()).filter(p => !["Telegram", "Instagram", "YouTube", "ВКонтакте", "TikTok", "Facebook", "Сайт", "Email-рассылка"].includes(p)).join(", ")}
+                onChange={(e) => {
+                  const selected = currentValue.split(",").map(s => s.trim()).filter(p => ["Telegram", "Instagram", "YouTube", "ВКонтакте", "TikTok", "Facebook", "Сайт", "Email-рассылка"].includes(p));
+                  const updated = e.target.value.trim() ? [...selected, e.target.value] : selected;
+                  setAnswers((prev) => ({ ...prev, platform: updated.join(", ") }));
+                }}
+              />
+            </div>
+          ) : (
+            <input
+              autoFocus
+              type={current.key === "email" ? "email" : "text"}
+              value={currentValue}
+              placeholder={current.placeholder}
+              onChange={(e) =>
+                setAnswers((prev) => ({
+                  ...prev,
+                  [current.key]: e.target.value,
+                }))
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") nextBasic();
+              }}
+            />
+          )}
 
           {current.key === "email" && currentValue.trim() && !isEmailValid && (
             <p className="profile-email-error">
@@ -445,7 +686,7 @@ export default function ProfilePage() {
           </button>
 
           {step > 0 && (
-            <button className="back-button" type="button" onClick={() => setStep(step - 1)}>
+            <button className="back-button" type="button" onClick={() => { if (editMode) { setBasicDone(true); setEditMode(false); } else { setStep(step - 1); } }}>
               Назад
             </button>
           )}
@@ -457,16 +698,21 @@ export default function ProfilePage() {
   return (
     <section className="profile-page">
       <div className="client-card profile-control-card">
-        <div className="client-card-top profile-card-header">
-          <label className="home-avatar uploadable-avatar">
-            {avatar ? <img src={avatar} alt="" /> : null}
+        <div className="tg-profile-header">
+          <button type="button" className="tg-profile-edit-btn" onClick={() => openBasicQuestion(0)}>✎</button>
+          <label className="tg-avatar uploadable-avatar">
+            {avatar
+              ? <img src={avatar} alt="" />
+              : <span>{answers.name ? answers.name[0].toUpperCase() : "?"}</span>
+            }
             <input type="file" accept="image/*" onChange={(e) => uploadAvatar(e.target.files?.[0])} />
           </label>
-
-          <div>
-            <p className="eyebrow">Профиль клиента</p>
-            <h1>{answers.name}</h1>
-            <p className="client-email">{answers.email}</p>
+          <h1 className="tg-profile-name">{answers.name}</h1>
+          <p className="tg-profile-email">{answers.email}</p>
+          <div className="tg-profile-tags">
+            {answers.client_type && <span className="tg-profile-tag">{answers.client_type}</span>}
+            {answers.niche && <span className="tg-profile-tag">{answers.niche}</span>}
+            {answers.platform && answers.platform.split(",").map(p => p.trim()).filter(Boolean).map(p => <span key={p} className="tg-profile-tag">{p}</span>)}
           </div>
         </div>
 
@@ -476,7 +722,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 className="status-help"
-                data-tooltip="Это нужно для точного позиционирования клиента. Заполните роль в базовых ответах: эксперт, предприниматель, школа и т.д."
+                data-tooltip="Это нужно для точного позиционирования клиента. Заполните роль в базовых ответах: эксперт, предприниматель, школа и т.д"
                 aria-label="Как заполнить поле кто клиент"
               >
                 ?
@@ -494,7 +740,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 className="status-help"
-                data-tooltip="Ниша нужна, чтобы ЛЕСik предлагал релевантные идеи и темы. Впишите конкретную специализацию клиента."
+                data-tooltip="Ниша помогает ЛЕСik подбирать точные идеи и темы"
                 aria-label="Как заполнить поле ниша"
               >
                 ?
@@ -512,7 +758,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 className="status-help"
-                data-tooltip="Площадки показывают, где уже есть трафик. Укажите текущие каналы в базовых ответах: Telegram, Instagram, сайт и т.д."
+                data-tooltip="Площадки показывают, где уже есть трафик. Укажите текущие каналы в базовых ответах: Telegram, Instagram, сайт и т.д"
                 aria-label="Как заполнить поле площадки сейчас"
               >
                 ?
@@ -523,21 +769,13 @@ export default function ProfilePage() {
             </div>
             <span>Площадки сейчас</span>
             <b>{answers.platform}</b>
+            {answers.primary_platform && <span style={{fontSize:"12px",color:"#1a7a3a",display:"block",marginTop:"4px"}}>⭐ Главная: {answers.primary_platform}</span>}
           </div>
 
           <div className="client-status">
             <div className="client-status-actions">
-              <button
-                type="button"
-                className="status-help"
-                data-tooltip="Это нужно, чтобы не пропускать напоминания и отчёты. Выберите каналы получения уведомлений в настройках."
-                aria-label="Как заполнить уведомления"
-              >
-                ?
-              </button>
-              <button type="button" className="status-edit" onClick={() => setNotifyOpen(true)} aria-label="Редактировать уведомления">
-                ✎
-              </button>
+              <button type="button" className="status-help" data-tooltip="Выберите куда направлять уведомления" aria-label="Про уведомления">?</button>
+              <button type="button" className="status-edit" onClick={() => setNotifyOpen(true)} aria-label="Редактировать уведомления">✎</button>
             </div>
             <span>Уведомления</span>
             <b>
@@ -547,13 +785,44 @@ export default function ProfilePage() {
               ].filter(Boolean).join(", ") || "Не выбрано"}
             </b>
           </div>
-
+          {/* LESIK_PROFILE_PAGE_TEST_RESULT_CARD - standalone */}
+          <div className="client-status profile-test-result-profile-card">
+            <div className="client-status-actions">
+              <button type="button" className="status-help" aria-label="Как работает результат теста">
+                ?
+              </button>
+            </div>
+            <span>Результат теста</span>
+            {profileTestResult ? (
+              <>
+                <strong>{profileTestResult.label}</strong>
+                <p className="profile-test-result-profile-desc">
+                  {profileTestResult.desc}
+                </p>
+                <div className="profile-test-result-profile-tags">
+                  {(profileTestResult.focus || []).map((item: string) => (
+                    <em key={item}>{item}</em>
+                  ))}
+                </div>
+                <small>
+                  Счёт: {profileTestResult.score || 0} из {profileTestResult.maxScore || 50} · прогрев: {profileTestResult.days || "—"}
+                </small>
+              </>
+            ) : (
+              <>
+                <strong>Тест ещё не пройден</strong>
+                <p className="profile-test-result-profile-desc">
+                  После прохождения теста здесь появятся акценты для карты контента.
+                </p>
+              </>
+            )}
+          </div>
           <div className="client-status">
             <div className="client-status-actions">
               <button
                 type="button"
                 className="status-help"
-                data-tooltip="Тариф влияет на доступные функции. Выберите FREE или PRO и для PRO укажите оплаченный период."
+                data-tooltip="Тариф влияет на доступные функции"
                 aria-label="Как заполнить тариф"
               >
                 ?
@@ -577,7 +846,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 className="readiness-help"
-                title="Заполните анализ аудитории вручную или загрузите файл в блоке «Аудитория и площадки»."
+                data-tooltip="Заполните анализ аудитории или загрузите файл"
                 aria-label="Как заполнить анализ аудитории"
               >
                 ?
@@ -591,41 +860,15 @@ export default function ProfilePage() {
                 ✎
               </button>
             </div>
-            <span>01</span>
-            <h2>Анализ аудитории</h2>
+            <div className="readiness-card-header"><span>1</span><h2>Анализ аудитории</h2></div>
             <p>
               {audienceReady
-                ? "Анализ аудитории заполнен. Можно подключать анализ."
-                : "Обязательно заполните анализ аудитории или вставьте распаковку клиента."}
+                ? "Анализ аудитории заполнен — можно подключать анализ"
+                : "Обязательно заполните анализ аудитории или вставьте распаковку клиента"}
             </p>
-          </article>
-
-          <article className={platformsReady ? "readiness-card done" : "readiness-card danger"}>
-            <div className="readiness-card-actions">
-              <button
-                type="button"
-                className="readiness-help"
-                title="Откройте «Аудитория и площадки» и выберите платформы, где будете развиваться."
-                aria-label="Как заполнить площадки развития"
-              >
-                ?
-              </button>
-              <button
-                type="button"
-                className="readiness-edit"
-                onClick={() => setDetailsOpen(true)}
-                aria-label="Редактировать площадки развития"
-              >
-                ✎
-              </button>
-            </div>
-            <span>02</span>
-            <h2>Площадки развития</h2>
-            <p>
-              {platformsReady
-                ? details.platforms.join(", ")
-                : "Выберите площадки, где клиент будет развиваться."}
-            </p>
+            <button type="button" className="audience-ai-start-button" style={{marginTop:"10px",fontSize:"13px",minHeight:"36px"}} onClick={() => { alert("😈 Потратьте время\n\nЕрунда здесь = ерунда в воронке\nЕрунда в воронке = нет продаж"); setAudienceAiOpen(true); }}>
+              {audienceReady ? "Обновить анализ" : "Пройти интервью"}
+            </button>
           </article>
 
           <article className={productReady ? "readiness-card done" : "readiness-card danger"}>
@@ -633,7 +876,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 className="readiness-help"
-                title="В блоке «Вопросы по продукту» выберите статус продукта и заполните поля."
+                data-tooltip="Укажите статус и описание вашего продукта"
                 aria-label="Как заполнить продукт"
               >
                 ?
@@ -647,13 +890,54 @@ export default function ProfilePage() {
                 ✎
               </button>
             </div>
-            <span>03</span>
-            <h2>Продукт</h2>
+            <div className="readiness-card-header"><span>2</span><h2>Продукт</h2></div>
             <p>
               {productReady
                 ? details.product_status
-                : "Нужно понять: продукт уже есть или его нужно собрать."}
+                : "Нужно понять: продукт уже есть или его нужно собрать"}
             </p>
+            {!productReady && (
+              <button type="button" className="audience-ai-start-button" style={{marginTop:"10px",fontSize:"13px",minHeight:"36px"}} onClick={() => setProductOpen(true)}>
+                Заполнить продукт
+              </button>
+            )}
+          </article>
+
+          <article className={Object.values(details.social_links).some(v => v.trim().length > 5) ? "readiness-card done" : "readiness-card danger"}>
+            <div className="readiness-card-actions">
+              <button type="button" className="readiness-help" data-tooltip="Добавьте ссылки на активные каналы" aria-label="Как заполнить соцсети">?</button>
+              <button type="button" className="readiness-edit" onClick={() => setSocialOpen(true)} aria-label="Редактировать соцсети">✎</button>
+            </div>
+            <div className="readiness-card-header"><span>3</span><h2>Соцсети</h2></div>
+            <p>
+              {Object.values(details.social_links).some(v => v.trim().length > 5)
+                ? Object.entries(details.social_links).filter(([,v]) => v.trim()).map(([k]) => k).join(", ")
+                : "Добавьте ссылки на ваши активные каналы"}
+            </p>
+            {!Object.values(details.social_links).some(v => v.trim().length > 5) && (
+              <button type="button" className="audience-ai-start-button" style={{marginTop:"10px",fontSize:"13px",minHeight:"36px"}} onClick={() => setSocialOpen(true)}>
+                Добавить ссылки
+              </button>
+            )}
+          </article>
+
+          <article className={(details.notify_email || details.notify_telegram) ? "readiness-card done" : "readiness-card danger"}>
+            <div className="readiness-card-actions">
+              <button type="button" className="readiness-help" data-tooltip="Выберите куда направлять уведомления" aria-label="Как заполнить уведомления">?</button>
+              <button type="button" className="readiness-edit" onClick={() => setNotifyOpen(true)} aria-label="Редактировать уведомления">✎</button>
+            </div>
+            <div className="readiness-card-header"><span>4</span><h2>Уведомления</h2></div>
+            <p>
+              {[
+                details.notify_email ? "Email" : "",
+                details.notify_telegram ? "Telegram" : "",
+              ].filter(Boolean).join(", ") || "Выберите, куда присылать уведомления"}
+            </p>
+            {!(details.notify_email || details.notify_telegram) && (
+              <button type="button" className="audience-ai-start-button" style={{marginTop:"10px",fontSize:"13px",minHeight:"36px"}} onClick={() => setNotifyOpen(true)}>
+                Настроить уведомления
+              </button>
+            )}
           </article>
         </div>
 
@@ -681,21 +965,23 @@ export default function ProfilePage() {
               <p>
                 После анализа аудитории и продукта сюда подключим агентов:
                 маркетолог, аналитик, продуктолог, редактор, продажник, сценарист,
-                упаковщик, стратег, критик и модератор идей.
-              </p>
+                упаковщик, стратег, критик и модератор идей</p>
             </div>
           </article>
         </div>
 
         <div className="client-actions profile-actions">
-          <button type="button" onClick={() => setDetailsOpen(true)}>
-            Заполнить анализ аудитории
+          <button type="button" className={audienceReady ? "secondary" : ""} onClick={() => { alert("😈 Потратьте время\n\nЕрунда здесь = ерунда в воронке\nЕрунда в воронке = нет продаж"); setDetailsOpen(true); }}>
+            {audienceReady ? "Обновить анализ аудитории" : "Заполнить анализ аудитории"}
           </button>
 
-          <button type="button" onClick={() => setProductOpen(true)}>
-            Вопросы по продукту
+          <button type="button" className={productReady ? "secondary" : ""} onClick={() => setProductOpen(true)}>
+            {productReady ? "Обновить вопросы по продукту" : "Вопросы по продукту"}
           </button>
 
+          <button type="button" className="secondary" onClick={() => setSocialOpen(true)}>
+            Ссылки на соцсети
+          </button>
           <button type="button" className="secondary" onClick={() => setNotifyOpen(true)}>
             Куда направлять уведомления
           </button>
@@ -709,6 +995,47 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {socialOpen && (
+        <div className="profile-modal-backdrop" onClick={() => setSocialOpen(false)}>
+          <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="profile-modal-head">
+              <div>
+                
+                <h2>Ссылки на ваши каналы</h2>
+              </div>
+              <button type="button" onClick={() => setSocialOpen(false)}>×</button>
+            </div>
+            <p className="profile-modal-text">Вставьте ссылки на ваши активные каналы. ЛЕС<span className="brand-ik">ik</span> будет использовать их для анализа</p>
+            <div className="social-links-grid">
+              {([
+                { key: "telegram", label: "Telegram", placeholder: "https://t.me/username", icon: "✈️" },
+                { key: "instagram", label: "Instagram", placeholder: "https://instagram.com/username", icon: "📸" },
+                { key: "youtube", label: "YouTube", placeholder: "https://youtube.com/@channel", icon: "▶️" },
+                { key: "vk", label: "ВКонтакте", placeholder: "https://vk.com/username", icon: "🔵" },
+                { key: "tiktok", label: "TikTok", placeholder: "https://tiktok.com/@username", icon: "🎵" },
+                { key: "site", label: "Сайт", placeholder: "https://yoursite.ru", icon: "🌐" },
+                { key: "other", label: "Другое", placeholder: "https://...", icon: "🔗" },
+              ] as { key: keyof typeof details.social_links; label: string; placeholder: string; icon: string }[]).map(({ key, label, placeholder, icon }) => (
+                <div key={key} className="social-link-row">
+                  <span className="social-link-icon">{icon}</span>
+                  <div className="social-link-field">
+                    <span className="social-link-label">{label}</span>
+                    <input
+                      type="url"
+                      value={details.social_links[key]}
+                      placeholder={placeholder}
+                      onChange={(e) => setDetails((prev) => ({ ...prev, social_links: { ...prev.social_links, [key]: e.target.value } }))}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button type="button" className="modal-save-button" onClick={() => { void saveDetails({ closeDetails: false }); setSocialOpen(false); }} disabled={saving}>
+              {saving ? "Сохраняю..." : "Сохранить ссылки"}
+            </button>
+          </div>
+        </div>
+      )}
       {notifyOpen && (
         <div className="profile-modal-backdrop" onClick={() => setNotifyOpen(false)}>
           <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
@@ -721,8 +1048,7 @@ export default function ProfilePage() {
             </div>
 
             <p className="profile-modal-text">
-              Выберите, где вы будете получать уведомления.
-            </p>
+              Выберите, где вы будете получать уведомления</p>
 
             <label className="profile-check-row">
               <input
@@ -746,7 +1072,7 @@ export default function ProfilePage() {
               <div className="telegram-connect-box">
                 <div>
                   <strong>Подключите Telegram-бота</strong>
-                  <p>Перейдите в бота и нажмите Start. После подключения ЛЕСik сможет присылать напоминания.</p>
+                  <p>Перейдите в бота и нажмите Start. После подключения ЛЕС<span className="brand-ik">ik</span> сможет присылать напоминания</p>
                 </div>
                 <a href={process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL || "https://t.me/"} target="_blank" rel="noreferrer">
                   Перейти в бота
@@ -762,123 +1088,44 @@ export default function ProfilePage() {
       )}
 
 
-      {audienceAiOpen && (
-        <div className="profile-modal-backdrop" onClick={() => setAudienceAiOpen(false)}>
-          <div className="profile-modal profile-modal-large audience-ai-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="profile-modal-head">
-              <div>
-                <p className="eyebrow">Помощник</p>
-                <h2>Интервью по аудитории</h2>
-              </div>
-              <button type="button" onClick={() => setAudienceAiOpen(false)}>×</button>
-            </div>
-
-            <p className="profile-modal-text">
-              ИИ задаст уточняющие вопросы по вашей аудитории и подготовит финальный черновик анализа.
-            </p>
-
-            {audienceAiLoading && (
-              <div className="audience-ai-state">
-                Формирую следующий вопрос...
-              </div>
-            )}
-
-            {!audienceAiLoading && audienceAiQuestion && (
-              <div className="audience-ai-question-box">
-                <h3>{audienceAiQuestion}</h3>
-                <textarea
-                  value={audienceAiAnswer}
-                  placeholder="Введите ответ на вопрос..."
-                  onChange={(e) => setAudienceAiAnswer(e.target.value)}
-                />
-                <button type="button" className="modal-save-button" onClick={answerAudienceAiQuestion}>
-                  Отправить ответ
-                </button>
-              </div>
-            )}
-
-            {!audienceAiLoading && audienceAiDraft && (
-              <div className="audience-ai-result-box">
-                <h3>Черновик анализа аудитории</h3>
-                <textarea
-                  value={audienceAiDraft}
-                  onChange={(e) => setAudienceAiDraft(e.target.value)}
-                />
-                <div className="audience-ai-actions">
-                  <button type="button" className="modal-save-button" onClick={saveAudienceAiDraft}>
-                    Сохранить в профиль
-                  </button>
-                  <button type="button" className="modal-secondary-button" onClick={() => setAudienceAiOpen(false)}>
-                    Закрыть
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {detailsOpen && (
         <div className="profile-modal-backdrop" onClick={() => setDetailsOpen(false)}>
           <div className="profile-modal profile-modal-large" onClick={(e) => e.stopPropagation()}>
             <div className="profile-modal-head">
               <div>
-                <p className="eyebrow">Глубокий профиль</p>
+                
                 <h2>Аудитория и площадки</h2>
               </div>
               <button type="button" onClick={() => setDetailsOpen(false)}>×</button>
             </div>
 
             <div className="profile-form-block">
-              <h3>1. Тариф — обязательно</h3>
-              <p>Укажите текущий тариф клиента. Для PRO обязательно дата оплаченного периода.</p>
-              <div className="product-status-row">
-                {[
-                  { key: "free", label: "FREE" },
-                  { key: "pro", label: "PRO" },
-                ].map((tariff) => (
-                  <button
-                    key={tariff.key}
-                    type="button"
-                    className={details.tariff_plan === tariff.key ? "selected" : ""}
-                    onClick={() => setDetails((prev) => ({ ...prev, tariff_plan: tariff.key }))}
-                  >
-                    {tariff.label}
-                  </button>
-                ))}
+              <h3><span className="readiness-card-header"><span>1</span>Тариф</span></h3>
+              <p>Тариф изменяется только после оплаты</p>
+              <div className="tariff-display">
+                <span className={details.tariff_plan === "pro" ? "tariff-badge pro" : "tariff-badge free"}>
+                  {details.tariff_plan === "pro" ? `PRO${details.pro_paid_until ? ` до ${details.pro_paid_until}` : ""}` : "FREE"}
+                </span>
               </div>
-
-              {details.tariff_plan === "pro" && (
-                <>
-                  <h3>Оплачено до</h3>
-                  <input
-                    type="date"
-                    value={details.pro_paid_until || ""}
-                    onChange={(e) => setDetails((prev) => ({ ...prev, pro_paid_until: e.target.value }))}
-                  />
-                </>
-              )}
             </div>
 
             <div className="profile-form-block">
-              <h3>2. Анализ аудитории — обязательно</h3>
+              <h3><span className="readiness-card-header"><span>2</span>Анализ аудитории</span></h3>
               <p>
                 Вставьте сюда распаковку аудитории: кто эти люди, что болит,
-                чего хотят, почему подписываются, почему покупают или сомневаются.
-              </p>
-              <textarea
-                value={details.audience_analysis}
-                placeholder="Например: аудитория — эксперты и онлайн-школы, хотят системно получать заявки..."
-                onChange={(e) => setDetails((prev) => ({ ...prev, audience_analysis: e.target.value }))}
-              />
+                чего хотят, почему подписываются, почему покупают или сомневаются</p>
+              {details.audience_analysis && (
+                <textarea
+                  value={details.audience_analysis}
+                  placeholder="Например: аудитория — эксперты и онлайн-школы, хотят системно получать заявки..."
+                  onChange={(e) => setDetails((prev) => ({ ...prev, audience_analysis: e.target.value }))}
+                />
+              )}
               
               <div className="audience-upload-box">
                 <div>
                   <h4>Или загрузите файл для разбора</h4>
-                  <p>
-                    Подойдут скриншоты, PDF, DOCX, TXT, аудио. GPT/Vision извлечёт смысл
-                    и заполнит анализ аудитории.
-                  </p>
+                  <p>Подойдут скриншоты, PDF, DOCX, TXT, аудио</p>
                 </div>
 
                 <label className="audience-upload-button">
@@ -897,19 +1144,117 @@ export default function ProfilePage() {
                 className="audience-ai-start-button"
                 onClick={() => {
                   setAudienceAiOpen(true);
-                  setAudienceAiQuestion("");
-                  setAudienceAiDraft("");
-                  setAudienceAiAnswers([]);
-                  runAudienceAiAnalysis([]);
                 }}
               >
                 Запустить интервью по аудитории
               </button>
             </div>
-
             <button type="button" className="modal-save-button" onClick={() => void saveDetails()} disabled={saving}>
               {saving ? "Сохраняю..." : "Сохранить глубокий профиль"}
             </button>
+          </div>
+        </div>
+      )}
+
+      {audienceAiOpen && (
+        <div className="profile-modal-backdrop" onClick={() => setAudienceAiOpen(false)}>
+          <div className="profile-modal profile-modal-large audience-ai-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="profile-modal-head">
+              <div>
+                
+                <h2>Интервью по аудитории</h2>
+              </div>
+              <button type="button" onClick={() => setAudienceAiOpen(false)}>×</button>
+            </div>
+
+            <div className="profile-progress">
+              <span>Вопрос {audienceStep + 1} из {audienceQuestions.length}</span>
+              <b>{Math.round(((audienceStep + 1) / audienceQuestions.length) * 100)}%</b>
+            </div>
+            <div className="profile-progress-line">
+              <div style={{ width: `${Math.round(((audienceStep + 1) / audienceQuestions.length) * 100)}%` }} />
+            </div>
+
+            {toastMsg && (
+              <div className="audience-toast">{toastMsg}</div>
+            )}
+            {!audienceAiDraft ? (
+              <div className="audience-ai-question-box">
+                <h3>{audienceQuestions[audienceStep]}</h3>
+                <textarea
+                  value={audienceAiAnswers[audienceStep]?.answer || audienceAiAnswer}
+                  placeholder="Введите ответ..."
+                  onChange={(e) => {
+                    setAudienceAiAnswer(e.target.value);
+                    const updated = [...audienceAiAnswers];
+                    updated[audienceStep] = { question: audienceQuestions[audienceStep], answer: e.target.value };
+                    setAudienceAiAnswers(updated);
+                  }}
+                />
+                <button
+                  type="button"
+                  className="modal-save-button"
+                  disabled={audienceAiLoading}
+                  onClick={async () => {
+                    const val = (audienceAiAnswers[audienceStep]?.answer || audienceAiAnswer).trim();
+                    if (val.length < 25) {
+                      setToastMsg("Упс — слишком мало информации о любимом клиенте 😊 Расскажите подробнее!");
+      setTimeout(() => setToastMsg(""), 3000);
+                      return;
+                    }
+                    const current = audienceAiAnswers[audienceStep]?.answer || audienceAiAnswer;
+                    const updated = [...audienceAiAnswers];
+                    updated[audienceStep] = { question: audienceQuestions[audienceStep], answer: current.trim() };
+                    setAudienceAiAnswers(updated);
+                    setAudienceAiAnswer("");
+                    if (audienceStep < audienceQuestions.length - 1) {
+                      setAudienceStep(audienceStep + 1);
+                    } else {
+                      setAudienceAiLoading(true);
+                      await runAudienceAiAnalysis(updated);
+                      setAudienceAiLoading(false);
+                    }
+                  }}
+                >
+                  {audienceAiLoading ? "Анализирую..." : audienceStep < audienceQuestions.length - 1 ? "Дальше" : "Получить анализ"}
+                </button>
+                {audienceAiLoading && (
+                  <div className="analyzing-loader">
+                    <div className="fir-emoji-grow">🌲</div>
+                    <p>Анализирую ваши ответы — обычно 10–20 секунд</p>
+                  </div>
+                )}
+                {audienceStep > 0 && (
+                  <button type="button" className="back-button" onClick={() => { setAudienceStep(audienceStep - 1); setAudienceAiAnswer(audienceAiAnswers[audienceStep - 1]?.answer || ""); }}>
+                    Назад
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="audience-ai-result-box">
+                <h3>Анализ аудитории готов</h3>
+                <textarea
+                  value={audienceAiDraft}
+                  onChange={(e) => setAudienceAiDraft(e.target.value)}
+                />
+                <div className="audience-ai-actions">
+                  <button type="button" className="modal-save-button" onClick={saveAudienceAiDraft} disabled={saving}>
+                    {saving ? "Сохраняю..." : "Сохранить в профиль"}
+                  </button>
+                  <button type="button" className="modal-secondary-button" onClick={() => {
+                    setAudienceAiDraft("");
+                    setAudienceAiAnswers([]);
+                    setAudienceAiAnswer("");
+                    setAudienceStep(0);
+                  }}>
+                    Начать заново
+                  </button>
+                  <button type="button" className="modal-secondary-button" onClick={() => setAudienceAiOpen(false)}>
+                    Закрыть
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1064,8 +1409,7 @@ export default function ProfilePage() {
                   onChange={(e) => setDetails((prev) => ({ ...prev, product_ideas_request: e.target.value }))}
                 />
                 <p className="form-hint">
-                  Позже офис 10 агентов предложит варианты продукта и поможет развить идеи.
-                </p>
+                  Позже офис 10 агентов предложит варианты продукта и поможет развить идеи</p>
               </div>
             )}
 
