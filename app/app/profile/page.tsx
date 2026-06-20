@@ -519,8 +519,10 @@ export default function ProfilePage() {
   };
 
   const saveProductWithTelegramCheck = async () => {
+    const ok = await saveDetails({ closeDetails: false, closeProduct: true });
+    if (!ok) return;
+
     if (details.channel === "Telegram") {
-      setSaving(true);
       try {
         const email = answers.email || localStorage.getItem("lesik_email") || "";
         const res = await fetch(`${API_BASE}/profile-details/telegram`, {
@@ -537,22 +539,16 @@ export default function ProfilePage() {
         });
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
-          alert(errData.detail || "Не удалось сохранить блок Telegram. Проверьте поля.");
-          setSaving(false);
-          return;
+          alert(
+            "Профиль сохранён. Но для запуска Telegram-бота нужно доделать: " +
+            (errData.detail || "проверьте поля блока Telegram")
+          );
         }
       } catch (e) {
         console.error(e);
-        alert("Не удалось сохранить блок Telegram. Проверьте подключение.");
-        setSaving(false);
-        return;
       }
-      setSaving(false);
     }
-
-    await saveDetails({ closeDetails: false, closeProduct: true });
   };
-
   const saveNotify = async () => {
     await saveDetails({ closeDetails: false });
     setNotifyOpen(false);
@@ -1736,7 +1732,7 @@ export default function ProfilePage() {
               type="button"
               className="modal-save-button"
               onClick={() => void saveProductWithTelegramCheck()}
-              disabled={saving || !telegramBlockValid}
+              disabled={saving}
             >
               {saving ? "Сохраняю..." : "Сохранить ответы по продукту"}
             </button>

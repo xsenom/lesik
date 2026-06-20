@@ -52,6 +52,7 @@ type FunnelStage = {
 type Funnel = {
   summary: string;
   stages: FunnelStage[];
+  _source_snapshot?: Record<string, any>;
 };
 
 type DiscussSource =
@@ -918,6 +919,19 @@ export default function ContentMapPage() {
     setCalendarAiOpen(false);
   };
 
+  const techSetupPrices: Record<string, number> = {
+    Telegram: 18000,
+    Instagram: 12000,
+    YouTube: 9000,
+    VK: 9000,
+  };
+  const techSetupPrice = techSetupPrices[productChannel] || 9000;
+
+  const funnelDirty = Boolean(
+    funnel?._source_snapshot &&
+    JSON.stringify(funnel._source_snapshot) !== JSON.stringify(funnelSourceCurrent)
+  );
+
   if (profileExists === false) {
     return (
       <section className="map-page map-empty">
@@ -997,6 +1011,12 @@ export default function ContentMapPage() {
 
           {funnel && (
             <div className="funnel-stages">
+              {funnelDirty && (
+                <div className="funnel-dirty-banner">
+                  Данные продукта изменились — пересоберите воронку, чтобы тексты были актуальными.
+                </div>
+              )}
+
               <div className="funnel-summary-card">
                 <b>ВЫВОД</b>
                 <p>{funnel.summary}</p>
@@ -1009,13 +1029,27 @@ export default function ContentMapPage() {
                   {funnelLoading ? `Собираю... ${funnelProgress}%` : "Пересобрать воронку"}
                 </button>
               </div>
-
-
               <FunnelFlow
                 stages={funnel.stages}
                 copiedField={copiedField}
                 onCopy={copyToClipboard}
               />
+
+              <div className="funnel-order-card">
+                <b>ЗАКАЗАТЬ ПОД КЛЮЧ</b>
+                <p>Соберём этого бота технически: настроим кодовое слово, автоответы, выдачу лид-магнита и приём оплаты.</p>
+                <div className="funnel-order-price">
+                  от 4 500 ₽
+                </div>
+                <a
+                  href={process.env.NEXT_PUBLIC_TECH_ORDER_URL || "https://t.me/"}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="funnel-order-button"
+                >
+                  Заказать тех. сборку
+                </a>
+              </div>
             </div>
           )}
         </div>
