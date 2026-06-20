@@ -8,6 +8,7 @@ from openai import OpenAI
 import sqlite3
 import os
 import json
+import re
 import base64
 import tempfile
 import mimetypes
@@ -17,6 +18,7 @@ import uuid
 BASE_DIR = Path(__file__).parent
 DB_PATH = BASE_DIR / "lesik.db"
 PROMPT_PATH = BASE_DIR / "prompts" / "content_map.md"
+FUNNEL_PROMPT_PATH = BASE_DIR / "prompts" / "funnel.md"
 AI_ROLES_DIR = BASE_DIR / "prompts" / "ai_roles"
 
 AI_ROLE_FILES = {
@@ -65,6 +67,11 @@ class ContentMapSaveIn(BaseModel):
     map: dict
 
 
+class FunnelSaveIn(BaseModel):
+    email: EmailStr
+    funnel: dict
+
+
 class ContentMapDiscussIn(BaseModel):
     email: EmailStr
     item: dict
@@ -93,6 +100,28 @@ class ProfileDetailsIn(BaseModel):
     tariff_plan: str = "free"
     pro_paid_until: str = ""
     social_links: str = "{}"
+    channel: str = ""
+    price: float = 0
+    price_currency: str = "RUB"
+    keyword: str = ""
+    cta_text: str = ""
+    lead_magnet_title: str = ""
+    lead_magnet_file: str = ""
+    funnel_dirty: bool = False
+    bot_description_short: str = ""
+    privacy_policy_url: str = ""
+    offer_url: str = ""
+    entry_keyword_or_link: str = ""
+    entry_button_label: str = ""
+
+
+class TelegramBlockIn(BaseModel):
+    email: EmailStr
+    bot_description_short: str = ""
+    privacy_policy_url: str = ""
+    offer_url: str = ""
+    entry_keyword_or_link: str = ""
+    entry_button_label: str = ""
 
 
 class PaymentIn(BaseModel):
@@ -134,6 +163,16 @@ def init_db():
             email TEXT NOT NULL,
             profile_id INTEGER,
             map_json TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+        """)
+
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS funnels (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL,
+            profile_id INTEGER,
+            funnel_json TEXT NOT NULL,
             created_at TEXT NOT NULL
         )
         """)
@@ -488,6 +527,28 @@ def get_content_map_by_email(email: str):
     result["map"] = json.loads(result.pop("map_json"))
     return {"content_map": result}
 
+@app.get("/funnel/by-email")
+def get_funnel_by_email(email: str):
+    with db() as conn:
+        row = conn.execute(
+            """
+            SELECT id, email, profile_id, funnel_json, created_at
+            FROM funnels
+            WHERE email = ?
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (email.strip().lower(),),
+        ).fetchone()
+
+    if not row:
+        return {"funnel": None}
+
+    result = dict(row)
+    result["funnel"] = json.loads(result.pop("funnel_json"))
+    return {"funnel": result}
+
+
 @app.post("/content-map/generate")
 def generate_content_map(data: EmailIn):
     email = data.email.strip().lower()
@@ -604,6 +665,172 @@ def save_content_map(data: ContentMapSaveIn):
                 email,
                 row["profile_id"] if row else None,
                 json.dumps(data.map, ensure_ascii=False),
+                datetime.utcnow().isoformat(),
+            ),
+        )
+
+    return {"ok": True}
+
+
+@app.post("/funnel/generate")
+def generate_funnel(data: EmailIn):
+    email = data.email.strip().lower()
+
+    with db() as conn:
+        profile = conn.execute(
+            """
+            SELECT id, name, email, client_type, niche, platform, primary_platform, monthly_goal, blocker, created_at
+            FROM profiles
+            WHERE email = ?
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (email,),
+        ).fetchone()
+
+    if not profile:
+        raise HTTPException(status_code=404, detail="profile_not_found")
+
+    prompt = FUNNEL_PROMPT_PATH.read_text(encoding="utf-8")
+    profile_dict = dict(profile)
+
+    details_dict = {}
+    with db() as conn:
+        details_row = conn.execute(
+            """
+            SELECT details_json
+            FROM profile_details
+            WHERE email = ?
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (email,),
+        ).fetchone()
+    if details_row:
+        try:
+            details_dict = json.loads(details_row["details_json"])
+        except Exception:
+            details_dict = {}
+
+    channel = details_dict.get("channel", "")
+    keyword = (details_dict.get("keyword", "") or "").strip()
+    cta_text = (details_dict.get("cta_text", "") or "").strip() or "Хочу разобрать свою ситуацию"
+    price = details_dict.get("price", 0) or 0
+    price_currency = details_dict.get("price_currency", "RUB") or "RUB"
+    lead_magnet_title = (details_dict.get("lead_magnet_title", "") or "").strip()
+    lead_magnet_file = (details_dict.get("lead_magnet_file", "") or "").strip()
+    product_name = details_dict.get("product_name", "")
+
+    user_payload = {
+        "profile": profile_dict,
+        "audience_analysis": details_dict.get("audience_analysis", ""),
+        "product_status": details_dict.get("product_status", ""),
+        "product_name": product_name,
+        "product_description": details_dict.get("product_description", ""),
+        "why_buy": details_dict.get("why_buy", ""),
+        "why_not_buy": details_dict.get("why_not_buy", ""),
+        "social_links": details_dict.get("social_links", ""),
+        "platforms": details_dict.get("platforms", []),
+        "channel": channel,
+        "keyword": keyword,
+        "cta_text": cta_text,
+        "price": price,
+        "price_currency": price_currency,
+        "lead_magnet_title": lead_magnet_title,
+        "lead_magnet_file": lead_magnet_file,
+    }
+
+    if OPENAI_API_KEY and not OPENAI_API_KEY.startswith("вставь"):
+        client = OpenAI(api_key=OPENAI_API_KEY)
+        try:
+            response = client.chat.completions.create(
+                model=OPENAI_MODEL,
+                messages=[
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": json.dumps(user_payload, ensure_ascii=False)}
+                ],
+                response_format={"type": "json_object"},
+            )
+            raw = response.choices[0].message.content or "{}"
+            result = json.loads(raw)
+        except Exception as e:
+            print("OPENAI_ERROR:", repr(e))
+            result = build_fallback_funnel(profile_dict, details_dict)
+    else:
+        result = build_fallback_funnel(profile_dict, details_dict)
+
+    # Детерминированная подстановка точных значений из карточки продукта (ТЗ п.3.1)
+    for stage in result.get("stages", []):
+        if stage.get("id") == "codeword":
+            if keyword:
+                stage["codeword"] = keyword
+                stage["auto_reply_text"] = (
+                    f"Напиши «{keyword}» — и я сразу пришлю короткий материал по теме."
+                )
+        if stage.get("id") == "lead_magnet":
+            if lead_magnet_title:
+                stage["lead_magnet_name"] = lead_magnet_title
+            if lead_magnet_file:
+                stage["lead_magnet_file"] = lead_magnet_file
+        if stage.get("id") == "offer":
+            stage["cta_text"] = cta_text
+            if price:
+                stage["price"] = price
+                stage["price_currency"] = price_currency
+
+    result["_source_snapshot"] = {
+        "channel": channel,
+        "product_name": product_name,
+        "product_description": details_dict.get("product_description", ""),
+        "price": price,
+        "keyword": keyword,
+        "cta_text": cta_text,
+        "lead_magnet_title": lead_magnet_title,
+        "lead_magnet_file": lead_magnet_file,
+    }
+
+    with db() as conn:
+        conn.execute(
+            """
+            INSERT INTO funnels (email, profile_id, funnel_json, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (
+                email,
+                profile_dict["id"],
+                json.dumps(result, ensure_ascii=False),
+                datetime.utcnow().isoformat(),
+            ),
+        )
+
+    return {"ok": True, "funnel": result}
+
+
+@app.post("/funnel/save")
+def save_funnel(data: FunnelSaveIn):
+    email = str(data.email).strip().lower()
+
+    with db() as conn:
+        row = conn.execute(
+            """
+            SELECT profile_id
+            FROM funnels
+            WHERE email = ?
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (email,),
+        ).fetchone()
+
+        conn.execute(
+            """
+            INSERT INTO funnels (email, profile_id, funnel_json, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (
+                email,
+                row["profile_id"] if row else None,
+                json.dumps(data.funnel, ensure_ascii=False),
                 datetime.utcnow().isoformat(),
             ),
         )
@@ -995,6 +1222,54 @@ def build_fallback_map(profile):
         "calendar": calendar,
     }
 
+def build_fallback_funnel(profile, details):
+    name = profile.get("name", "Клиент")
+    niche = profile.get("niche", "ниша")
+    platform = profile.get("platform", "Telegram")
+    product_name = details.get("product_name") or f"продукт в нише {niche}"
+    product_description = details.get("product_description") or "Подробное описание появится после заполнения продукта в профиле."
+    why_not_buy = details.get("why_not_buy") or "не хватает доверия и понимания результата"
+
+    stages = [
+        {
+            "id": "trigger",
+            "title": "Триггер в контенте",
+            "description": f"Пост или сторис, который подталкивает аудиторию написать кодовое слово в директ {platform}",
+            "details": f"Например: разбор частой проблемы в нише {niche} с призывом написать слово в директ"
+        },
+        {
+            "id": "codeword",
+            "title": "Кодовое слово",
+            "codeword": "СТАРТ",
+            "description": "Простое слово, которое легко напечатать в директе",
+            "auto_reply_text": f"Привет! Спасибо за интерес 🙌 Сейчас отправлю тебе материал по теме {niche}."
+        },
+        {
+            "id": "lead_magnet",
+            "title": "Лид-магнит",
+            "lead_magnet_name": f"Чек-лист по теме {niche}",
+            "description": "Бесплатный материал, который закрывает первый страх клиента и показывает экспертность",
+            "lead_magnet_text": f"Вот чек-лист, который поможет разобраться с {niche}. Если будут вопросы — пиши, помогу"
+        },
+        {
+            "id": "warmup",
+            "title": "Прогрев",
+            "description": "1-2 касания с пользой и личным опытом перед предложением продукта",
+            "details": "Истории, разборы, мини-кейсы, ответы на частые вопросы"
+        },
+        {
+            "id": "offer",
+            "title": "Продажа продукта",
+            "description": f"Предложение продукта {product_name} с закрытием возражения: {why_not_buy}",
+            "offer_text": f"{product_description} Если откликается — напиши мне, расскажу подробнее и отвечу на вопросы"
+        }
+    ]
+
+    return {
+        "summary": f"Воронка для {name}: от кодового слова в директе {platform} к лид-магниту и продаже {product_name}.",
+        "stages": stages
+    }
+
 
 
 
@@ -1041,6 +1316,76 @@ def save_profile_details(data: ProfileDetailsIn):
         )
 
     return {"ok": True, "details": payload}
+
+
+@app.post("/profile-details/telegram")
+def save_telegram_block(data: TelegramBlockIn):
+    email = str(data.email).strip().lower()
+
+    bot_description_short = data.bot_description_short.strip()
+    privacy_policy_url = data.privacy_policy_url.strip()
+    offer_url = data.offer_url.strip()
+    entry_keyword_or_link = data.entry_keyword_or_link.strip()
+    entry_button_label = data.entry_button_label.strip() or "Начать"
+
+    url_pattern = re.compile(r"^https?://.+", re.IGNORECASE)
+    errors = []
+
+    if not bot_description_short:
+        errors.append("Короткое описание обязательно")
+    if not privacy_policy_url or not url_pattern.match(privacy_policy_url):
+        errors.append("Ссылка на политику конфиденциальности обязательна и должна начинаться с http(s)://")
+    if not offer_url or not url_pattern.match(offer_url):
+        errors.append("Ссылка на оферту обязательна и должна начинаться с http(s)://")
+    if not entry_keyword_or_link:
+        errors.append("Точка входа в воронку обязательна")
+
+    assembled = f"{bot_description_short} Политика: {privacy_policy_url} · Оферта: {offer_url} Войти: {entry_keyword_or_link}".strip()
+    if len(assembled) > 120:
+        errors.append(f"Итоговый description превышает лимит 120 символов (сейчас {len(assembled)})")
+
+    if errors:
+        raise HTTPException(status_code=400, detail="; ".join(errors))
+
+    details_dict = {}
+    with db() as conn:
+        details_row = conn.execute(
+            """
+            SELECT details_json
+            FROM profile_details
+            WHERE email = ?
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (email,),
+        ).fetchone()
+    if details_row:
+        try:
+            details_dict = json.loads(details_row["details_json"])
+        except Exception:
+            details_dict = {}
+
+    details_dict["email"] = email
+    details_dict["bot_description_short"] = bot_description_short
+    details_dict["privacy_policy_url"] = privacy_policy_url
+    details_dict["offer_url"] = offer_url
+    details_dict["entry_keyword_or_link"] = entry_keyword_or_link
+    details_dict["entry_button_label"] = entry_button_label
+
+    with db() as conn:
+        conn.execute(
+            """
+            INSERT INTO profile_details (email, details_json, updated_at)
+            VALUES (?, ?, ?)
+            """,
+            (
+                email,
+                json.dumps(details_dict, ensure_ascii=False),
+                datetime.utcnow().isoformat(),
+            ),
+        )
+
+    return {"ok": True, "assembled_description": assembled, "length": len(assembled)}
 
 
 def _extract_text_from_uploaded_file(filename: str, content_type: str, data: bytes) -> tuple[str, str]:

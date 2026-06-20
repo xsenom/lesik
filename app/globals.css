@@ -11654,3 +11654,391 @@ button.modal-test-next-btn {
   color: #1a7a3a !important;
   background: rgba(45, 158, 45, 0.12) !important;
 }
+
+/* === Вкладки Карта контента / Воронка === */
+.map-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.map-tab {
+  cursor: pointer;
+  background: #f0f8f0;
+  border: 1px solid rgba(45, 158, 45, 0.25);
+  border-radius: 999px;
+  color: #1a2e1a;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 10px 22px;
+  transition: all 0.2s ease;
+}
+.map-tab.active {
+  background: linear-gradient(135deg, #1a7a3a, #145c2c);
+  border-color: #145c2c;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(20, 92, 44, 0.3);
+}
+
+/* === Воронка === */
+.funnel-tab-content {
+  display: block;
+}
+.funnel-generate-button,
+.funnel-regenerate-button {
+  cursor: pointer;
+  color: #111a08;
+  background: linear-gradient(#ff9300, #d86a00);
+  border: 0;
+  border-radius: 16px;
+  min-height: 52px;
+  padding: 0 24px;
+  font-size: 15px;
+  font-weight: 800;
+  margin-top: 16px;
+  box-shadow: 0 8px 20px rgba(255, 147, 0, 0.32);
+}
+.funnel-generate-button:disabled,
+.funnel-regenerate-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.funnel-stages {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.funnel-summary-card {
+  background: #fbf8f1;
+  border: 1px solid rgba(0, 155, 70, 0.18);
+  border-radius: 20px;
+  padding: 18px 22px;
+}
+.funnel-summary-card b {
+  color: #009b46;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+}
+.funnel-summary-card p {
+  margin: 8px 0 4px;
+  color: #1a2e1a;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.funnel-stage-card {
+  background: #fff;
+  border: 1px solid rgba(45, 158, 45, 0.2);
+  border-radius: 22px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+.funnel-stage-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.funnel-stage-num {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a7a3a, #145c2c);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+}
+.funnel-stage-head h3 {
+  margin: 0;
+  font-size: 19px;
+  color: #1a2e1a;
+}
+.funnel-stage-desc {
+  margin: 0 0 10px;
+  color: #3f4f43;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.funnel-codeword-badge {
+  display: inline-block;
+  background: rgba(0, 155, 70, 0.1);
+  border: 1px solid rgba(0, 155, 70, 0.3);
+  border-radius: 999px;
+  padding: 6px 16px;
+  color: #1a5c1a;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+.funnel-codeword-badge b {
+  color: #009b46;
+}
+.funnel-stage-details {
+  margin: 0 0 10px;
+  color: #4a7a4a;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.funnel-ready-text {
+  background: #f0f8f0;
+  border: 1px solid rgba(45, 158, 45, 0.25);
+  border-left: 3px solid #1a7a3a;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 8px;
+}
+.funnel-ready-text-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.funnel-ready-text-head span {
+  color: #4a7a4a;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.funnel-ready-text-head button {
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #009b46;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0;
+}
+.funnel-ready-text p {
+  margin: 0;
+  color: #1a2e1a;
+  font-size: 14px;
+  line-height: 1.5;
+}
+@media (max-width: 760px) {
+  .map-tabs {
+    flex-wrap: wrap;
+  }
+  .map-tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 12px;
+  }
+}
+
+/* === Схема воронки === */
+.funnel-flow-wrap {
+  background: #fbf8f1;
+  border: 1px solid rgba(0, 155, 70, 0.18);
+  border-radius: 20px;
+  padding: 12px 8px;
+  margin-bottom: 4px;
+}
+.funnel-flow-scroll {
+  overflow-x: auto;
+  padding: 4px 0;
+}
+@media (max-width: 760px) {
+  .funnel-flow-scroll svg {
+    min-width: 720px;
+  }
+}
+
+/* === Контент внутри блоков схемы воронки (foreignObject) === */
+.funnel-flow-box {
+  box-sizing: border-box;
+  width: 300px;
+  height: 330px;
+  background: #fff;
+  border: 2px solid rgba(0, 155, 70, 0.35);
+  border-radius: 20px;
+  padding: 16px 18px;
+  font-family: Rubik, Inter, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.funnel-flow-box-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.funnel-flow-step {
+  color: #009b46;
+  font-size: 18px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.funnel-flow-icon {
+  font-size: 30px;
+  line-height: 1;
+}
+.funnel-flow-box h4 {
+  margin: 0 0 8px;
+  color: #1a2e1a;
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+.funnel-flow-desc {
+  margin: 0 0 10px;
+  color: #3f4f43;
+  font-size: 18px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.funnel-flow-codeword {
+  display: inline-block;
+  background: rgba(0, 155, 70, 0.1);
+  border: 1px solid rgba(0, 155, 70, 0.3);
+  border-radius: 999px;
+  padding: 6px 14px;
+  color: #1a5c1a;
+  font-size: 18px;
+  margin-bottom: 10px;
+  width: fit-content;
+}
+.funnel-flow-codeword b {
+  color: #009b46;
+}
+.funnel-flow-magnet-name {
+  margin: 0 0 8px;
+  color: #1a2e1a;
+  font-size: 18px;
+  line-height: 1.35;
+}
+.funnel-flow-details {
+  margin: 0 0 10px;
+  color: #4a7a4a;
+  font-size: 16px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.funnel-flow-ready {
+  margin-top: auto;
+  background: #f0f8f0;
+  border: 1px solid rgba(45, 158, 45, 0.3);
+  border-left: 4px solid #1a7a3a;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.funnel-flow-ready span {
+  display: block;
+  color: #009b46;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.funnel-flow-ready p {
+  margin: 0;
+  color: #1a2e1a;
+  font-size: 16px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.map-section-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 34px 0 22px;
+}
+.map-section-divider:before,
+.map-section-divider:after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(0, 155, 70, 0.2);
+}
+.map-section-divider span {
+  color: #009b46;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.lead-magnet-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px !important;
+}
+.suggestion-apply-button {
+  cursor: pointer;
+  background: rgba(0, 155, 70, 0.1);
+  border: 1px solid rgba(0, 155, 70, 0.3);
+  border-radius: 999px;
+  color: #009b46;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  white-space: nowrap;
+}
+
+/* === Блок Telegram (ТЗ раздел 4) === */
+.telegram-block {
+  border: 1px solid rgba(0, 136, 204, 0.25);
+  background: rgba(0, 136, 204, 0.04);
+}
+.telegram-block h4 {
+  margin: 0 0 8px;
+  color: #1a2e1a;
+  font-size: 15px;
+  font-weight: 700;
+}
+.telegram-error {
+  color: #d23c3c !important;
+}
+.telegram-preview-box {
+  background: #fff;
+  border: 1px dashed rgba(0, 136, 204, 0.35);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 14px;
+}
+.telegram-preview-label {
+  margin: 0 0 6px !important;
+  color: #4a7a4a;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.telegram-preview-text {
+  margin: 0;
+  color: #1a2e1a;
+  font-size: 14px;
+  line-height: 1.5;
+  background: #f5f8f5;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.telegram-char-counter {
+  margin: 6px 0 0;
+  color: #4a7a4a;
+  font-size: 12px;
+  font-weight: 700;
+}
+.telegram-entry-button-preview {
+  display: inline-block;
+  background: #0088cc;
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 700;
+}

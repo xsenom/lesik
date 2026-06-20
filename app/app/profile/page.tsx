@@ -31,6 +31,18 @@ type ProfileDetails = {
   product_ideas_request: string;
   tariff_plan: string;
   pro_paid_until: string;
+  channel: string;
+  price: number;
+  price_currency: string;
+  keyword: string;
+  cta_text: string;
+  lead_magnet_title: string;
+  lead_magnet_file: string;
+  bot_description_short: string;
+  privacy_policy_url: string;
+  offer_url: string;
+  entry_keyword_or_link: string;
+  entry_button_label: string;
 };
 
 const emptyAnswers: Answers = {
@@ -59,7 +71,40 @@ const emptyDetails: ProfileDetails = {
   product_ideas_request: "",
   tariff_plan: "free",
   pro_paid_until: "",
+  channel: "",
+  price: 0,
+  price_currency: "RUB",
+  keyword: "",
+  cta_text: "",
+  lead_magnet_title: "",
+  lead_magnet_file: "",
+  bot_description_short: "",
+  privacy_policy_url: "",
+  offer_url: "",
+  entry_keyword_or_link: "",
+  entry_button_label: "",
 };
+
+function extractAudienceSection(text: string, sectionLabel: string): string {
+  if (!text) return "";
+  const lines = text.split("\n");
+  let capturing = false;
+  const collected: string[] = [];
+  for (const line of lines) {
+    const isHeading = /^#{1,3}\s*\d+[.)]/.test(line.trim());
+    if (isHeading) {
+      if (capturing) break;
+      if (line.toLowerCase().includes(sectionLabel.toLowerCase())) {
+        capturing = true;
+      }
+      continue;
+    }
+    if (capturing && line.trim()) {
+      collected.push(line.trim().replace(/^[-•]\s*/, ""));
+    }
+  }
+  return collected.join(" ").trim();
+}
 
 const basicQuestions = [
   { key: "name", title: "Как вас зовут?", placeholder: "Например: Катерина" },
@@ -473,17 +518,68 @@ export default function ProfilePage() {
     }
   };
 
+  const saveProductWithTelegramCheck = async () => {
+    if (details.channel === "Telegram") {
+      setSaving(true);
+      try {
+        const email = answers.email || localStorage.getItem("lesik_email") || "";
+        const res = await fetch(`${API_BASE}/profile-details/telegram`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            bot_description_short: details.bot_description_short,
+            privacy_policy_url: details.privacy_policy_url,
+            offer_url: details.offer_url,
+            entry_keyword_or_link: details.entry_keyword_or_link,
+            entry_button_label: details.entry_button_label,
+          }),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          alert(errData.detail || "Не удалось сохранить блок Telegram. Проверьте поля.");
+          setSaving(false);
+          return;
+        }
+      } catch (e) {
+        console.error(e);
+        alert("Не удалось сохранить блок Telegram. Проверьте подключение.");
+        setSaving(false);
+        return;
+      }
+      setSaving(false);
+    }
+
+    await saveDetails({ closeDetails: false, closeProduct: true });
+  };
+
   const saveNotify = async () => {
     await saveDetails({ closeDetails: false });
     setNotifyOpen(false);
   };
 
   const audienceReady = details.audience_analysis.trim().length > 20;
+  const suggestedWhyBuy = extractAudienceSection(details.audience_analysis, "Желания");
+  const suggestedWhyNotBuy = extractAudienceSection(details.audience_analysis, "Возражения");
+
+  const isValidHttpUrl = (url: string) => /^https?:\/\/.+/i.test(url.trim());
+  const assembledTelegramDescription =
+    details.channel === "Telegram"
+      ? `${details.bot_description_short} Политика: ${details.privacy_policy_url} · Оферта: ${details.offer_url} Войти: ${details.entry_keyword_or_link}`.trim()
+      : "";
+  const telegramDescLength = assembledTelegramDescription.length;
+  const telegramDescOverLimit = telegramDescLength > 120;
+  const telegramBlockValid =
+    details.channel !== "Telegram" ||
+    (
+      details.bot_description_short.trim().length > 0 &&
+      isValidHttpUrl(details.privacy_policy_url) &&
+      isValidHttpUrl(details.offer_url) &&
+      details.entry_keyword_or_link.trim().length > 0 &&
+      !telegramDescOverLimit
+    );
   const platformsReady = details.platforms.length > 0 || Boolean(answers.platform.trim());
-  const productReady =
-    details.product_status === "Есть продукт"
-      ? Boolean(details.product_name.trim() && details.product_description.trim())
-      : Boolean(details.product_status.trim());
+  const productReady = Boolean(details.product_name.trim() && details.product_description.trim());
   const openBasicQuestion = (questionIndex: number) => {
     setStep(questionIndex);
     setBasicDone(false);
@@ -893,8 +989,8 @@ export default function ProfilePage() {
             <div className="readiness-card-header"><span>2</span><h2>Продукт</h2></div>
             <p>
               {productReady
-                ? details.product_status
-                : "Нужно понять: продукт уже есть или его нужно собрать"}
+                ? details.product_name
+                : "Заполните название и описание продукта или услуги"}
             </p>
             {!productReady && (
               <button type="button" className="audience-ai-start-button" style={{marginTop:"10px",fontSize:"13px",minHeight:"36px"}} onClick={() => setProductOpen(true)}>
@@ -1343,30 +1439,119 @@ export default function ProfilePage() {
             </div>
 
             <div className="profile-form-block">
-              <h3>Статус продукта</h3>
+              <h3>Основная площадка воронки</h3>
               <div className="product-status-row">
-                {["Есть продукт", "Продукта пока нет"].map((status) => (
+                {["Telegram", "Instagram", "YouTube", "VK"].map((ch) => (
                   <button
-                    key={status}
+                    key={ch}
                     type="button"
-                    className={details.product_status === status ? "selected" : ""}
-                    onClick={() => setDetails((prev) => ({ ...prev, product_status: status }))}
+                    className={details.channel === ch ? "selected" : ""}
+                    onClick={() => setDetails((prev) => ({ ...prev, channel: ch }))}
                   >
-                    {status}
+                    {ch}
                   </button>
                 ))}
               </div>
             </div>
 
-            {details.product_status === "Есть продукт" && (
-              <>
+            {details.channel === "Telegram" && (
+              <div className="profile-form-block telegram-block">
+                <h3>Описание Telegram-бота</h3>
+                <p className="form-hint">Обязательные документы и точка входа в воронку для description бота</p>
+
+                <div className="profile-form-block">
+                  <h4>Короткое описание</h4>
+                  <textarea
+                    value={details.bot_description_short}
+                    placeholder="О чём бот в двух словах..."
+                    onChange={(e) => setDetails((prev) => ({ ...prev, bot_description_short: e.target.value }))}
+                  />
+                </div>
+
+                <div className="profile-form-block two-cols">
+                  <div>
+                    <h4>Ссылка на политику конфиденциальности</h4>
+                    <input
+                      value={details.privacy_policy_url}
+                      placeholder="https://..."
+                      onChange={(e) => setDetails((prev) => ({ ...prev, privacy_policy_url: e.target.value }))}
+                    />
+                    {details.privacy_policy_url.trim() && !isValidHttpUrl(details.privacy_policy_url) && (
+                      <p className="form-hint telegram-error">Ссылка должна начинаться с http:// или https://</p>
+                    )}
+                  </div>
+                  <div>
+                    <h4>Ссылка на оферту</h4>
+                    <input
+                      value={details.offer_url}
+                      placeholder="https://..."
+                      onChange={(e) => setDetails((prev) => ({ ...prev, offer_url: e.target.value }))}
+                    />
+                    {details.offer_url.trim() && !isValidHttpUrl(details.offer_url) && (
+                      <p className="form-hint telegram-error">Ссылка должна начинаться с http:// или https://</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="profile-form-block two-cols">
+                  <div>
+                    <h4>Точка входа в воронку</h4>
+                    <input
+                      value={details.entry_keyword_or_link}
+                      placeholder="Кодовое слово или deep-link t.me/bot?start=..."
+                      onChange={(e) => setDetails((prev) => ({ ...prev, entry_keyword_or_link: e.target.value }))}
+                    />
+                    {!details.entry_keyword_or_link.trim() && details.keyword.trim() && (
+                      <p className="form-hint lead-magnet-suggestion">
+                        Подсказка: «{details.keyword}»{" "}
+                        <button
+                          type="button"
+                          className="suggestion-apply-button"
+                          onClick={() => setDetails((prev) => ({ ...prev, entry_keyword_or_link: details.keyword }))}
+                        >
+                          Подставить
+                        </button>
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <h4>Подпись кнопки входа</h4>
+                    <input
+                      value={details.entry_button_label}
+                      placeholder="Начать"
+                      maxLength={30}
+                      onChange={(e) => setDetails((prev) => ({ ...prev, entry_button_label: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="telegram-preview-box">
+                  <p className="form-hint telegram-preview-label">Превью description бота</p>
+                  <p className={telegramDescOverLimit ? "telegram-preview-text telegram-error" : "telegram-preview-text"}>
+                    {assembledTelegramDescription || "Заполните поля выше"}
+                  </p>
+                  <p className={telegramDescOverLimit ? "telegram-char-counter telegram-error" : "telegram-char-counter"}>
+                    {telegramDescLength}/120{telegramDescOverLimit ? " — превышен лимит, сократите текст" : ""}
+                  </p>
+
+                  <p className="form-hint telegram-preview-label" style={{ marginTop: 14 }}>Превью кнопки входа</p>
+                  <div className="telegram-entry-button-preview">
+                    {details.entry_button_label.trim() || "Начать"}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <>
                 <div className="profile-form-block">
                   <h3>Название продукта</h3>
                   <input
                     value={details.product_name}
                     placeholder="Например: настройка Salebot под ключ"
+                    maxLength={60}
                     onChange={(e) => setDetails((prev) => ({ ...prev, product_name: e.target.value }))}
                   />
+                  <p className="form-hint">{details.product_name.length}/60</p>
                 </div>
 
                 <div className="profile-form-block">
@@ -1374,8 +1559,127 @@ export default function ProfilePage() {
                   <textarea
                     value={details.product_description}
                     placeholder="Опишите результат, формат, стоимость, кому подходит..."
+                    maxLength={300}
                     onChange={(e) => setDetails((prev) => ({ ...prev, product_description: e.target.value }))}
                   />
+                  <p className="form-hint">{details.product_description.length}/300</p>
+                </div>
+
+                <div className="profile-form-block two-cols">
+                  <div>
+                    <h3>Цена</h3>
+                    <input
+                      type="number"
+                      value={details.price || ""}
+                      placeholder="Например: 15000"
+                      onChange={(e) => setDetails((prev) => ({ ...prev, price: Number(e.target.value) || 0 }))}
+                    />
+                  </div>
+
+                  <div>
+                    <h3>Валюта</h3>
+                    <select
+                      value={details.price_currency}
+                      onChange={(e) => setDetails((prev) => ({ ...prev, price_currency: e.target.value }))}
+                    >
+                      <option value="RUB">RUB ₽</option>
+                      <option value="USD">USD $</option>
+                      <option value="EUR">EUR €</option>
+                      <option value="KZT">KZT ₸</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="profile-form-block">
+                  <h3>Кодовое слово</h3>
+                  <input
+                    value={details.keyword}
+                    placeholder="Например: бот"
+                    maxLength={20}
+                    onChange={(e) => setDetails((prev) => ({ ...prev, keyword: e.target.value.replace(/\s+/g, "") }))}
+                  />
+                  <p className="form-hint">Одно слово, до 20 символов — клиент напишет его в директ</p>
+                  {!details.keyword.trim() && (
+                    <p className="form-hint lead-magnet-suggestion">
+                      Подсказка: «бот»{" "}
+                      <button
+                        type="button"
+                        className="suggestion-apply-button"
+                        onClick={() => setDetails((prev) => ({ ...prev, keyword: "бот" }))}
+                      >
+                        Подставить
+                      </button>
+                    </p>
+                  )}
+                </div>
+
+                <div className="profile-form-block two-cols">
+                  <div>
+                    <h3>Название лид-магнита</h3>
+                    <input
+                      value={details.lead_magnet_title}
+                      placeholder="Если пусто — подберём автоматически"
+                      onChange={(e) => setDetails((prev) => ({ ...prev, lead_magnet_title: e.target.value }))}
+                    />
+                    {!details.lead_magnet_title.trim() && answers.niche.trim() && (
+                      <p className="form-hint lead-magnet-suggestion">
+                        Подсказка: «Чек-лист по теме {answers.niche}»{" "}
+                        <button
+                          type="button"
+                          className="suggestion-apply-button"
+                          onClick={() => setDetails((prev) => ({ ...prev, lead_magnet_title: `Чек-лист по теме ${answers.niche}` }))}
+                        >
+                          Подставить
+                        </button>
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <h3>Файл или ссылка на лид-магнит</h3>
+                    <input
+                      value={details.lead_magnet_file}
+                      placeholder="Ссылка на PDF, гайд, чек-лист..."
+                      onChange={(e) => setDetails((prev) => ({ ...prev, lead_magnet_file: e.target.value }))}
+                    />
+                    {!details.lead_magnet_file.trim() && (
+                      <p className="form-hint lead-magnet-suggestion">
+                        Подсказка: «Без файла — текстом в боте»{" "}
+                        <button
+                          type="button"
+                          className="suggestion-apply-button"
+                          onClick={() => setDetails((prev) => ({ ...prev, lead_magnet_file: "Без файла — текстом в боте" }))}
+                        >
+                          Подставить
+                        </button>
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="profile-form-block">
+                  <h3>Текст на кнопке для клиента</h3>
+                  <input
+                    value={details.cta_text}
+                    placeholder="Хочу разобрать свою ситуацию"
+                    maxLength={80}
+                    onChange={(e) => setDetails((prev) => ({ ...prev, cta_text: e.target.value }))}
+                  />
+                  <p className="form-hint">
+                    Например: «Хочу узнать больше» или «Хочу разобрать свою ситуацию» — то, что нажмёт клиент, чтобы перейти к покупке
+                  </p>
+                  {!details.cta_text.trim() && (
+                    <p className="form-hint lead-magnet-suggestion">
+                      Подсказка: «Хочу разобрать свою ситуацию»{" "}
+                      <button
+                        type="button"
+                        className="suggestion-apply-button"
+                        onClick={() => setDetails((prev) => ({ ...prev, cta_text: "Хочу разобрать свою ситуацию" }))}
+                      >
+                        Подставить
+                      </button>
+                    </p>
+                  )}
                 </div>
 
                 <div className="profile-form-block two-cols">
@@ -1386,6 +1690,18 @@ export default function ProfilePage() {
                       placeholder="Какие причины покупки, какие триггеры, что важно клиенту..."
                       onChange={(e) => setDetails((prev) => ({ ...prev, why_buy: e.target.value }))}
                     />
+                    {!details.why_buy.trim() && suggestedWhyBuy && (
+                      <p className="form-hint lead-magnet-suggestion">
+                        Из анализа аудитории: «{suggestedWhyBuy.slice(0, 120)}{suggestedWhyBuy.length > 120 ? "…" : ""}»{" "}
+                        <button
+                          type="button"
+                          className="suggestion-apply-button"
+                          onClick={() => setDetails((prev) => ({ ...prev, why_buy: suggestedWhyBuy }))}
+                        >
+                          Подставить
+                        </button>
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -1395,29 +1711,32 @@ export default function ProfilePage() {
                       placeholder="Какие страхи, возражения, сомнения, барьеры..."
                       onChange={(e) => setDetails((prev) => ({ ...prev, why_not_buy: e.target.value }))}
                     />
+                    {!details.why_not_buy.trim() && suggestedWhyNotBuy && (
+                      <p className="form-hint lead-magnet-suggestion">
+                        Из анализа аудитории: «{suggestedWhyNotBuy.slice(0, 120)}{suggestedWhyNotBuy.length > 120 ? "…" : ""}»{" "}
+                        <button
+                          type="button"
+                          className="suggestion-apply-button"
+                          onClick={() => setDetails((prev) => ({ ...prev, why_not_buy: suggestedWhyNotBuy }))}
+                        >
+                          Подставить
+                        </button>
+                      </p>
+                    )}
                   </div>
                 </div>
               </>
-            )}
 
-            {details.product_status === "Продукта пока нет" && (
-              <div className="profile-form-block">
-                <h3>Что хотите продавать или в чём сильны?</h3>
-                <textarea
-                  value={details.product_ideas_request}
-                  placeholder="Опишите опыт, навыки, аудиторию, что могли бы упаковать в продукт..."
-                  onChange={(e) => setDetails((prev) => ({ ...prev, product_ideas_request: e.target.value }))}
-                />
-                <p className="form-hint">
-                  Позже офис 10 агентов предложит варианты продукта и поможет развить идеи</p>
-              </div>
+            {!telegramBlockValid && (
+              <p className="form-hint telegram-error" style={{ marginTop: 10 }}>
+                Заполните корректно блок Telegram: короткое описание, рабочие ссылки на политику и оферту, точку входа — и не превышайте 120 символов в итоговом description.
+              </p>
             )}
-
             <button
               type="button"
               className="modal-save-button"
-              onClick={() => saveDetails({ closeDetails: false, closeProduct: true })}
-              disabled={saving}
+              onClick={() => void saveProductWithTelegramCheck()}
+              disabled={saving || !telegramBlockValid}
             >
               {saving ? "Сохраняю..." : "Сохранить ответы по продукту"}
             </button>

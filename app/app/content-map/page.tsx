@@ -37,6 +37,23 @@ type ContentMap = {
   calendar: CalendarPlanItem[];
 };
 
+type FunnelStage = {
+  id: string;
+  title: string;
+  description: string;
+  details?: string;
+  codeword?: string;
+  auto_reply_text?: string;
+  lead_magnet_name?: string;
+  lead_magnet_text?: string;
+  offer_text?: string;
+};
+
+type Funnel = {
+  summary: string;
+  stages: FunnelStage[];
+};
+
 type DiscussSource =
   | { kind: "calendar"; day: number }
   | { kind: "node"; nodeId: string };
@@ -444,12 +461,109 @@ function MindMap({
   );
 }
 
+function FunnelFlow({
+  stages,
+  copiedField,
+  onCopy,
+}: {
+  stages: FunnelStage[];
+  copiedField: string;
+  onCopy: (text: string, key: string) => void;
+}) {
+  const W = 1740;
+  const H = 360;
+  const boxW = 300;
+  const boxH = 330;
+  const gap = (W - stages.length * boxW) / (stages.length + 1);
+  const y = (H - boxH) / 2;
+
+  const icons: Record<string, string> = {
+    trigger: "\ud83d\udce3",
+    codeword: "\ud83d\udd11",
+    lead_magnet: "\ud83c\udf81",
+    warmup: "\ud83d\udd25",
+    offer: "\ud83d\udcb0",
+  };
+
+  return (
+    <div className="funnel-flow-wrap">
+      <div className="funnel-flow-scroll">
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} style={{ display: "block" }}>
+          <defs>
+            <marker id="funnelArrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#009b46" />
+            </marker>
+          </defs>
+          {stages.map((stage, i) => {
+            const x = gap + i * (boxW + gap);
+            const readyText = stage.auto_reply_text || stage.lead_magnet_text || stage.offer_text || "";
+            return (
+              <g key={stage.id}>
+                {i < stages.length - 1 && (
+                  <line
+                    x1={x + boxW}
+                    y1={H / 2}
+                    x2={x + boxW + gap}
+                    y2={H / 2}
+                    stroke="#009b46"
+                    strokeWidth="2"
+                    strokeDasharray="6 6"
+                    markerEnd="url(#funnelArrow)"
+                  />
+                )}
+                <foreignObject x={x} y={y} width={boxW} height={boxH}>
+                  <div
+                    className="funnel-flow-box"
+                    onClick={() => readyText && onCopy(readyText, stage.id)}
+                    style={{ cursor: readyText ? "pointer" : "default" }}
+                  >
+                    <div className="funnel-flow-box-head">
+                      <span className="funnel-flow-step">Шаг {i + 1}</span>
+                      <span className="funnel-flow-icon">{icons[stage.id] || "\u2022"}</span>
+                    </div>
+                    <h4>{stage.title}</h4>
+                    <p className="funnel-flow-desc">{stage.description}</p>
+                    {stage.codeword && (
+                      <div className="funnel-flow-codeword">
+                        Слово: <b>{stage.codeword}</b>
+                      </div>
+                    )}
+                    {stage.lead_magnet_name && (
+                      <p className="funnel-flow-magnet-name"><b>{stage.lead_magnet_name}</b></p>
+                    )}
+                    {stage.details && (
+                      <p className="funnel-flow-details">{stage.details}</p>
+                    )}
+                    {readyText && (
+                      <div className="funnel-flow-ready">
+                        <span>{copiedField === stage.id ? "Скопировано \u2713" : "Нажмите, чтобы скопировать"}</span>
+                        <p>{readyText}</p>
+                      </div>
+                    )}
+                  </div>
+                </foreignObject>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 export default function ContentMapPage() {
   const [email, setEmail] = useState("");
   const [profileExists, setProfileExists] = useState<boolean | null>(null);
   const [map, setMap] = useState<ContentMap | null>(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [activeTab, setActiveTab] = useState<"map" | "funnel">("map");
+  const [funnel, setFunnel] = useState<Funnel | null>(null);
+  const [funnelLoading, setFunnelLoading] = useState(false);
+  const [funnelProgress, setFunnelProgress] = useState(0);
+  const [copiedField, setCopiedField] = useState<string>("");
+  const [productChannel, setProductChannel] = useState<string>("");
+  const [funnelSourceCurrent, setFunnelSourceCurrent] = useState<Record<string, any>>({});
   const [calendarAiOpen, setCalendarAiOpen] = useState(false);
   const [donePosts, setDonePosts] = useState<Record<string, boolean>>(() => {
     try {
@@ -500,6 +614,31 @@ export default function ContentMapPage() {
       if (mapData.content_map?.map) {
         setMap(mapData.content_map.map);
       }
+
+      const funnelRes = await fetch(`${API_BASE}/funnel/by-email?email=${encodeURIComponent(savedEmail)}`);
+      const funnelData = await funnelRes.json();
+
+      if (funnelData.funnel?.funnel) {
+        setFunnel(funnelData.funnel.funnel);
+      }
+
+      const detailsRes = await fetch(`${API_BASE}/profile-details/by-email?email=${encodeURIComponent(savedEmail)}`);
+      const detailsData = await detailsRes.json();
+      if (detailsData.details?.details) {
+        const d = detailsData.details.details;
+        setProductChannel(d.channel || "");
+        setFunnelSourceCurrent({
+          channel: d.channel || "",
+          product_name: d.product_name || "",
+          product_description: d.product_description || "",
+          price: d.price || 0,
+          keyword: d.keyword || "",
+          cta_text: d.cta_text || "",
+          lead_magnet_title: d.lead_magnet_title || "",
+          lead_magnet_file: d.lead_magnet_file || "",
+        });
+      }
+
     };
 
     load();
@@ -515,7 +654,6 @@ export default function ContentMapPage() {
         console.error(e);
       }
     };
-
     loadRoles();
   }, []);
 
@@ -565,6 +703,60 @@ export default function ContentMapPage() {
       setLoading(false);
       setProgress(0);
     }
+  };
+
+  const generateFunnel = async () => {
+    if (!email) return;
+    setFunnelLoading(true);
+    setFunnelProgress(0);
+    const steps = [
+      { pct: 15, delay: 300 },
+      { pct: 35, delay: 900 },
+      { pct: 55, delay: 1800 },
+      { pct: 75, delay: 3000 },
+      { pct: 90, delay: 4500 },
+    ];
+    let stopped = false;
+    const runSteps = async () => {
+      for (const step of steps) {
+        if (stopped) break;
+        await new Promise((r) => setTimeout(r, step.delay));
+        if (!stopped) setFunnelProgress(step.pct);
+      }
+    };
+    runSteps();
+    try {
+      const res = await fetch(`${API_BASE}/funnel/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      stopped = true;
+      setFunnelProgress(100);
+      if (data.funnel) {
+        setTimeout(() => {
+          setFunnel(data.funnel);
+          setFunnelLoading(false);
+          setFunnelProgress(0);
+        }, 400);
+      } else {
+        setFunnelLoading(false);
+        setFunnelProgress(0);
+      }
+    } catch (e) {
+      stopped = true;
+      console.error(e);
+      setFunnelLoading(false);
+      setFunnelProgress(0);
+    }
+  };
+
+  const copyToClipboard = (text: string, fieldKey: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedField(fieldKey);
+      setTimeout(() => setCopiedField(""), 1500);
+    });
   };
 
   const saveMapDraft = async (nextMap: ContentMap) => {
@@ -777,47 +969,96 @@ export default function ContentMapPage() {
       )}
 
       {map && (
-        <>
-          <MindMap nodes={map.nodes} summary={map.summary} onNodeClick={openNodeAi} />
+        <MindMap nodes={map.nodes} summary={map.summary} onNodeClick={openNodeAi} />
+      )}
 
-          <div className="content-calendar">
-            <div className="calendar-head">
-              <h2>Календарь публикаций</h2>
-              <p>14 дней контент-действий</p>
-            </div>
+      <div className="calendar-head">
+        <h2>Воронка для бота</h2>
+        <p>Кодовое слово в директ, лид-магнит и продажа продукта</p>
+      </div>
 
-            <div className="calendar-grid">
-              {map.calendar.map((item) => (
-                <article
-                  className="calendar-card calendar-card-clickable"
-                  key={item.day}
-                  style={donePosts[`post-${item.day}`] ? { opacity: 0.6, borderColor: "#009b46", background: "rgba(0,155,70,0.08)" } : {}}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
-                    <span>День {item.day} · {item.platform || item.date_label}</span>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); toggleDonePost(`post-${item.day}`); }}
-                      style={{
-                        width: 28, height: 28, borderRadius: "50%", border: "2px solid #009b46",
-                        background: donePosts[`post-${item.day}`] ? "#009b46" : "transparent",
-                        color: "#fff", fontSize: 14, cursor: "pointer", flexShrink: 0,
-                        display: "flex", alignItems: "center", justifyContent: "center"
-                      }}
-                    >
-                      {donePosts[`post-${item.day}`] ? "✓" : ""}
-                    </button>
-                  </div>
-                  <h3 onClick={() => openCalendarAi(item)} style={{ cursor: "pointer" }}>{humanizeTitle(item.title || item.topic || "Без темы")}</h3>
-                  <p onClick={() => openCalendarAi(item)} style={{ cursor: "pointer" }}>{(item.description || item.task || "").replace(/\.+$/, "")}</p>
-                  <button type="button" className="calendar-ai-inline-button" onClick={() => openCalendarAi(item)}>
-                    Обсудить с ИИ
-                  </button>
-                </article>
-              ))}
-            </div>
+      {true && (
+        <div className="funnel-tab-content">
+          <div className="map-start" style={!funnel ? {} : { display: "none" }}>
+            <h2>Воронка ещё не собрана</h2>
+            <p>
+              ЛЕС<span className="brand-ik">ik</span> построит воронку для бота: кодовое слово в директ,
+              лид-магнит и продажа продукта — на основе анализа аудитории и продукта из профиля.
+            </p>
+            <button
+              type="button"
+              className="funnel-generate-button"
+              onClick={generateFunnel}
+              disabled={funnelLoading || !email}
+            >
+              {funnelLoading ? `Собираю... ${funnelProgress}%` : "Сформировать воронку"}
+            </button>
           </div>
-        </>
+
+          {funnel && (
+            <div className="funnel-stages">
+              <div className="funnel-summary-card">
+                <b>ВЫВОД</b>
+                <p>{funnel.summary}</p>
+                <button
+                  type="button"
+                  className="funnel-regenerate-button"
+                  onClick={generateFunnel}
+                  disabled={funnelLoading}
+                >
+                  {funnelLoading ? `Собираю... ${funnelProgress}%` : "Пересобрать воронку"}
+                </button>
+              </div>
+
+
+              <FunnelFlow
+                stages={funnel.stages}
+                copiedField={copiedField}
+                onCopy={copyToClipboard}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {map && (
+        <div className="content-calendar">
+          <div className="calendar-head">
+            <h2>Календарь публикаций</h2>
+            <p>14 дней контент-действий</p>
+          </div>
+
+          <div className="calendar-grid">
+            {map.calendar.map((item) => (
+              <article
+                className="calendar-card calendar-card-clickable"
+                key={item.day}
+                style={donePosts[`post-${item.day}`] ? { opacity: 0.6, borderColor: "#009b46", background: "rgba(0,155,70,0.08)" } : {}}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+                  <span>День {item.day} · {item.platform || item.date_label}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); toggleDonePost(`post-${item.day}`); }}
+                    style={{
+                      width: 28, height: 28, borderRadius: "50%", border: "2px solid #009b46",
+                      background: donePosts[`post-${item.day}`] ? "#009b46" : "transparent",
+                      color: "#fff", fontSize: 14, cursor: "pointer", flexShrink: 0,
+                      display: "flex", alignItems: "center", justifyContent: "center"
+                    }}
+                  >
+                    {donePosts[`post-${item.day}`] ? "✓" : ""}
+                  </button>
+                </div>
+                <h3 onClick={() => openCalendarAi(item)} style={{ cursor: "pointer" }}>{humanizeTitle(item.title || item.topic || "Без темы")}</h3>
+                <p onClick={() => openCalendarAi(item)} style={{ cursor: "pointer" }}>{(item.description || item.task || "").replace(/\.+$/, "")}</p>
+                <button type="button" className="calendar-ai-inline-button" onClick={() => openCalendarAi(item)}>
+                  Обсудить с ИИ
+                </button>
+              </article>
+            ))}
+          </div>
+        </div>
       )}
 
       {calendarAiOpen && selectedItem && (
