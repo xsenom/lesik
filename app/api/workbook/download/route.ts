@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "fs/promises";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { verifyAuthToken } from "@/lib/workbookAccess";
@@ -14,15 +14,21 @@ export async function GET() {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const filePath = process.env.WORKBOOK_PDF_PATH || "/opt/lesik/private/workbook.pdf";
+  const filePath = process.env.WORKBOOK_PDF_PATH || "private/workbook.pdf";
 
-  if (!fs.existsSync(filePath)) {
+  let file: Buffer;
+
+  try {
+    file = await fs.readFile(filePath);
+  } catch (error) {
+    console.error("[WORKBOOK DOWNLOAD] PDF not found", {
+      hasCustomPath: Boolean(process.env.WORKBOOK_PDF_PATH),
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
     return new NextResponse("PDF not found", { status: 404 });
   }
 
-  const file = fs.readFileSync(filePath);
-
-  return new NextResponse(file, {
+  return new NextResponse(new Uint8Array(file), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",

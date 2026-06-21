@@ -1,12 +1,6 @@
-import { Rubik } from "next/font/google";
 import styles from "../page.module.css";
 
-const rubik = Rubik({
-  subsets: ["cyrillic", "latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  display: "swap",
-  variable: "--font-rubik",
-});
+const rubik = { variable: "" };
 
 export default function PaymentFailPage() {
   return (

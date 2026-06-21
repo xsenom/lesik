@@ -102,7 +102,9 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    load();
+    queueMicrotask(() => {
+      void load();
+    });
   }, []);
 
   const saveProfileDetails = async (profile: AdminProfile, details: ProfileDetails) => {

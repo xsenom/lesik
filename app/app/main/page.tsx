@@ -1,8 +1,7 @@
 ﻿"use client";
 
-import { Rubik } from "next/font/google";
 
-const rubik = Rubik({ subsets: ["cyrillic", "latin"], weight: ["400","700","800","900"], display: "swap", variable: "--font-rubik" });
+const rubik = { variable: "" };
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -37,6 +36,16 @@ type VideoItem = {
   description: string;
   url: string;
 };
+type StoredTestResult = {
+  label?: string;
+  desc?: string;
+  days?: string;
+  level?: string;
+  focus?: string[];
+  score?: number;
+  maxScore?: number;
+};
+
 
 const TELEGRAM_BOT_URL =
   process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL || "https://t.me/";
@@ -799,7 +808,7 @@ export default function TrendsPage() {
         .replaceAll("'", "&#039;");
 
     const buildResultHtml = () => {
-      let result: any = null;
+      let result: StoredTestResult | null = null;
 
       try {
         const raw = window.localStorage.getItem("lesik_test_result");
@@ -809,15 +818,16 @@ export default function TrendsPage() {
       }
 
       const hasResult = Boolean(result?.label);
+      const safeResult = result ?? {};
 
-      const label = hasResult ? result.label : "Тест ещё не пройден";
+      const label = hasResult ? safeResult.label : "Тест ещё не пройден";
       const desc = hasResult
-        ? result.desc
+        ? safeResult.desc
         : "После прохождения теста здесь появится результат и акценты для карты контента.";
 
-      const score = hasResult ? result.score ?? 0 : 0;
-      const maxScore = hasResult ? result.maxScore ?? 50 : 50;
-      const days = hasResult ? result.days ?? "—" : "—";
+      const score = hasResult ? safeResult.score ?? 0 : 0;
+      const maxScore = hasResult ? safeResult.maxScore ?? 50 : 50;
+      const days = hasResult ? safeResult.days ?? "—" : "—";
       const focus = Array.isArray(result?.focus) ? result.focus : [];
 
       return `
@@ -953,7 +963,7 @@ export default function TrendsPage() {
         return;
       }
 
-      let result: any = null;
+      let result: StoredTestResult | null = null;
 
       try {
         const raw = window.localStorage.getItem("lesik_test_result");
@@ -1048,7 +1058,6 @@ export default function TrendsPage() {
 
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
-  const [profileNiche, setProfileNiche] = useState("");
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
   const [calendar, setCalendar] = useState<CalendarItem[]>([]);
@@ -1057,12 +1066,20 @@ export default function TrendsPage() {
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
 
-  const [name, setName] = useState("друг");
-  const [email, setEmail] = useState("");
-  const [startDate, setStartDate] = useState("");
+  const [email, setEmail] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("lesik_email") || "";
+  });
+  const [startDate, setStartDate] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("lesik_calendar_start") || "";
+  });
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [instaCalendarOpen, setInstaCalendarOpen] = useState(false);
-  const [selectedStartDate, setSelectedStartDate] = useState("");
+  const [selectedStartDate, setSelectedStartDate] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("lesik_calendar_start") || "";
+  });
   const [notify, setNotify] = useState({
     email: true,
     telegram: false,
@@ -1075,21 +1092,23 @@ export default function TrendsPage() {
     const savedNotify = localStorage.getItem("lesik_notify");
     const savedChecks = localStorage.getItem(`lesik-goal-checks:${savedEmail}`);
 
-    setEmail(savedEmail);
-    setStartDate(savedStartDate);
-    setSelectedStartDate(savedStartDate);
+    queueMicrotask(() => {
+      setEmail(savedEmail);
+      setStartDate(savedStartDate);
+      setSelectedStartDate(savedStartDate);
 
-    if (savedNotify) {
-      try {
-        setNotify(JSON.parse(savedNotify));
-      } catch {}
-    }
+      if (savedNotify) {
+        try {
+          setNotify(JSON.parse(savedNotify));
+        } catch {}
+      }
 
-    if (savedChecks) {
-      try {
-        setGoalChecks(JSON.parse(savedChecks));
-      } catch {}
-    }
+      if (savedChecks) {
+        try {
+          setGoalChecks(JSON.parse(savedChecks));
+        } catch {}
+      }
+    });
 
     if (!savedEmail) return;
 
@@ -1100,12 +1119,7 @@ export default function TrendsPage() {
         );
         const profileData = await profileRes.json();
 
-        if (profileData.profile?.name) {
-          setName(profileData.profile.name);
-        }
-
         if (profileData.profile) {
-          setProfileNiche(profileData.profile.niche || "");
           setHasProfile(true);
         }
         setProfileLoaded(true);
@@ -1152,12 +1166,14 @@ export default function TrendsPage() {
     if (!calendar.length) return;
 
     const normalized = buildCalendarDays(calendar, startDate);
-    setCalendarDays(normalized);
+    queueMicrotask(() => {
+      setCalendarDays(normalized);
 
-    if (!selectedDateKey && normalized[0]) {
-      setSelectedDateKey(normalized[0].date);
-      setCalendarMonth(new Date(normalized[0].date));
-    }
+      if (!selectedDateKey && normalized[0]) {
+        setSelectedDateKey(normalized[0].date);
+        setCalendarMonth(new Date(normalized[0].date));
+      }
+    });
   }, [calendar, startDate, selectedDateKey]);
 
   const confirmCalendarStart = () => {
@@ -1907,7 +1923,7 @@ export default function TrendsPage() {
                   Твой счёт: {testTotal} из 50
                 </div>
                 <a href="/app/profile" className="profile-green-map-button" onClick={() => setTestModalOpen(false)} style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:"16px", background:"#0a5c3a", borderRadius:18, textDecoration:"none", fontSize:16, fontWeight:800, boxShadow:"0 4px 18px rgba(10,92,58,0.4)" }}>
-                  <span style={{color:"#ffffff !important" as any, fontWeight:800, WebkitTextFillColor:"#ffffff"}}>Построить свою систему →</span>
+                  <span style={{color:"#ffffff", fontWeight:800, WebkitTextFillColor:"#ffffff"}}>Построить свою систему →</span>
                 </a>
               </div>
             )}

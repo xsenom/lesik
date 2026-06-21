@@ -7,6 +7,12 @@ import {
 
 export const dynamic = "force-dynamic";
 
+function maskEmail(email: string) {
+  const [name = "", domain = ""] = email.split("@");
+  if (!domain) return "***";
+  return `${name.slice(0, 2)}***@${domain}`;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -15,15 +21,14 @@ export async function POST(request: NextRequest) {
     const password = String(body.password || "");
 
     console.log("[WORKBOOK LOGIN] request", {
-      email,
+      email: maskEmail(email),
       hasPassword: Boolean(password),
-      passwordLength: password.length,
     });
 
     const user = findUserByEmail(email);
 
     console.log("[WORKBOOK LOGIN] user lookup", {
-      email,
+      email: maskEmail(email),
       found: Boolean(user),
     });
 
@@ -37,7 +42,7 @@ export async function POST(request: NextRequest) {
     const passwordOk = verifyPassword(password, user.passwordHash);
 
     console.log("[WORKBOOK LOGIN] password check", {
-      email,
+      email: maskEmail(email),
       passwordOk,
     });
 

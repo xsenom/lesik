@@ -140,15 +140,15 @@ function OnboardingTour({ open, onClose }: { open: boolean; onClose: () => void 
 }
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const [isAdminUser, setIsAdminUser] = useState(false);
-
-  useEffect(() => {
-    const email = (localStorage.getItem("lesik_email") || "").trim().toLowerCase();
-    setIsAdminUser(email === LESIK_ADMIN_EMAIL);
-  }, []);
-
   const pathname = usePathname();
-  const [tourOpen, setTourOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return !localStorage.getItem("lesik_onboarded");
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     const syncAdminAccess = () => {
@@ -171,9 +171,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       window.removeEventListener("storage", syncAdminAccess);
       window.removeEventListener("focus", syncAdminAccess);
     };
-  }, []);
-  useEffect(() => {
-    try { if (!localStorage.getItem("lesik_onboarded")) setTourOpen(true); } catch {}
   }, []);
   const closeTour = () => {
     try { localStorage.setItem("lesik_onboarded", "1"); } catch {}

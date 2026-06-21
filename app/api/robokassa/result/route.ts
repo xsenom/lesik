@@ -143,6 +143,17 @@ export async function POST(request: NextRequest) {
       return new NextResponse("order not found", { status: 404 });
     }
 
+    if (amountToCents(order.outSum) !== amountToCents(outSum)) {
+      console.error("Robokassa workbook bad sum", {
+        invId,
+        expected: order.outSum,
+        received: outSum,
+        expectedCents: amountToCents(order.outSum),
+        receivedCents: amountToCents(outSum),
+      });
+      return new NextResponse("bad sum", { status: 400 });
+    }
+
     const paidOrder = markOrderPaid(invId) || order;
     const password = generatePassword();
 

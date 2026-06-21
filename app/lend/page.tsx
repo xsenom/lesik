@@ -1,14 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { Rubik } from "next/font/google";
 import styles from "./page.module.css";
 
-const rubik = Rubik({
-  subsets: ["cyrillic", "latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  display: "swap",
-  variable: "--font-rubik",
-});
+const rubik = { variable: "" };
 
 export const metadata: Metadata = {
   title: "Схема роста — система заявок через контент и чат-ботов",

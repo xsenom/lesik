@@ -2,7 +2,7 @@
 
 import { createPortal } from "react-dom";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
@@ -54,7 +54,7 @@ type FunnelStage = {
 type Funnel = {
   summary: string;
   stages: FunnelStage[];
-  _source_snapshot?: Record<string, any>;
+  _source_snapshot?: Record<string, unknown>;
 };
 
 type DiscussSource =
@@ -554,8 +554,14 @@ function FunnelDiagram({
 }
 
 export default function ContentMapPage() {
-  const [email, setEmail] = useState("");
-  const [profileExists, setProfileExists] = useState<boolean | null>(null);
+  const [email, setEmail] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("lesik_email") || "";
+  });
+  const [profileExists, setProfileExists] = useState<boolean | null>(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("lesik_email") ? null : false;
+  });
   const [map, setMap] = useState<ContentMap | null>(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -565,7 +571,7 @@ export default function ContentMapPage() {
   const [funnelProgress, setFunnelProgress] = useState(0);
   const [copiedField, setCopiedField] = useState<string>("");
   const [productChannel, setProductChannel] = useState<string>("");
-  const [funnelSourceCurrent, setFunnelSourceCurrent] = useState<Record<string, any>>({});
+  const [funnelSourceCurrent, setFunnelSourceCurrent] = useState<Record<string, unknown>>({});
   const [calendarAiOpen, setCalendarAiOpen] = useState(false);
   const [donePosts, setDonePosts] = useState<Record<string, boolean>>(() => {
     try {
@@ -594,14 +600,13 @@ export default function ContentMapPage() {
   const [bgType, setBgType] = useState<"gradient"|"upload">("gradient");
   const [bgGradient, setBgGradient] = useState("beige");
   const [bgImage, setBgImage] = useState<string|null>(null);
-  const [selectedAgent, setSelectedAgent] = useState("daily_manager");
+  const [selectedAgent] = useState("daily_manager");
+  const router = useRouter();
 
   useEffect(() => {
-    const savedEmail = localStorage.getItem("lesik_email") || "";
-    setEmail(savedEmail);
+    const savedEmail = email;
 
     if (!savedEmail) {
-      setProfileExists(false);
       return;
     }
 
@@ -665,12 +670,12 @@ export default function ContentMapPage() {
       ? `/app/service-payment?email=${encodeURIComponent(email)}`
       : "/app/service-payment";
 
-    window.location.href = url;
+    router.push(url);
   };
 
   useEffect(() => {
     if (!email) {
-      setServicePaid(false);
+      queueMicrotask(() => setServicePaid(false));
       return;
     }
 
@@ -1208,7 +1213,11 @@ export default function ContentMapPage() {
                   className="calendar-ai-inline-button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    locked ? goServicePayment() : openCalendarAi(item);
+                    if (locked) {
+                      goServicePayment();
+                    } else {
+                      openCalendarAi(item);
+                    }
                   }}
                 >
                   {servicePaid ? "Обсудить с маркетологом" : (locked ? "Открыть за 2900 ₽" : "Обсудить с маркетологом после оплаты")}
@@ -1371,7 +1380,7 @@ export default function ContentMapPage() {
                 {carouselSlides.length > 0 && (
                   <div style={{ marginTop: 16 }}>
                     <p style={{ fontSize: 13, color: "#009b46", marginBottom: 8, fontWeight: 700 }}>
-                      Слайды готовы! На iPhone: зажмите картинку → "Сохранить". На Mac: правая кнопка → "Сохранить".
+                      Слайды готовы! На iPhone: зажмите картинку → &quot;Сохранить&quot;. На Mac: правая кнопка → &quot;Сохранить&quot;.
                     </p>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                       {carouselSlides.map((src, i) => (
