@@ -1,5 +1,7 @@
 ﻿"use client";
 
+import { createPortal } from "react-dom";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -329,19 +331,21 @@ function MindMap({
           {/* Left cards */}
           {leftItems.map(({ node, y }, i) => {
             const color = BRANCH_COLORS[i * 2 % BRANCH_COLORS.length];
-            const lines = wrapText(humanizeTitle(node.title), 24);
+            const titleLines = wrapText(humanizeTitle(node.title), 24).slice(0, 2);
+            const descLines = wrapText(node.description.replace(/\.+$/, ""), 36).slice(0, titleLines.length > 1 ? 3 : 4);
+            const descY = y + 28 + titleLines.length * 15;
             return (
               <g key={node.id} style={{ cursor: "pointer" }} onClick={() => onNodeClick(node)}>
                 <rect x={LEFT_X} y={y} width={CARD_W} height={CARD_H} rx="12"
                   fill="#fbf8f1" stroke={color} strokeWidth="1.5" strokeOpacity="0.65" />
                 <rect x={LEFT_X} y={y + 10} width="3" height={CARD_H - 20} rx="2" fill={color} />
-                {lines.map((line, li) => (
-                  <text key={li} x={LEFT_X + 16} y={y + 24 + li * 19}
-                    fill="#1a1a1a" fontSize="16" fontWeight="800">{line}</text>
+                {titleLines.map((line, li) => (
+                  <text key={li} x={LEFT_X + 16} y={y + 22 + li * 15}
+                    fill="#1a1a1a" fontSize="14" fontWeight="900">{line}</text>
                 ))}
-                {wrapText(node.description.replace(/\.+$/, ""), 35).slice(0,4).map((dl, di) => (
-                  <text key={"d"+di} x={LEFT_X + 16} y={y + 54 + di * 13}
-                    fill="#555555" fontSize="13">{dl}</text>
+                {descLines.map((dl, di) => (
+                  <text key={"d"+di} x={LEFT_X + 16} y={descY + di * 13}
+                    fill="#555555" fontSize="12">{dl}</text>
                 ))}
 
               </g>
@@ -351,19 +355,21 @@ function MindMap({
           {/* Right cards */}
           {rightItems.map(({ node, y }, i) => {
             const color = BRANCH_COLORS[(i * 2 + 1) % BRANCH_COLORS.length];
-            const lines = wrapText(humanizeTitle(node.title), 24);
+            const titleLines = wrapText(humanizeTitle(node.title), 24).slice(0, 2);
+            const descLines = wrapText(node.description.replace(/\.+$/, ""), 36).slice(0, titleLines.length > 1 ? 3 : 4);
+            const descY = y + 28 + titleLines.length * 15;
             return (
               <g key={node.id} style={{ cursor: "pointer" }} onClick={() => onNodeClick(node)}>
                 <rect x={RIGHT_X} y={y} width={CARD_W} height={CARD_H} rx="12"
                   fill="#fbf8f1" stroke={color} strokeWidth="1.5" strokeOpacity="0.65" />
                 <rect x={RIGHT_X} y={y + 10} width="3" height={CARD_H - 20} rx="2" fill={color} />
-                {lines.map((line, li) => (
-                  <text key={li} x={RIGHT_X + 16} y={y + 24 + li * 19}
-                    fill="#1a1a1a" fontSize="16" fontWeight="800">{line}</text>
+                {titleLines.map((line, li) => (
+                  <text key={li} x={RIGHT_X + 16} y={y + 22 + li * 15}
+                    fill="#1a1a1a" fontSize="14" fontWeight="900">{line}</text>
                 ))}
-                {wrapText(node.description.replace(/\.+$/, ""), 35).slice(0,4).map((dl, di) => (
-                  <text key={"d"+di} x={RIGHT_X + 16} y={y + 54 + di * 13}
-                    fill="#555555" fontSize="13">{dl}</text>
+                {descLines.map((dl, di) => (
+                  <text key={"d"+di} x={RIGHT_X + 16} y={descY + di * 13}
+                    fill="#555555" fontSize="12">{dl}</text>
                 ))}
 
               </g>
@@ -462,7 +468,7 @@ function MindMap({
   );
 }
 
-function FunnelFlow({
+function FunnelDiagram({
   stages,
   copiedField,
   onCopy,
@@ -471,13 +477,6 @@ function FunnelFlow({
   copiedField: string;
   onCopy: (text: string, key: string) => void;
 }) {
-  const W = 1740;
-  const H = 360;
-  const boxW = 300;
-  const boxH = 330;
-  const gap = (W - stages.length * boxW) / (stages.length + 1);
-  const y = (H - boxH) / 2;
-
   const icons: Record<string, string> = {
     trigger: "\ud83d\udce3",
     codeword: "\ud83d\udd11",
@@ -485,69 +484,71 @@ function FunnelFlow({
     warmup: "\ud83d\udd25",
     offer: "\ud83d\udcb0",
   };
-
   return (
-    <div className="funnel-flow-wrap">
-      <div className="funnel-flow-scroll">
-        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} style={{ display: "block" }}>
-          <defs>
-            <marker id="funnelArrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-              <path d="M0,0 L8,4 L0,8 Z" fill="#009b46" />
-            </marker>
-          </defs>
-          {stages.map((stage, i) => {
-            const x = gap + i * (boxW + gap);
-            const readyText = stage.auto_reply_text || stage.lead_magnet_text || stage.offer_text || "";
-            return (
-              <g key={stage.id}>
-                {i < stages.length - 1 && (
-                  <line
-                    x1={x + boxW}
-                    y1={H / 2}
-                    x2={x + boxW + gap}
-                    y2={H / 2}
-                    stroke="#009b46"
-                    strokeWidth="2"
-                    strokeDasharray="6 6"
-                    markerEnd="url(#funnelArrow)"
-                  />
+    <div className="funnel-diagram">
+      {stages.map((stage, i) => {
+        const readyText = stage.auto_reply_text || stage.lead_magnet_text || stage.offer_text || "";
+        const isLast = i === stages.length - 1;
+        return (
+          <div key={stage.id} id={`funnel-step-${stage.id}`} className={isLast ? "fd-row fd-row-last" : "fd-row"}>
+            {!isLast && <div className="fd-connector" />}
+            <div className="fd-spine">
+              <div className="fd-node">{i + 1}</div>
+            </div>
+            <div className="fd-card">
+              <div className="fd-card-head">
+                <span className="fd-step-label">Шаг {i + 1}</span>
+                <span className="fd-title">{stage.title}</span>
+                <span className="fd-icon">{icons[stage.id] || "\u2022"}</span>
+              </div>
+              <p className="fd-desc">{stage.description}</p>
+              <div className="fd-meta">
+                {stage.codeword && (
+                  <span className="fd-codeword">Слово: <b>{stage.codeword}</b></span>
                 )}
-                <foreignObject x={x} y={y} width={boxW} height={boxH}>
-                  <div
-                    className="funnel-flow-box"
-                    onClick={() => readyText && onCopy(readyText, stage.id)}
-                    style={{ cursor: readyText ? "pointer" : "default" }}
-                  >
-                    <div className="funnel-flow-box-head">
-                      <span className="funnel-flow-step">Шаг {i + 1}</span>
-                      <span className="funnel-flow-icon">{icons[stage.id] || "\u2022"}</span>
-                    </div>
-                    <h4>{stage.title}</h4>
-                    <p className="funnel-flow-desc">{stage.description}</p>
-                    {stage.codeword && (
-                      <div className="funnel-flow-codeword">
-                        Слово: <b>{stage.codeword}</b>
-                      </div>
-                    )}
-                    {stage.lead_magnet_name && (
-                      <p className="funnel-flow-magnet-name"><b>{stage.lead_magnet_name}</b></p>
-                    )}
-                    {stage.details && (
-                      <p className="funnel-flow-details">{stage.details}</p>
-                    )}
-                    {readyText && (
-                      <div className="funnel-flow-ready">
-                        <span>{copiedField === stage.id ? "Скопировано \u2713" : "Нажмите, чтобы скопировать"}</span>
-                        <p>{readyText}</p>
-                      </div>
-                    )}
-                  </div>
-                </foreignObject>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
+                {stage.lead_magnet_name && (
+                  <span className="fd-magnet-name">{stage.lead_magnet_name}</span>
+                )}
+                {readyText && (
+                  <button type="button" className="fd-copy profile-green-map-button" onClick={() => onCopy(readyText, stage.id)}>
+                    {copiedField === stage.id ? "Скопировано \u2713" : "Копировать ответ"}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+      <style jsx>{`
+        .funnel-diagram { display: flex; flex-direction: column; padding: 8px 4px 0; margin-bottom: 8px; }
+        .fd-row { position: relative; display: flex; gap: 14px; padding-bottom: 14px; }
+        .fd-row-last { padding-bottom: 0; }
+        .fd-connector { position: absolute; left: 18px; top: 36px; bottom: 0; width: 2.5px; transform: translateX(-50%); background: #009b46; border-radius: 2px; }
+        .fd-spine { flex-shrink: 0; width: 36px; }
+        .fd-node { width: 36px; height: 36px; border-radius: 50%; background: #1a5c35; border: 2.5px solid #009b46; color: #fff; font-weight: 900; font-size: 15px; display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; }
+        .fd-card { flex: 1; background: #fbf8f1; border: 1.5px solid rgba(0,155,70,0.3); border-radius: 12px; padding: 10px 14px; }
+        .fd-card-head { display: flex; align-items: center; gap: 8px; }
+        .fd-step-label { color: #009b46; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; flex-shrink: 0; }
+        .fd-title { font-size: 15px; font-weight: 800; color: #1a2e1a; flex: 1; }
+        .fd-icon { font-size: 16px; line-height: 1; flex-shrink: 0; }
+        .fd-desc { margin: 4px 0 0; color: rgba(17,17,17,0.7); font-size: 12.5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .fd-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .fd-codeword { padding: 3px 10px; border-radius: 999px; background: rgba(0,155,70,0.1); border: 1px solid rgba(0,155,70,0.35); color: #1a5c35; font-size: 12px; }
+        .fd-magnet-name { font-size: 12px; color: #1a5c35; }
+        .fd-copy { margin-left: auto; padding: 5px 12px; border-radius: 999px; background: #009b46; color: #fff; border: none; font-size: 12px; font-weight: 700; cursor: pointer; }
+        .fd-copy:hover { background: #0bb053; }
+        @media (max-width: 600px) {
+          .fd-title { font-size: 14px; }
+          .fd-copy { margin-left: 0; }
+        }
+        @media print {
+          .fd-row { padding-bottom: 10px; break-inside: avoid; }
+          .fd-card { box-shadow: none; }
+          .fd-copy { display: none; }
+          .fd-desc { -webkit-line-clamp: unset; overflow: visible; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -584,6 +585,7 @@ export default function ContentMapPage() {
   const [calendarAiLoading, setCalendarAiLoading] = useState(false);
   const [calendarAiComment, setCalendarAiComment] = useState("");
   const [calendarAiDraft, setCalendarAiDraft] = useState<CalendarPlanItem | null>(null);
+  const [servicePaid, setServicePaid] = useState(false);
   const [discussSource, setDiscussSource] = useState<DiscussSource | null>(null);
   const [aiRoles, setAiRoles] = useState<AiRole[]>([]);
   const [carouselSlides, setCarouselSlides] = useState<string[]>([]);
@@ -657,6 +659,36 @@ export default function ContentMapPage() {
     };
     loadRoles();
   }, []);
+
+  const goServicePayment = () => {
+    const url = email
+      ? `/app/service-payment?email=${encodeURIComponent(email)}`
+      : "/app/service-payment";
+
+    window.location.href = url;
+  };
+
+  useEffect(() => {
+    if (!email) {
+      setServicePaid(false);
+      return;
+    }
+
+    let alive = true;
+
+    fetch(`/api/service-access/check?email=${encodeURIComponent(email)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (alive) setServicePaid(data?.paid === true);
+      })
+      .catch(() => {
+        if (alive) setServicePaid(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [email]);
 
   const generate = async () => {
     setLoading(true);
@@ -775,7 +807,25 @@ export default function ContentMapPage() {
     }
   };
 
+
+  const focusCalendarAiModal = () => {
+    window.setTimeout(() => {
+      const backdrop = document.querySelector('[data-calendar-ai-modal="true"]') as HTMLElement | null;
+      const modal = document.querySelector('[data-calendar-ai-modal="true"] .calendar-ai-modal') as HTMLElement | null;
+
+      document.body.classList.add("calendar-ai-body-locked");
+
+      backdrop?.scrollTo({ top: 0, behavior: "auto" });
+      modal?.scrollTo({ top: 0, behavior: "auto" });
+    }, 30);
+  };
+
   const openCalendarAi = async (item: CalendarPlanItem) => {
+    if (!servicePaid) {
+      goServicePayment();
+      return;
+    }
+
     const enriched = {
       ...item,
       task: item.task || item.description || "",
@@ -788,6 +838,11 @@ export default function ContentMapPage() {
     setCalendarAiQuestion("");
     setCalendarAiComment("");
     setCalendarAiOpen(true);
+    focusCalendarAiModal();
+    setTimeout(() => {
+      const modal = document.querySelector(".calendar-ai-modal") as HTMLElement | null;
+      modal?.scrollTo({ top: 0, behavior: "auto" });
+    }, 80);
 
     // Автоматически генерируем пост при открытии
     if (!email) return;
@@ -843,10 +898,11 @@ export default function ContentMapPage() {
     setCalendarAiQuestion("");
     setCalendarAiComment("");
     setCalendarAiOpen(true);
+    focusCalendarAiModal();
   };
 
   const askCalendarAi = async () => {
-    if (!selectedItem || !calendarAiQuestion.trim() || !email) return;
+    if (!selectedItem || !email) return;
 
     setCalendarAiLoading(true);
 
@@ -857,7 +913,7 @@ export default function ContentMapPage() {
         body: JSON.stringify({
           email,
           item: selectedItem,
-          question: calendarAiQuestion.trim(),
+          question: calendarAiQuestion.trim() || "Подготовь готовый текст публикации по этой карточке. Пиши напрямую на вы, без маркетинговых терминов.",
           agent: selectedAgent,
         }),
       });
@@ -916,7 +972,7 @@ export default function ContentMapPage() {
 
     setMap(nextMap);
     await saveMapDraft(nextMap);
-    setCalendarAiOpen(false);
+    setCalendarAiOpen(false); document.body.classList.remove("calendar-ai-body-locked");
   };
 
   const techSetupPrices: Record<string, number> = {
@@ -935,14 +991,17 @@ export default function ContentMapPage() {
   if (profileExists === false) {
     return (
       <section className="map-page map-empty">
-        <div className="map-empty-card">
-          <p className="eyebrow">Карта контента</p>
-          <h1>Сначала заполните профиль</h1>
+        <div className="profile-question-card profile-intro-card content-map-profile-gate">
+          <h1>Профиль нужен, чтобы ЛЕС<span className="brand-ik">ik</span> думал точнее</h1>
+
           <p>
-            ЛЕС<span className="brand-ik">ik</span> должен понять вашу нишу, цель, площадки и препятствия.
-            После этого он сможет собрать карту контента и календарь публикаций.
+            Мы соберём базу: кто вы, какая ниша, цель, препятствие и где вы ведёте контент.
+            После этого можно будет перейти к аудитории, продукту и карте контента
           </p>
-          <Link href="/app/profile">Перейти к заполнению</Link>
+
+          <a href="/app/profile" className="content-map-profile-gate-button profile-green-map-button">
+            Перейти к заполнению
+          </a>
         </div>
       </section>
     );
@@ -957,18 +1016,20 @@ export default function ContentMapPage() {
         </div>
 
         <div className="map-actions">
-          <button type="button" onClick={generate} disabled={loading || !email}>
-            {loading ? `Формирую магию... ${progress}%` : map ? "Пересобрать карту" : "Сформировать карту"}
-          </button>
+          {map && (
+            <button type="button" onClick={generate} disabled={loading || !email} className="content-map-generate-btn" style={{ background:"linear-gradient(180deg, #0f6b45 0%, #06452e 100%)", color:"#ffffff", WebkitTextFillColor:"#ffffff", border:"none", opacity:1, boxShadow:"0 12px 26px rgba(6,69,46,0.24)" }}>
+              {loading ? `Формирую магию... ${progress}%` : "Пересобрать карту"}
+            </button>
+          )}
 
           {map && (
-            <a href={`${API_BASE}/content-map/ics?email=${encodeURIComponent(email)}`}>
-              Скачать .ics
+            <a href={`${API_BASE}/content-map/ics?email=${encodeURIComponent(email)}${servicePaid ? "" : "&preview=1"}`}>
+              {servicePaid ? "Скачать .ics" : "Скачать первые 3 дня .ics"}
             </a>
           )}
           {map && (
-            <a href={`${API_BASE}/content-map/pdf?email=${encodeURIComponent(email)}`} target="_blank">
-              Скачать PDF
+            <a href={`${API_BASE}/content-map/pdf?email=${encodeURIComponent(email)}${servicePaid ? "" : "&preview=1"}`} target="_blank">
+              {servicePaid ? "Скачать PDF" : "Скачать первые 3 дня PDF"}
             </a>
           )}
 
@@ -979,6 +1040,9 @@ export default function ContentMapPage() {
         <div className="map-start">
           <h2>Профиль найден</h2>
           <p>Нажмите кнопку, и ЛЕС<span className="brand-ik">ik</span> соберёт карту и календарь.</p>
+          <button type="button" className="funnel-generate-button" onClick={generate} disabled={loading || !email}>
+            {loading ? `Формирую... ${progress}%` : "Сформировать карту"}
+          </button>
         </div>
       )}
 
@@ -988,7 +1052,7 @@ export default function ContentMapPage() {
 
       <div className="calendar-head">
         <h2>Воронка для бота</h2>
-        <p>Кодовое слово в директ, лид-магнит и продажа продукта</p>
+        <p>Кодовое слово в директ, бесплатный подарок и продажа продукта</p>
       </div>
 
       {true && (
@@ -997,7 +1061,7 @@ export default function ContentMapPage() {
             <h2>Воронка ещё не собрана</h2>
             <p>
               ЛЕС<span className="brand-ik">ik</span> построит воронку для бота: кодовое слово в директ,
-              лид-магнит и продажа продукта — на основе анализа аудитории и продукта из профиля.
+              бесплатный подарок и продажа продукта — на основе анализа аудитории и продукта из профиля.
             </p>
             <button
               type="button"
@@ -1029,7 +1093,8 @@ export default function ContentMapPage() {
                   {funnelLoading ? `Собираю... ${funnelProgress}%` : "Пересобрать воронку"}
                 </button>
               </div>
-              <FunnelFlow
+
+              <FunnelDiagram
                 stages={funnel.stages}
                 copiedField={copiedField}
                 onCopy={copyToClipboard}
@@ -1037,7 +1102,7 @@ export default function ContentMapPage() {
 
               <div className="funnel-order-card">
                 <b>ЗАКАЗАТЬ ПОД КЛЮЧ</b>
-                <p>Соберём этого бота технически: настроим кодовое слово, автоответы, выдачу лид-магнита и приём оплаты.</p>
+                <p>Соберём этого бота технически: настроим кодовое слово, автоответы, выдачу подарка и приём оплаты.</p>
                 <div className="funnel-order-price">
                   от 4 500 ₽
                 </div>
@@ -1059,21 +1124,69 @@ export default function ContentMapPage() {
         <div className="content-calendar">
           <div className="calendar-head">
             <h2>Календарь публикаций</h2>
-            <p>14 дней контент-действий</p>
+            <p>{servicePaid ? "14 дней контент-действий" : "Первые 3 дня открыты бесплатно. Остальные дни доступны после оплаты."}</p>
           </div>
 
+          {!servicePaid && (
+            <div style={{
+              margin: "0 0 18px",
+              padding: "18px",
+              borderRadius: "22px",
+              background: "linear-gradient(135deg, rgba(0,155,70,0.12), rgba(255,194,56,0.16))",
+              border: "1px solid rgba(0,155,70,0.18)",
+              display: "flex",
+              gap: "14px",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+            }}>
+              <div>
+                <b style={{ color: "#1a5c35" }}>Полная карта доступна после оплаты</b>
+                <p style={{ margin: "5px 0 0", color: "#4d5d52" }}>
+                  Откроем все 14 дней, обсуждение с ИИ и полное скачивание календаря.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={goServicePayment}
+                style={{
+                  minHeight: 46,
+                  padding: "0 18px",
+                  borderRadius: 999,
+                  border: "none",
+                  background: "#009b46",
+                  color: "#fff",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                  boxShadow: "0 12px 24px rgba(0,155,70,0.22)",
+                }}
+              >
+                Открыть за 2900 ₽
+              </button>
+            </div>
+          )}
+
           <div className="calendar-grid">
-            {map.calendar.map((item) => (
+            {map.calendar.map((item) => {
+              const locked = !servicePaid && Number(item.day || 0) > 3;
+              return (
               <article
                 className="calendar-card calendar-card-clickable"
                 key={item.day}
-                style={donePosts[`post-${item.day}`] ? { opacity: 0.6, borderColor: "#009b46", background: "rgba(0,155,70,0.08)" } : {}}
+                onClick={() => locked ? goServicePayment() : openCalendarAi(item)}
+                style={{
+                  minHeight: 236,
+                  display: "flex",
+                  flexDirection: "column",
+                  ...(donePosts[`post-${item.day}`] ? { opacity: 0.6, borderColor: "#009b46", background: "rgba(0,155,70,0.08)" } : {}),
+                  ...(locked ? { position: "relative", overflow: "hidden", borderColor: "rgba(0,155,70,0.18)", background: "rgba(246,241,232,0.92)" } : {}),
+                }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
                   <span>День {item.day} · {item.platform || item.date_label}</span>
                   <button
                     type="button"
-                    onClick={(e) => { e.stopPropagation(); toggleDonePost(`post-${item.day}`); }}
+                    onClick={(e) => { e.stopPropagation(); if (!locked) toggleDonePost(`post-${item.day}`); }}
                     style={{
                       width: 28, height: 28, borderRadius: "50%", border: "2px solid #009b46",
                       background: donePosts[`post-${item.day}`] ? "#009b46" : "transparent",
@@ -1084,26 +1197,57 @@ export default function ContentMapPage() {
                     {donePosts[`post-${item.day}`] ? "✓" : ""}
                   </button>
                 </div>
-                <h3 onClick={() => openCalendarAi(item)} style={{ cursor: "pointer" }}>{humanizeTitle(item.title || item.topic || "Без темы")}</h3>
-                <p onClick={() => openCalendarAi(item)} style={{ cursor: "pointer" }}>{(item.description || item.task || "").replace(/\.+$/, "")}</p>
-                <button type="button" className="calendar-ai-inline-button" onClick={() => openCalendarAi(item)}>
-                  Обсудить с ИИ
+                <h3 style={locked ? { filter: "blur(4px)", userSelect: "none" } : {}}>
+                  {humanizeTitle(item.title || item.topic || "Без темы")}
+                </h3>
+                <p style={locked ? { filter: "blur(4px)", userSelect: "none" } : {}}>
+                  {(item.description || item.task || "").replace(/\.+$/, "")}
+                </p>
+                <button
+                  type="button"
+                  className="calendar-ai-inline-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    locked ? goServicePayment() : openCalendarAi(item);
+                  }}
+                >
+                  {servicePaid ? "Обсудить с маркетологом" : (locked ? "Открыть за 2900 ₽" : "Обсудить с маркетологом после оплаты")}
                 </button>
+                {locked && (
+                  <div style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    pointerEvents: "none",
+                    background: "linear-gradient(180deg, rgba(255,248,236,0.10), rgba(255,248,236,0.62))",
+                    color: "#1a5c35",
+                    fontWeight: 900,
+                    textAlign: "center",
+                    padding: 18,
+                  }}>
+                    День доступен после оплаты
+                  </div>
+                )}
               </article>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
 
-      {calendarAiOpen && selectedItem && (
-        <div className="profile-modal-backdrop" onClick={() => setCalendarAiOpen(false)}>
-          <div className="profile-modal profile-modal-large" onClick={(e) => e.stopPropagation()}>
+      {typeof document !== "undefined"
+        ? createPortal(
+            calendarAiOpen && selectedItem && (
+        <div data-calendar-ai-modal="true" className="profile-modal-backdrop calendar-ai-modal-backdrop" onClick={() => setCalendarAiOpen(false)}>
+          <div className="profile-modal profile-modal-large calendar-ai-modal" onClick={(e) => e.stopPropagation()}>
             <div className="profile-modal-head">
               <div>
                 <p className="eyebrow">Редактор контента</p>
                 <h2>{selectedItem.title || selectedItem.topic || "Пост"}</h2>
               </div>
-              <button type="button" onClick={() => { setCalendarAiOpen(false); setCarouselSlides([]); }}>×</button>
+              <button type="button" onClick={() => { setCalendarAiOpen(false); document.body.classList.remove("calendar-ai-body-locked"); setCarouselSlides([]); }}>×</button>
             </div>
 
             <div className="profile-form-block">
@@ -1114,21 +1258,21 @@ export default function ContentMapPage() {
             </div>
 
             <div className="profile-form-block">
-              <h3>Ваш вопрос к ИИ</h3>
-              <p style={{fontSize:13, color:"#009b46", marginBottom:8}}>ИИ-помощник поможет улучшить, переписать или адаптировать этот пост</p>
+              <h3>Ваш вопрос к маркетологу</h3>
+              <p style={{fontSize:13, color:"#009b46", marginBottom:8}}>Маркетолог поможет улучшить, переписать или адаптировать этот пост</p>
               <textarea
                 value={calendarAiQuestion}
-                placeholder="Например: сделай этот пост более продающим, но без агрессии"
+                placeholder="Например: сделай текст понятнее, мягче или короче"
                 onChange={(e) => setCalendarAiQuestion(e.target.value)}
               />
               <button
                 type="button"
                 className="modal-save-button"
                 onClick={askCalendarAi}
-                disabled={calendarAiLoading || !calendarAiQuestion.trim()}
+                disabled={calendarAiLoading}
               style={calendarAiLoading ? { background: "linear-gradient(90deg, #ff9800, #ffc238, #ff9800)", backgroundSize: "200%", animation: "shimmer 1.5s infinite linear" } : {}}
               >
-                {calendarAiLoading ? "Пишу пост для тебя... 💚" : "Обсудить с ИИ"}
+                {calendarAiLoading ? "Пишу пост для тебя... 💚" : "Обсудить с маркетологом"}
               </button>
             </div>
 
@@ -1304,7 +1448,10 @@ export default function ContentMapPage() {
             </button>
           </div>
         </div>
-      )}
+      ),
+            document.body
+          )
+        : null}
     </section>
   );
 }

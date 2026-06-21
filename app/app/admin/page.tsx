@@ -36,6 +36,10 @@ type AdminProfile = {
   monthly_goal: string;
   blocker: string;
   created_at: string;
+  primary_platform?: string;
+  has_product?: boolean;
+  has_funnel?: boolean;
+  has_content_map?: boolean;
   details?: Partial<ProfileDetails>;
 };
 
@@ -169,6 +173,18 @@ export default function AdminPage() {
     load();
   };
 
+  const userStats = {
+    total: profiles.length,
+    withProduct: profiles.filter((p) => p.has_product || p.details?.product_name).length,
+    withFunnel: profiles.filter((p) => p.has_funnel).length,
+    withMap: profiles.filter((p) => p.has_content_map).length,
+  };
+  const platformCounts = profiles.reduce<Record<string, number>>((acc, p) => {
+    const key = (p.primary_platform || p.platform || "Не указана").trim() || "Не указана";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+
   return (
     <section className="map-page">
       <div className="map-topbar">
@@ -200,6 +216,23 @@ export default function AdminPage() {
             <p>Всего: <b>{stats.video_views.total}</b></p>
             <small>По видео ниже в таблице</small>
           </article>
+        </div>
+      )}
+
+      {profiles.length > 0 && (
+        <div className="content-calendar">
+          <div className="calendar-head">
+            <h2>Зарегистрированные пользователи</h2>
+            <p>Всего: {userStats.total} · с продуктом: {userStats.withProduct} · с воронкой: {userStats.withFunnel} · с картой контента: {userStats.withMap}</p>
+          </div>
+          <div className="calendar-grid">
+            {Object.entries(platformCounts).map(([plat, cnt]) => (
+              <article className="calendar-card" key={plat}>
+                <h3>{plat}</h3>
+                <p>Пользователей: <b>{cnt}</b></p>
+              </article>
+            ))}
+          </div>
         </div>
       )}
 
@@ -274,91 +307,148 @@ export default function AdminPage() {
 
       <div className="content-calendar">
         <div className="calendar-head">
-          <h2>Профили клиентов</h2>
-          <p>Можно открыть профиль и поменять тариф, дату PRO и другие данные.</p>
+          <h2>Анкеты пользователей</h2>
+          <p>Как пользователи заполнили профиль</p>
         </div>
-        <div className="calendar-grid">
-          {profiles.map((profile) => {
-            const details: ProfileDetails = {
-              ...emptyDetails,
-              ...(profile.details || {}),
-              email: profile.email,
-            };
-
-            return (
-              <article className="calendar-card" key={profile.id}>
-                <h3>{profile.name || "Без имени"}</h3>
-                <p>{profile.email}</p>
-                <p>{profile.niche}</p>
-
-                <label>Тариф</label>
-                <select
-                  value={details.tariff_plan}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setProfiles((prev) =>
-                      prev.map((item) =>
-                        item.id === profile.id
-                          ? { ...item, details: { ...(item.details || {}), tariff_plan: value } }
-                          : item
-                      )
-                    );
-                  }}
-                >
-                  <option value="free">FREE</option>
-                  <option value="pro">PRO</option>
-                </select>
-
-                {(profile.details?.tariff_plan || "free") === "pro" && (
-                  <>
-                    <label>Оплачено до</label>
-                    <input
-                      type="date"
-                      value={profile.details?.pro_paid_until || ""}
-                      onChange={(e) =>
-                        setProfiles((prev) =>
-                          prev.map((item) =>
-                            item.id === profile.id
-                              ? { ...item, details: { ...(item.details || {}), pro_paid_until: e.target.value } }
-                              : item
-                          )
-                        )
-                      }
-                    />
-                  </>
-                )}
-
-                <label>Анализ аудитории</label>
-                <textarea
-                  value={profile.details?.audience_analysis || ""}
-                  onChange={(e) =>
-                    setProfiles((prev) =>
-                      prev.map((item) =>
-                        item.id === profile.id
-                          ? { ...item, details: { ...(item.details || {}), audience_analysis: e.target.value } }
-                          : item
-                      )
-                    )
-                  }
-                />
-
-                <button
-                  type="button"
-                  className="modal-save-button"
-                  onClick={() =>
-                    saveProfileDetails(profile, {
-                      ...details,
-                      ...(profile.details || {}),
-                    })
-                  }
-                >
-                  Сохранить профиль
-                </button>
-              </article>
-            );
-          })}
+        <div style={{ overflowX: "auto" }}>
+          <table className="admin-users-table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Имя</th>
+                <th>Кто клиент</th>
+                <th>Ниша</th>
+                <th>Площадка</th>
+                <th>Цель на месяц</th>
+                <th>Препятствие</th>
+              </tr>
+            </thead>
+            <tbody>
+              {profiles.map((p) => (
+                <tr key={p.id}>
+                  <td>{p.email || "—"}</td>
+                  <td>{p.name || "—"}</td>
+                  <td>{p.client_type || "—"}</td>
+                  <td>{p.niche || "—"}</td>
+                  <td>{p.primary_platform || p.platform || "—"}</td>
+                  <td>{p.monthly_goal || "—"}</td>
+                  <td>{p.blocker || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+        <style jsx>{`
+          .admin-users-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
+          .admin-users-table th, .admin-users-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid rgba(0,155,70,0.15); vertical-align: top; }
+          .admin-users-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #009b46; font-weight: 800; white-space: nowrap; }
+          .admin-users-table td { color: rgba(17,17,17,0.8); }
+          .admin-users-table tr:hover td { background: rgba(0,155,70,0.05); }
+        `}</style>
       </div>
+
+      <div className="content-calendar">
+        <div className="calendar-head">
+          <h2>Профили клиентов</h2>
+          <p>Тариф, статус оплаты и быстрые статусы по каждому клиенту.</p>
+        </div>
+        <div style={{ overflowX: "auto" }}>
+          <table className="admin-clients-table">
+            <thead>
+              <tr>
+                <th>Имя</th>
+                <th>Email</th>
+                <th>Ниша</th>
+                <th>Площадка</th>
+                <th>Статусы</th>
+                <th>Тариф</th>
+                <th>Оплачено до</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {profiles.map((profile) => {
+                const details: ProfileDetails = {
+                  ...emptyDetails,
+                  ...(profile.details || {}),
+                  email: profile.email,
+                };
+                const hasProduct = Boolean(profile.has_product || profile.details?.product_name);
+                return (
+                  <tr key={profile.id}>
+                    <td>{profile.name || "—"}</td>
+                    <td>{profile.email}</td>
+                    <td>{profile.niche || "—"}</td>
+                    <td>{profile.primary_platform || profile.platform || "—"}</td>
+                    <td>
+                      <span className={hasProduct ? "ac-badge on" : "ac-badge"}>Продукт</span>
+                      <span className={profile.has_funnel ? "ac-badge on" : "ac-badge"}>Воронка</span>
+                      <span className={profile.has_content_map ? "ac-badge on" : "ac-badge"}>Карта</span>
+                    </td>
+                    <td>
+                      <select
+                        value={details.tariff_plan}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setProfiles((prev) =>
+                            prev.map((item) =>
+                              item.id === profile.id
+                                ? { ...item, details: { ...(item.details || {}), tariff_plan: value } }
+                                : item
+                            )
+                          );
+                        }}
+                      >
+                        <option value="free">FREE</option>
+                        <option value="pro">PRO</option>
+                      </select>
+                    </td>
+                    <td>
+                      {(profile.details?.tariff_plan || "free") === "pro" ? (
+                        <input
+                          type="date"
+                          value={profile.details?.pro_paid_until || ""}
+                          onChange={(e) =>
+                            setProfiles((prev) =>
+                              prev.map((item) =>
+                                item.id === profile.id
+                                  ? { ...item, details: { ...(item.details || {}), pro_paid_until: e.target.value } }
+                                  : item
+                              )
+                            )
+                          }
+                        />
+                      ) : (
+                        <span style={{ color: "#aaa" }}>—</span>
+                      )}
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        className="ac-save"
+                        onClick={() => saveProfileDetails(profile, { ...details, ...(profile.details || {}) })}
+                      >
+                        Сохранить
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <style jsx>{`
+          .admin-clients-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 820px; }
+          .admin-clients-table th, .admin-clients-table td { text-align: left; padding: 9px 12px; border-bottom: 1px solid rgba(0,155,70,0.15); vertical-align: middle; }
+          .admin-clients-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #009b46; font-weight: 800; white-space: nowrap; }
+          .admin-clients-table select, .admin-clients-table input { padding: 5px 8px; border: 1px solid rgba(0,155,70,0.3); border-radius: 8px; font-size: 13px; }
+          .ac-badge { display: inline-block; margin: 2px; padding: 2px 7px; border-radius: 999px; font-size: 10px; background: rgba(0,0,0,0.06); color: #999; white-space: nowrap; }
+          .ac-badge.on { background: rgba(0,155,70,0.15); color: #1a5c35; }
+          .ac-save { padding: 6px 14px; border: none; border-radius: 8px; background: #009b46; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; }
+          .ac-save:hover { background: #0bb053; }
+        `}</style>
+      </div>
+
     </section>
   );
 }

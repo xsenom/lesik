@@ -23,6 +23,7 @@ type ProfileDetails = {
   platforms: string[];
   audience_analysis: string;
   social_links: { telegram: string; instagram: string; youtube: string; vk: string; tiktok: string; site: string; other: string; };
+  social_analysis: string;
   product_status: string;
   product_name: string;
   product_description: string;
@@ -56,6 +57,15 @@ const emptyAnswers: Answers = {
   blocker: "",
 };
 
+function cleanAnalysis(text: string): string {
+  return (text || "")
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*/g, "")
+    .replace(/^\s*[-•]\s+/gm, "• ")
+    .trim();
+}
+
 const emptyDetails: ProfileDetails = {
   email: "",
   notify_email: true,
@@ -63,6 +73,7 @@ const emptyDetails: ProfileDetails = {
   platforms: [],
   audience_analysis: "",
   social_links: { telegram: "", instagram: "", youtube: "", vk: "", tiktok: "", site: "", other: "" },
+  social_analysis: "",
   product_status: "",
   product_name: "",
   product_description: "",
@@ -119,7 +130,10 @@ const basicQuestions = [
 export default function ProfilePage() {
 
   // LESIK_PROFILE_PAGE_LOAD_TEST_RESULT
-  useEffect(() => {
+  
+
+
+useEffect(() => {
     const loadProfileTestResult = () => {
       try {
         const raw = window.localStorage.getItem("lesik_test_result");
@@ -140,7 +154,20 @@ export default function ProfilePage() {
     window.addEventListener("focus", loadProfileTestResult);
     window.addEventListener("storage", loadProfileTestResult);
 
-    return () => {
+  
+  const normalizeNicheForPositioning = (value: string) => {
+    const raw = (value || "").trim();
+    const lower = raw.toLowerCase();
+
+    if (!raw) return "чат-ботам";
+    if (lower.includes("чат") && lower.includes("бот")) return "чат-ботам";
+
+    return lower;
+  };
+
+  const positioningText = `${answers.client_type || "Эксперт"} по ${normalizeNicheForPositioning(answers.niche || "чат-боты")}`;
+
+  return () => {
       window.removeEventListener("focus", loadProfileTestResult);
       window.removeEventListener("storage", loadProfileTestResult);
     };
@@ -157,7 +184,11 @@ export default function ProfilePage() {
   const [productOpen, setProductOpen] = useState(false);
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [serviceAccessPaid, setServiceAccessPaid] = useState(false);
+  const [serviceAccessUntilText, setServiceAccessUntilText] = useState("");
   const [socialOpen, setSocialOpen] = useState(false);
+  const [socialAnalysisLoading, setSocialAnalysisLoading] = useState(false);
+  const [socialAnalysisProgress, setSocialAnalysisProgress] = useState(0);
   const [audienceUploading, setAudienceUploading] = useState(false);
   const [audienceAiOpen, setAudienceAiOpen] = useState(false);
   const [audienceAiLoading, setAudienceAiLoading] = useState(false);
@@ -175,6 +206,43 @@ export default function ProfilePage() {
     "Что чаще всего мешает клиенту купить или начать работу с вами?",
   ];
   const [answers, setAnswers] = useState<Answers>(emptyAnswers);
+
+  useEffect(() => {
+    const serviceEmail = (
+      answers.email ||
+      (typeof window !== "undefined" ? window.localStorage.getItem("lesik_email") : "") ||
+      ""
+    ).trim().toLowerCase();
+
+    if (!serviceEmail) {
+      setServiceAccessPaid(false);
+      setServiceAccessUntilText("");
+      return;
+    }
+
+    let alive = true;
+
+    fetch(`/api/service-access/check?email=${encodeURIComponent(serviceEmail)}`, {
+      cache: "no-store",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!alive) return;
+
+        setServiceAccessPaid(data?.paid === true);
+        setServiceAccessUntilText(data?.accessUntilText || "");
+      })
+      .catch(() => {
+        if (!alive) return;
+
+        setServiceAccessPaid(false);
+        setServiceAccessUntilText("");
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [answers.email]);
   const [details, setDetails] = useState<ProfileDetails>(emptyDetails);
   const [avatar, setAvatar] = useState("");
 
@@ -549,11 +617,80 @@ export default function ProfilePage() {
       }
     }
   };
+  useEffect(() => {
+    if (!socialAnalysisLoading) {
+      setSocialAnalysisProgress(0);
+      return;
+    }
+
+    setSocialAnalysisProgress(5);
+
+    const timer = window.setInterval(() => {
+      setSocialAnalysisProgress((value) => {
+        if (value >= 95) return 95;
+        if (value < 35) return Math.min(95, value + 7);
+        if (value < 70) return Math.min(95, value + 4);
+        return Math.min(95, value + 2);
+      });
+    }, 900);
+
+    return () => window.clearInterval(timer);
+  }, [socialAnalysisLoading]);
+
+const runSocialLinksAnalysis = async () => {
+    const email = answers.email || localStorage.getItem("lesik_email") || "";
+
+    if (!email) {
+      alert("Сначала укажите email в профиле");
+      return;
+    }
+
+    const hasLinks = Object.values(details.social_links).some((value) => value.trim().length > 5);
+
+    if (!hasLinks) {
+      alert("Сначала добавьте хотя бы одну ссылку на соцсеть");
+      setSocialOpen(true);
+      return;
+    }
+
+    setSocialAnalysisProgress(5);
+    setSocialAnalysisLoading(true);
+
+    try {
+      await saveDetails({ closeDetails: false });
+
+      const res = await fetch(`${API_BASE}/social-analysis/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      const data = await res.json();
+      const analysis = data.analysis || "";
+
+      setDetails((prev) => ({
+        ...prev,
+        social_analysis: analysis,
+      }));
+
+      setSocialOpen(true);
+    } catch (e) {
+      console.error(e);
+      alert("Не удалось проанализировать соцсети. Проверь backend и OPENAI_API_KEY");
+    } finally {
+      setSocialAnalysisLoading(false);
+    }
+  };
+
   const saveNotify = async () => {
     await saveDetails({ closeDetails: false });
     setNotifyOpen(false);
   };
 
+  const socialHasLinks = Object.values(details.social_links).some((value) => value.trim().length > 5);
+  const socialAnalysisReady = Boolean((details.social_analysis || "").trim().length > 20);
   const audienceReady = details.audience_analysis.trim().length > 20;
   const suggestedWhyBuy = extractAudienceSection(details.audience_analysis, "Желания");
   const suggestedWhyNotBuy = extractAudienceSection(details.audience_analysis, "Возражения");
@@ -809,41 +946,34 @@ export default function ProfilePage() {
         </div>
 
         <div className="client-status-grid">
-          <div className="client-status">
-            <div className="client-status-actions">
-              <button
-                type="button"
-                className="status-help"
-                data-tooltip="Это нужно для точного позиционирования клиента. Заполните роль в базовых ответах: эксперт, предприниматель, школа и т.д"
-                aria-label="Как заполнить поле кто клиент"
-              >
-                ?
-              </button>
-              <button type="button" className="status-edit" onClick={() => openBasicQuestion(2)} aria-label="Редактировать кто клиент">
-                ✎
-              </button>
-            </div>
-            <span>Кто клиент</span>
-            <b>{answers.client_type}</b>
-          </div>
+          <div className="client-status client-status-positioning">
+              <span>Позиционирование</span>
+              <b>
+                {`${answers.client_type || "Эксперт"} по ${(() => {
+                  const raw = (answers.niche || "чат-боты").trim();
+                  const lower = raw.toLowerCase();
 
-          <div className="client-status">
-            <div className="client-status-actions">
-              <button
-                type="button"
-                className="status-help"
-                data-tooltip="Ниша помогает ЛЕСik подбирать точные идеи и темы"
-                aria-label="Как заполнить поле ниша"
-              >
-                ?
-              </button>
-              <button type="button" className="status-edit" onClick={() => openBasicQuestion(3)} aria-label="Редактировать нишу">
-                ✎
-              </button>
+                  if (!raw) return "чат-ботам";
+                  if (lower.includes("чат") && lower.includes("бот")) return "чат-ботам";
+
+                  return lower;
+                })()}`}
+              </b>
+
+              <div className="client-status-actions">
+                <button
+                  type="button"
+                  className="status-help"
+                  data-tooltip="Это объединённое позиционирование: кто вы + в какой нише работаете"
+                  aria-label="Как заполнить позиционирование"
+                >
+                  ?
+                </button>
+                <button type="button" className="status-edit" onClick={() => openBasicQuestion(2)} aria-label="Редактировать позиционирование">
+                  ✎
+                </button>
+              </div>
             </div>
-            <span>Ниша</span>
-            <b>{answers.niche}</b>
-          </div>
 
           <div className="client-status">
             <div className="client-status-actions">
@@ -925,9 +1055,11 @@ export default function ProfilePage() {
             </div>
             <span>Тариф</span>
             <b>
-              {details.tariff_plan === "pro"
-                ? `PRO${details.pro_paid_until ? ` до ${details.pro_paid_until}` : ""}`
-                : "FREE"}
+              {serviceAccessPaid
+                ? `FULL${serviceAccessUntilText ? ` до ${serviceAccessUntilText}` : ""}`
+                : details.tariff_plan === "pro"
+                  ? `PRO${details.pro_paid_until ? ` до ${details.pro_paid_until}` : ""}`
+                  : "FREE"}
             </b>
           </div>
         </div>
@@ -1006,6 +1138,30 @@ export default function ProfilePage() {
                 ? Object.entries(details.social_links).filter(([,v]) => v.trim()).map(([k]) => k).join(", ")
                 : "Добавьте ссылки на ваши активные каналы"}
             </p>
+            {socialHasLinks && (
+              <button
+                type="button"
+                className="audience-ai-start-button"
+                style={{marginTop:"10px",fontSize:"13px",minHeight:"36px"}}
+                onClick={runSocialLinksAnalysis}
+                disabled={socialAnalysisLoading}
+              >
+                {socialAnalysisLoading ? `Анализирую... ${socialAnalysisProgress}%` : socialAnalysisReady ? "Обновить анализ соцсетей" : "Проанализировать соцсети"}
+              </button>
+            )}
+
+            {socialAnalysisLoading && (
+              <div className="social-analysis-progress-wrap">
+                <div className="social-analysis-progress-bar">
+                  <span style={{ width: `${socialAnalysisProgress}%` }} />
+                </div>
+              </div>
+            )}
+
+            {socialAnalysisReady && !socialAnalysisLoading && (
+              <small className="social-analysis-ready">Анализ соцсетей готов и будет учитываться в карте контента</small>
+            )}
+
             {!Object.values(details.social_links).some(v => v.trim().length > 5) && (
               <button type="button" className="audience-ai-start-button" style={{marginTop:"10px",fontSize:"13px",minHeight:"36px"}} onClick={() => setSocialOpen(true)}>
                 Добавить ссылки
@@ -1122,9 +1278,22 @@ export default function ProfilePage() {
                 </div>
               ))}
             </div>
-            <button type="button" className="modal-save-button" onClick={() => { void saveDetails({ closeDetails: false }); setSocialOpen(false); }} disabled={saving}>
-              {saving ? "Сохраняю..." : "Сохранить ссылки"}
-            </button>
+            {details.social_analysis && (
+              <div className="social-analysis-result">
+                <h3>Анализ соцсетей</h3>
+                <p>{details.social_analysis}</p>
+              </div>
+            )}
+
+            <div className="social-analysis-actions">
+              <button type="button" className="modal-save-button secondary" onClick={() => { void saveDetails({ closeDetails: false }); setSocialOpen(false); }} disabled={saving}>
+                {saving ? "Сохраняю..." : "Сохранить ссылки"}
+              </button>
+
+              <button type="button" className="modal-save-button" onClick={runSocialLinksAnalysis} disabled={saving || socialAnalysisLoading}>
+                {socialAnalysisLoading ? `Анализирую... ${socialAnalysisProgress}%` : details.social_analysis ? "Обновить анализ" : "Проанализировать соцсети"}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1195,8 +1364,12 @@ export default function ProfilePage() {
               <h3><span className="readiness-card-header"><span>1</span>Тариф</span></h3>
               <p>Тариф изменяется только после оплаты</p>
               <div className="tariff-display">
-                <span className={details.tariff_plan === "pro" ? "tariff-badge pro" : "tariff-badge free"}>
-                  {details.tariff_plan === "pro" ? `PRO${details.pro_paid_until ? ` до ${details.pro_paid_until}` : ""}` : "FREE"}
+                <span className={(serviceAccessPaid || details.tariff_plan === "pro") ? "tariff-badge pro" : "tariff-badge free"}>
+                  {serviceAccessPaid
+                    ? `FULL${serviceAccessUntilText ? ` до ${serviceAccessUntilText}` : ""}`
+                    : details.tariff_plan === "pro"
+                      ? `PRO${details.pro_paid_until ? ` до ${details.pro_paid_until}` : ""}`
+                      : "FREE"}
                 </span>
               </div>
             </div>
@@ -1208,7 +1381,7 @@ export default function ProfilePage() {
                 чего хотят, почему подписываются, почему покупают или сомневаются</p>
               {details.audience_analysis && (
                 <textarea
-                  value={details.audience_analysis}
+                  value={cleanAnalysis(details.audience_analysis)}
                   placeholder="Например: аудитория — эксперты и онлайн-школы, хотят системно получать заявки..."
                   onChange={(e) => setDetails((prev) => ({ ...prev, audience_analysis: e.target.value }))}
                 />
@@ -1286,7 +1459,14 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   className="modal-save-button"
-                  disabled={audienceAiLoading}
+                  disabled={audienceAiLoading || ((audienceAiAnswers[audienceStep]?.answer || audienceAiAnswer).trim().length < 25)}
+                  style={(!audienceAiLoading && ((audienceAiAnswers[audienceStep]?.answer || audienceAiAnswer).trim().length < 25)) ? {
+                    opacity: 0.42,
+                    filter: "grayscale(0.35) saturate(0.65)",
+                    cursor: "not-allowed",
+                    boxShadow: "none",
+                    transform: "none",
+                  } : undefined}
                   onClick={async () => {
                     const val = (audienceAiAnswers[audienceStep]?.answer || audienceAiAnswer).trim();
                     if (val.length < 25) {
@@ -1308,7 +1488,7 @@ export default function ProfilePage() {
                     }
                   }}
                 >
-                  {audienceAiLoading ? "Анализирую..." : audienceStep < audienceQuestions.length - 1 ? "Дальше" : "Получить анализ"}
+                  {audienceAiLoading ? `Анализирую... ${socialAnalysisProgress}%` : audienceStep < audienceQuestions.length - 1 ? "Дальше" : "Получить анализ"}
                 </button>
                 {audienceAiLoading && (
                   <div className="analyzing-loader">
@@ -1326,7 +1506,7 @@ export default function ProfilePage() {
               <div className="audience-ai-result-box">
                 <h3>Анализ аудитории готов</h3>
                 <textarea
-                  value={audienceAiDraft}
+                  value={cleanAnalysis(audienceAiDraft)}
                   onChange={(e) => setAudienceAiDraft(e.target.value)}
                 />
                 <div className="audience-ai-actions">
@@ -1611,7 +1791,7 @@ export default function ProfilePage() {
 
                 <div className="profile-form-block two-cols">
                   <div>
-                    <h3>Название лид-магнита</h3>
+                    <h3>Название бесплатного подарка</h3>
                     <input
                       value={details.lead_magnet_title}
                       placeholder="Если пусто — подберём автоматически"
@@ -1632,7 +1812,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <h3>Файл или ссылка на лид-магнит</h3>
+                    <h3>Файл или ссылка на подарок</h3>
                     <input
                       value={details.lead_magnet_file}
                       placeholder="Ссылка на PDF, гайд, чек-лист..."

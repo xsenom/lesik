@@ -1,3 +1,4 @@
+import ServiceFooter from "./components/ServiceFooter";
 ﻿import AppShell from "@/components/app/AppShell";
 
 export default function AppLayout({
@@ -6,5 +7,6 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return <AppShell>{children}
+      <ServiceFooter />
       </AppShell>;
 }

@@ -47,3 +47,14 @@ Thumbs.db
 # local temp
 next
 astro-platform@0.1.0
+
+# local runtime/payment data
+.data/
+backups/
+*.bak
+*.bak_*
+*.disabled_*
+.env
+.env.*
+.next/
+node_modules/

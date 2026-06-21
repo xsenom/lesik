@@ -1808,21 +1808,22 @@ button { font: inherit; }
 .map-start {
   width: min(620px, 100%);
   border-radius: 28px;
-  border: 1px solid rgba(150, 255, 80, .34);
-  background: rgba(0, 30, 14, .72);
+  border: 1px solid rgba(0, 155, 70, 0.3);
+  background: #fbf8f1;
   padding: 34px;
-  box-shadow: 0 0 44px rgba(90, 255, 80, .12);
+  box-shadow: 0 8px 24px rgba(0,155,70,0.08);
 }
 
 .map-empty-card h1,
 .map-start h2 {
   margin: 0 0 14px;
   font-size: 34px;
+  color: #1a2e1a;
 }
 
 .map-empty-card p,
 .map-start p {
-  color: rgba(240,255,230,.68);
+  color: rgba(17,17,17,0.7);
   line-height: 1.5;
 }
 
@@ -11845,18 +11846,35 @@ button.modal-test-next-btn {
 }
 
 /* === Контент внутри блоков схемы воронки (foreignObject) === */
+.funnel-flow-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+.funnel-flow-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.funnel-flow-arrow-down {
+  color: #009b46;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 6px 0;
+}
 .funnel-flow-box {
   box-sizing: border-box;
-  width: 300px;
-  height: 330px;
+  width: 100%;
+  max-width: 640px;
   background: #fff;
   border: 2px solid rgba(0, 155, 70, 0.35);
   border-radius: 20px;
-  padding: 16px 18px;
+  padding: 18px 22px;
   font-family: Rubik, Inter, Arial, sans-serif;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 .funnel-flow-box-head {
   display: flex;
@@ -11885,12 +11903,8 @@ button.modal-test-next-btn {
 .funnel-flow-desc {
   margin: 0 0 10px;
   color: #3f4f43;
-  font-size: 18px;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-size: 16px;
+  line-height: 1.5;
 }
 .funnel-flow-codeword {
   display: inline-block;
@@ -11915,12 +11929,8 @@ button.modal-test-next-btn {
 .funnel-flow-details {
   margin: 0 0 10px;
   color: #4a7a4a;
-  font-size: 16px;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-size: 15px;
+  line-height: 1.5;
 }
 .funnel-flow-ready {
   margin-top: auto;
@@ -12064,13 +12074,13 @@ button.modal-test-next-btn {
   min-width: 280px;
 }
 .funnel-order-card {
-  flex: 1;
-  min-width: 240px;
+  max-width: 480px;
   background: linear-gradient(135deg, #1a7a3a, #145c2c);
   border-radius: 20px;
   padding: 18px 22px;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
 }
 .funnel-order-card b {
   color: #c9ffb0;
@@ -12094,13 +12104,14 @@ button.modal-test-next-btn {
   display: inline-block;
   text-align: center;
   background: #ff9300;
-  color: #111a08;
+  color: #fff !important;
   border-radius: 14px;
-  padding: 12px 0;
+  padding: 12px 28px;
   font-weight: 800;
   font-size: 15px;
   text-decoration: none;
-  margin-top: auto;
+  margin-top: 4px;
+  align-self: flex-start;
 }
 .funnel-order-button:hover {
   filter: brightness(1.06);
@@ -12109,4 +12120,4189 @@ button.modal-test-next-btn {
   .funnel-top-row {
     flex-direction: column;
   }
+}
+
+/* === Компактная схема-обзор шагов воронки === */
+.funnel-overview {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 18px;
+  padding: 14px;
+  background: #fbf8f1;
+  border: 1px solid rgba(0, 155, 70, 0.18);
+  border-radius: 16px;
+}
+.funnel-overview-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.funnel-overview-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1.5px solid rgba(0, 155, 70, 0.4);
+  border-radius: 12px;
+  padding: 8px 14px;
+}
+.funnel-overview-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: #009b46;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.funnel-overview-title {
+  color: #1a2e1a;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.funnel-overview-arrow {
+  color: #009b46;
+  font-size: 16px;
+  font-weight: 800;
+}
+@media (max-width: 760px) {
+  .funnel-overview-title {
+    white-space: normal;
+  }
+}
+
+/* === SVG-схема обзора шагов воронки === */
+.funnel-overview-wrap {
+  background: #fbf8f1;
+  border: 1px solid rgba(0, 155, 70, 0.18);
+  border-radius: 16px;
+  padding: 10px;
+  margin-bottom: 18px;
+  overflow-x: auto;
+}
+
+/* Content map empty-state CTA readability fix */
+a[href="/app/profile"],
+a[href="/app/profile"] *,
+button.content-map-cta,
+button.content-map-cta * {
+  color: #102f19 !important;
+  font-weight: 800 !important;
+  text-shadow: none !important;
+}
+
+a[href="/app/profile"]:hover,
+button.content-map-cta:hover {
+  color: #071f0f !important;
+}
+
+/* Content map empty-state CTA: white text */
+a[href="/app/profile"],
+a[href="/app/profile"] *,
+button.content-map-cta,
+button.content-map-cta * {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,.22) !important;
+}
+
+a[href="/app/profile"]:hover,
+a[href="/app/profile"]:hover *,
+button.content-map-cta:hover,
+button.content-map-cta:hover * {
+  color: #ffffff !important;
+}
+
+/* Unified empty state cards: profile + content map */
+.profile-page .profile-start-card,
+.profile-page .profile-gate,
+.profile-page .profile-onboarding-card,
+.profile-page .profile-required-card {
+  max-width: 620px !important;
+  margin: 56px auto !important;
+  padding: 42px 36px !important;
+  border-radius: 28px !important;
+  background: #526b58 !important;
+  border: 1px solid rgba(54, 166, 45, .28) !important;
+  box-shadow: 0 18px 46px rgba(60, 120, 72, .12) !important;
+  color: #102f19 !important;
+}
+
+.profile-page .profile-start-card h1,
+.profile-page .profile-gate h1,
+.profile-page .profile-onboarding-card h1,
+.profile-page .profile-required-card h1 {
+  margin: 14px 0 18px !important;
+  max-width: 560px !important;
+  color: #132f18 !important;
+  font-size: 32px !important;
+  line-height: 1.08 !important;
+  font-weight: 800 !important;
+}
+
+.profile-page .profile-start-card p,
+.profile-page .profile-gate p,
+.profile-page .profile-onboarding-card p,
+.profile-page .profile-required-card p {
+  max-width: 560px !important;
+  color: rgba(236, 246, 230, .78) !important;
+  font-size: 16px !important;
+  line-height: 1.48 !important;
+  font-weight: 700 !important;
+}
+
+.lesik-unified-eyebrow {
+  color: #28bb2f !important;
+  font-size: 28px !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+  margin-bottom: 18px !important;
+}
+
+/* Consent block inside profile card */
+.profile-page .profile-start-card label,
+.profile-page .profile-gate label,
+.profile-page .profile-onboarding-card label,
+.profile-page .profile-required-card label {
+  margin: 24px 0 18px !important;
+  padding: 16px 18px !important;
+  border-radius: 16px !important;
+  background: rgba(255,255,255,.08) !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+  color: rgba(255,255,255,.9) !important;
+  font-weight: 700 !important;
+}
+
+/* CTA */
+.profile-page .lesik-unified-cta,
+.profile-page .profile-start-card button,
+.profile-page .profile-gate button,
+.profile-page .profile-onboarding-card button,
+.profile-page .profile-required-card button {
+  min-width: 220px !important;
+  width: auto !important;
+  margin-top: 0 !important;
+  padding: 15px 24px !important;
+  border-radius: 15px !important;
+  border: none !important;
+  background: linear-gradient(135deg, #ff9900, #ff7a00) !important;
+  color: #ffffff !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,.25) !important;
+  box-shadow: none !important;
+}
+
+.profile-page .lesik-unified-cta:disabled,
+.profile-page .profile-start-card button:disabled,
+.profile-page .profile-gate button:disabled,
+.profile-page .profile-onboarding-card button:disabled,
+.profile-page .profile-required-card button:disabled {
+  opacity: .55 !important;
+  cursor: not-allowed !important;
+}
+
+/* Unified gate card for Profile and Content Map */
+.lesik-unified-card,
+.content-map-unified-card {
+  max-width: 620px !important;
+  margin: 56px auto !important;
+  padding: 42px 36px !important;
+  border-radius: 28px !important;
+  background: #526b58 !important;
+  border: 1px solid rgba(54, 166, 45, .28) !important;
+  box-shadow: 0 18px 46px rgba(60, 120, 72, .12) !important;
+  color: #102f19 !important;
+}
+
+.lesik-unified-eyebrow,
+.content-map-unified-card > div:first-child {
+  color: #28bb2f !important;
+  font-size: 28px !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+  margin-bottom: 18px !important;
+}
+
+.lesik-unified-card h1,
+.lesik-unified-card h2,
+.content-map-unified-card h1,
+.content-map-unified-card h2,
+.lesik-unified-title {
+  margin: 14px 0 18px !important;
+  max-width: 560px !important;
+  color: #132f18 !important;
+  font-size: 32px !important;
+  line-height: 1.08 !important;
+  font-weight: 800 !important;
+}
+
+.lesik-unified-card p,
+.content-map-unified-card p {
+  max-width: 560px !important;
+  color: rgba(236, 246, 230, .78) !important;
+  font-size: 16px !important;
+  line-height: 1.48 !important;
+  font-weight: 700 !important;
+}
+
+.lesik-unified-cta,
+.content-map-unified-card a[href="/app/profile"],
+.content-map-unified-card button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  min-width: 220px !important;
+  margin-top: 18px !important;
+  padding: 15px 24px !important;
+  border-radius: 15px !important;
+  border: none !important;
+  background: linear-gradient(135deg, #ff9900, #ff7a00) !important;
+  color: #ffffff !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  text-decoration: none !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,.25) !important;
+  box-shadow: none !important;
+}
+
+.lesik-unified-cta *,
+.content-map-unified-card a[href="/app/profile"] *,
+.content-map-unified-card button * {
+  color: #ffffff !important;
+}
+
+@media (max-width: 720px) {
+  .lesik-unified-card,
+  .content-map-unified-card {
+    margin: 28px 16px !important;
+    padding: 32px 24px !important;
+    border-radius: 24px !important;
+  }
+
+  .lesik-unified-eyebrow,
+  .content-map-unified-card > div:first-child {
+    font-size: 22px !important;
+  }
+
+  .lesik-unified-card h1,
+  .lesik-unified-card h2,
+  .content-map-unified-card h1,
+  .content-map-unified-card h2,
+  .lesik-unified-title {
+    font-size: 28px !important;
+  }
+}
+
+/* Content map gate: same visual style as Profile gate */
+.content-map-unified-card {
+  max-width: 620px !important;
+  margin: 56px auto !important;
+  padding: 34px 34px !important;
+  border-radius: 26px !important;
+  background: #ffffff !important;
+  border: 1px solid #d7efd9 !important;
+  box-shadow: 0 18px 46px rgba(60, 120, 72, .08) !important;
+  color: #203625 !important;
+}
+
+/* Hide green eyebrow "КАРТА КОНТЕНТА" to match profile notification */
+.content-map-unified-card .lesik-unified-eyebrow,
+.content-map-unified-card > div:first-child {
+  display: none !important;
+}
+
+.content-map-unified-card h1,
+.content-map-unified-card h2,
+.content-map-unified-card .lesik-unified-title {
+  margin: 0 0 18px !important;
+  max-width: 560px !important;
+  color: #203625 !important;
+  font-size: 30px !important;
+  line-height: 1.08 !important;
+  font-weight: 800 !important;
+}
+
+.content-map-unified-card p {
+  max-width: 560px !important;
+  color: #4a5c4d !important;
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  font-weight: 600 !important;
+}
+
+/* Button like profile card, but active */
+.content-map-unified-card a[href="/app/profile"],
+.content-map-unified-card button,
+.content-map-unified-card .lesik-unified-cta {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 52px !important;
+  margin-top: 22px !important;
+  padding: 15px 24px !important;
+  border-radius: 16px !important;
+  border: none !important;
+  background: #a9c0ad !important;
+  color: #ffffff !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  text-decoration: none !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+.content-map-unified-card a[href="/app/profile"]:hover,
+.content-map-unified-card button:hover,
+.content-map-unified-card .lesik-unified-cta:hover {
+  background: #93ad98 !important;
+  color: #ffffff !important;
+}
+
+.content-map-unified-card a[href="/app/profile"] *,
+.content-map-unified-card button *,
+.content-map-unified-card .lesik-unified-cta * {
+  color: #ffffff !important;
+}
+
+@media (max-width: 720px) {
+  .content-map-unified-card {
+    margin: 28px 16px !important;
+    padding: 28px 22px !important;
+    border-radius: 24px !important;
+  }
+
+  .content-map-unified-card h1,
+  .content-map-unified-card h2,
+  .content-map-unified-card .lesik-unified-title {
+    font-size: 28px !important;
+  }
+}
+
+/* Content map gate exactly like Profile gate */
+.profile-like-gate-card {
+  width: min(620px, calc(100vw - 32px)) !important;
+  margin: 42px auto !important;
+  padding: 34px 34px !important;
+  border-radius: 26px !important;
+  background: #ffffff !important;
+  border: 1px solid #d8efd9 !important;
+  box-shadow: 0 18px 46px rgba(60, 120, 72, .08) !important;
+}
+
+.profile-like-gate-card h1 {
+  margin: 0 0 20px !important;
+  color: #1d3423 !important;
+  font-size: 30px !important;
+  line-height: 1.08 !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
+}
+
+.profile-like-gate-card p {
+  margin: 0 0 24px !important;
+  color: #4b5d4f !important;
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  font-weight: 600 !important;
+}
+
+.profile-like-gate-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 52px !important;
+  padding: 15px 24px !important;
+  border-radius: 16px !important;
+  border: none !important;
+  background: #a9c0ad !important;
+  color: #ffffff !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+}
+
+.profile-like-gate-btn:hover {
+  background: #93ad98 !important;
+  color: #ffffff !important;
+}
+
+@media (max-width: 720px) {
+  .profile-like-gate-card {
+    margin: 28px 16px !important;
+    padding: 28px 22px !important;
+    border-radius: 24px !important;
+  }
+
+  .profile-like-gate-card h1 {
+    font-size: 28px !important;
+  }
+}
+
+/* Content map gate title: match Profile title exactly */
+body .profile-like-gate-card h1 {
+  max-width: 520px !important;
+  margin: 0 0 20px !important;
+  color: #203625 !important;
+  font-size: 30px !important;
+  line-height: 1.05 !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.035em !important;
+}
+
+/* Force same two-line composition as profile */
+body .profile-like-gate-card h1::after {
+  content: "" !important;
+}
+
+@media (max-width: 720px) {
+  body .profile-like-gate-card h1 {
+    max-width: 100% !important;
+    font-size: 28px !important;
+    line-height: 1.08 !important;
+  }
+}
+
+/* Content map gate: text colors exactly like Profile gate */
+body .profile-like-gate-card h1 {
+  color: #1f3322 !important;
+}
+
+body .profile-like-gate-card p {
+  color: #46564a !important;
+}
+
+body .profile-like-gate-card a,
+body .profile-like-gate-card a *,
+body .profile-like-gate-card .profile-like-gate-btn,
+body .profile-like-gate-card .profile-like-gate-btn * {
+  color: #ffffff !important;
+}
+
+body .profile-like-gate-card {
+  color: #1f3322 !important;
+}
+
+/* Content map notification: exact Profile intro card colors */
+.content-map-profile-gate {
+  color: inherit !important;
+}
+
+.content-map-profile-gate h1 {
+  color: #1f3322 !important;
+}
+
+.content-map-profile-gate p {
+  color: #46564a !important;
+}
+
+.content-map-profile-gate-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 52px !important;
+  margin-top: 24px !important;
+  padding: 15px 24px !important;
+  border-radius: 16px !important;
+  border: none !important;
+  background: #a9c0ad !important;
+  color: #ffffff !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.content-map-profile-gate-button:hover {
+  background: #93ad98 !important;
+  color: #ffffff !important;
+}
+
+.content-map-profile-gate-button * {
+  color: #ffffff !important;
+}
+
+/* Unified font for Profile and Content Map gate buttons */
+body .profile-question-card.profile-intro-card button,
+body .content-map-profile-gate-button,
+body .content-map-profile-gate-button:visited,
+body .content-map-profile-gate-button:hover,
+body .content-map-profile-gate-button:active {
+  font-family: inherit !important;
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  color: #ffffff !important;
+}
+
+body .profile-question-card.profile-intro-card button *,
+body .content-map-profile-gate-button * {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  font-weight: inherit !important;
+  letter-spacing: inherit !important;
+  text-transform: inherit !important;
+  color: #ffffff !important;
+}
+
+/* Unified soft notice inside Content Map */
+.content-map-soft-notice {
+  width: 100% !important;
+  margin-top: 20px !important;
+  padding: 22px 22px !important;
+  border-radius: 22px !important;
+  background: #f3fbf3 !important;
+  border: 1px solid #d7efd9 !important;
+  box-shadow: none !important;
+}
+
+.content-map-soft-notice p {
+  margin: 0 !important;
+  color: #46564a !important;
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  font-weight: 600 !important;
+}
+
+.content-map-soft-notice .brand-ik {
+  color: #27b333 !important;
+  font-weight: 800 !important;
+}
+
+/* FINAL: goals empty notice in Content Map */
+body .content-map-goals-empty-notice {
+  width: 100% !important;
+  margin-top: 20px !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+body .content-map-goals-empty-notice p {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  color: #46564a !important;
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  font-weight: 600 !important;
+  max-width: 560px !important;
+}
+
+body .content-map-goals-empty-notice .brand-ik {
+  color: #27b333 !important;
+  font-weight: 800 !important;
+}
+
+/* Daily goals card: same light design as profile/card notifications */
+body .daily-goals-card {
+  background: #ffffff !important;
+  border: 1px solid #d8efd9 !important;
+  border-radius: 26px !important;
+  box-shadow: 0 18px 46px rgba(60, 120, 72, .08) !important;
+  color: #1f3322 !important;
+}
+
+body .daily-goals-head span {
+  color: #ffbd59 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+
+body .daily-goals-head h2 {
+  color: #1f3322 !important;
+}
+
+body .daily-goals-card p,
+body .daily-goals-card div,
+body .daily-goals-card b {
+  color: #46564a !important;
+}
+
+body .daily-goals-card .content-map-goals-empty-notice,
+body .daily-goals-card .content-map-soft-notice,
+body .daily-goals-card [class*="notice"] {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+body .daily-goals-card .content-map-goals-empty-notice p,
+body .daily-goals-card .content-map-soft-notice p,
+body .daily-goals-card [class*="notice"] p {
+  color: #46564a !important;
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  font-weight: 600 !important;
+}
+
+body .daily-goals-card .brand-ik {
+  color: #27b333 !important;
+  font-weight: 800 !important;
+}
+
+/* Daily goals empty notice: unified light design */
+body .daily-goals-card .daily-goals-empty.daily-goals-empty-clean {
+  margin-top: 18px !important;
+  padding: 20px 22px !important;
+  border-radius: 18px !important;
+  background: #f3fbf3 !important;
+  border: 1px solid #d8efd9 !important;
+  box-shadow: none !important;
+  color: #46564a !important;
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  font-weight: 600 !important;
+}
+
+body .daily-goals-card .daily-goals-empty.daily-goals-empty-clean .brand-ik {
+  color: #27b333 !important;
+  font-weight: 800 !important;
+}
+
+/* FINAL: Daily goals card exactly like Profile intro card */
+body .home-dashboard-v2 .daily-goals-card,
+body .daily-goals-card {
+  width: min(620px, 100%) !important;
+  margin: 0 0 20px !important;
+  padding: 34px !important;
+  border-radius: 28px !important;
+  background: #ffffff !important;
+  border: 1px solid #d8efd9 !important;
+  box-shadow: 0 18px 46px rgba(60, 120, 72, .08) !important;
+  color: #1f3322 !important;
+}
+
+/* Header */
+body .home-dashboard-v2 .daily-goals-head,
+body .daily-goals-head {
+  display: block !important;
+  margin: 0 0 22px !important;
+}
+
+body .home-dashboard-v2 .daily-goals-head span,
+body .daily-goals-head span {
+  display: block !important;
+  min-width: 0 !important;
+  height: auto !important;
+  margin: 0 0 8px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  color: #ffbd59 !important;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+}
+
+body .home-dashboard-v2 .daily-goals-head h2,
+body .daily-goals-head h2 {
+  margin: 0 !important;
+  color: #1f3322 !important;
+  font-size: 30px !important;
+  line-height: 1.08 !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
+}
+
+/* Empty notice inside daily goals */
+body .home-dashboard-v2 .daily-goals-empty,
+body .daily-goals-empty,
+body .home-dashboard-v2 .daily-goals-empty.daily-goals-empty-clean,
+body .daily-goals-empty.daily-goals-empty-clean {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #46564a !important;
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  font-weight: 600 !important;
+}
+
+/* All text inside */
+body .home-dashboard-v2 .daily-goals-card p,
+body .home-dashboard-v2 .daily-goals-card div,
+body .home-dashboard-v2 .daily-goals-card b,
+body .daily-goals-card p,
+body .daily-goals-card div,
+body .daily-goals-card b {
+  color: inherit !important;
+}
+
+body .daily-goals-card .brand-ik {
+  color: #27b333 !important;
+  font-weight: 800 !important;
+}
+
+@media (max-width: 720px) {
+  body .home-dashboard-v2 .daily-goals-card,
+  body .daily-goals-card {
+    width: 100% !important;
+    padding: 28px 22px !important;
+    border-radius: 24px !important;
+  }
+
+  body .home-dashboard-v2 .daily-goals-head h2,
+  body .daily-goals-head h2 {
+    font-size: 28px !important;
+  }
+}
+
+/* FINAL: Daily goals typography exactly like Profile intro card */
+body .daily-goals-card,
+body .daily-goals-card * {
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+}
+
+/* Title: same as profile intro title */
+body .daily-goals-card .daily-goals-head h2 {
+  margin: 0 !important;
+  color: #1f3322 !important;
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-size: 28px !important;
+  line-height: 1.12 !important;
+  font-weight: 950 !important;
+  letter-spacing: 0 !important;
+}
+
+/* Small label "Сегодня" */
+body .daily-goals-card .daily-goals-head span {
+  color: #ffbd59 !important;
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+}
+
+/* Text: same as profile intro description */
+body .daily-goals-card .daily-goals-empty,
+body .daily-goals-card .daily-goals-empty.daily-goals-empty-clean {
+  color: #46564a !important;
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+  font-weight: 650 !important;
+  letter-spacing: 0 !important;
+}
+
+/* Brand ik inside text */
+body .daily-goals-card .daily-goals-empty .brand-ik {
+  color: #27b333 !important;
+  font-weight: 800 !important;
+}
+
+/* FINAL FIX: Daily goals typography like Profile notification */
+body .daily-goals-card .daily-goals-head h2 {
+  color: #1f3322 !important;
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-size: 30px !important;
+  line-height: 1.08 !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
+}
+
+body .daily-goals-card .daily-goals-empty,
+body .daily-goals-card .daily-goals-empty.daily-goals-empty-clean {
+  color: #46564a !important;
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+}
+
+body .daily-goals-card .daily-goals-empty b,
+body .daily-goals-card .daily-goals-empty strong,
+body .daily-goals-card .daily-goals-empty span:not(.brand-ik) {
+  color: #46564a !important;
+  font-weight: 600 !important;
+}
+
+body .daily-goals-card .brand-ik {
+  color: #27b333 !important;
+  font-weight: 800 !important;
+}
+
+/* Daily goals text: final profile-like typography */
+body .daily-goals-card p.daily-goals-profile-text {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #46564a !important;
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+}
+
+body .daily-goals-card p.daily-goals-profile-text .brand-ik {
+  color: #27b333 !important;
+  font-weight: 800 !important;
+}
+
+/* Generate content map button: match Profile light design */
+body .content-map-generate-btn,
+body button.content-map-generate-btn,
+body .map-page .content-map-generate-btn,
+body .home-dashboard-v2 .content-map-generate-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  max-width: 550px !important;
+  min-height: 52px !important;
+  margin-top: 24px !important;
+  padding: 15px 24px !important;
+  border-radius: 16px !important;
+  border: none !important;
+  background: #a9c0ad !important;
+  color: #ffffff !important;
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  cursor: pointer !important;
+}
+
+body .content-map-generate-btn:hover {
+  background: #93ad98 !important;
+  color: #ffffff !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+body .content-map-generate-btn:disabled {
+  opacity: .55 !important;
+  cursor: not-allowed !important;
+}
+
+body .content-map-generate-btn *,
+body button.content-map-generate-btn * {
+  color: #ffffff !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+}
+
+/* Generate content map button: match Profile light design */
+body .content-map-generate-btn,
+body button.content-map-generate-btn,
+body .map-page .content-map-generate-btn,
+body .home-dashboard-v2 .content-map-generate-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  max-width: 550px !important;
+  min-height: 52px !important;
+  margin-top: 24px !important;
+  padding: 15px 24px !important;
+  border-radius: 16px !important;
+  border: none !important;
+  background: #a9c0ad !important;
+  color: #ffffff !important;
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  cursor: pointer !important;
+}
+
+body .content-map-generate-btn:hover {
+  background: #93ad98 !important;
+  color: #ffffff !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+body .content-map-generate-btn:disabled {
+  opacity: .55 !important;
+  cursor: not-allowed !important;
+}
+
+body .content-map-generate-btn *,
+body button.content-map-generate-btn * {
+  color: #ffffff !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+}
+
+/* FINAL: green map generation button like profile button, less bold */
+html body form:has(.profile-green-map-button) {
+  width: 100% !important;
+}
+
+html body .profile-green-map-button,
+html body button.profile-green-map-button,
+html body a.profile-green-map-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 100% !important;
+  min-height: 52px !important;
+  margin-top: 24px !important;
+  padding: 15px 24px !important;
+
+  border: none !important;
+  border-radius: 16px !important;
+
+  background: linear-gradient(180deg, #15833e 0%, #0d6f33 100%) !important;
+  color: #ffffff !important;
+
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  text-decoration: none !important;
+
+  box-shadow: 0 14px 28px rgba(20, 110, 54, .16) !important;
+  text-shadow: none !important;
+  cursor: pointer !important;
+}
+
+html body .profile-green-map-button:hover,
+html body button.profile-green-map-button:hover,
+html body a.profile-green-map-button:hover {
+  background: linear-gradient(180deg, #137638 0%, #0b612d 100%) !important;
+  color: #ffffff !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+html body .profile-green-map-button *,
+html body button.profile-green-map-button *,
+html body a.profile-green-map-button * {
+  color: #ffffff !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+}
+
+/* Empty calendar generate map button */
+body .empty-calendar-card .profile-green-map-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 100% !important;
+  min-height: 52px !important;
+  margin-top: 24px !important;
+  padding: 15px 24px !important;
+
+  border: none !important;
+  border-radius: 16px !important;
+
+  background: linear-gradient(180deg, #15833e 0%, #0d6f33 100%) !important;
+  color: #ffffff !important;
+
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  text-decoration: none !important;
+
+  box-shadow: 0 14px 28px rgba(20, 110, 54, .16) !important;
+  text-shadow: none !important;
+}
+
+body .empty-calendar-card .profile-green-map-button:hover {
+  background: linear-gradient(180deg, #137638 0%, #0b612d 100%) !important;
+  color: #ffffff !important;
+}
+
+/* Combined daily goals + map generation empty state */
+body .daily-goals-empty-combined {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+body .daily-goals-empty-combined .daily-goals-profile-text {
+  margin: 0 0 22px !important;
+  padding: 0 !important;
+  color: #46564a !important;
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+}
+
+body .daily-goals-empty-combined .brand-ik {
+  color: #27b333 !important;
+  font-weight: 800 !important;
+}
+
+body .daily-goals-map-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 100% !important;
+  min-height: 52px !important;
+  padding: 15px 24px !important;
+
+  border: none !important;
+  border-radius: 16px !important;
+
+  background: linear-gradient(180deg, #15833e 0%, #0d6f33 100%) !important;
+  color: #ffffff !important;
+
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  text-shadow: none !important;
+
+  box-shadow: 0 14px 28px rgba(20, 110, 54, .16) !important;
+}
+
+body .daily-goals-map-button:hover {
+  background: linear-gradient(180deg, #137638 0%, #0b612d 100%) !important;
+  color: #ffffff !important;
+}
+
+/* FINAL combined empty state inside daily goals */
+body .daily-goals-empty-combined {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+body .daily-goals-empty-combined .daily-goals-profile-text {
+  margin: 0 0 22px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  color: #46564a !important;
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  font-weight: 600 !important;
+}
+
+body .daily-goals-empty-combined .brand-ik {
+  color: #27b333 !important;
+  font-weight: 800 !important;
+}
+
+body .daily-goals-map-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 52px !important;
+  padding: 15px 24px !important;
+  border-radius: 16px !important;
+  border: none !important;
+  background: linear-gradient(180deg, #15833e 0%, #0d6f33 100%) !important;
+  color: #ffffff !important;
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  box-shadow: 0 14px 28px rgba(20, 110, 54, .16) !important;
+}
+
+body .daily-goals-map-button:hover {
+  background: linear-gradient(180deg, #137638 0%, #0b612d 100%) !important;
+  color: #ffffff !important;
+}
+
+/* Daily goals: normal text weight */
+body .daily-goals-card .daily-goals-empty-combined .daily-goals-profile-text,
+body .daily-goals-card p.daily-goals-profile-text {
+  font-weight: 400 !important;
+  color: #46564a !important;
+}
+
+body .daily-goals-card .daily-goals-empty-combined .daily-goals-profile-text *,
+body .daily-goals-card p.daily-goals-profile-text * {
+  font-weight: 400 !important;
+}
+
+body .daily-goals-card .daily-goals-empty-combined .brand-ik,
+body .daily-goals-card p.daily-goals-profile-text .brand-ik {
+  color: #27b333 !important;
+  font-weight: 600 !important;
+}
+
+/* Daily goals button: less bold */
+body .daily-goals-map-button {
+  font-weight: 500 !important;
+}
+
+body .daily-goals-map-button * {
+  font-weight: 500 !important;
+}
+
+/* FINAL FORCE: Daily goals text and button NOT bold */
+html body .home-dashboard-v2 .daily-goals-card .daily-goals-empty-combined .daily-goals-profile-text,
+html body .home-dashboard-v2 .daily-goals-card .daily-goals-empty-combined .daily-goals-profile-text *,
+html body .daily-goals-card .daily-goals-empty-combined .daily-goals-profile-text,
+html body .daily-goals-card .daily-goals-empty-combined .daily-goals-profile-text * {
+  font-weight: 400 !important;
+}
+
+html body .home-dashboard-v2 .daily-goals-card .daily-goals-map-button,
+html body .home-dashboard-v2 .daily-goals-card .daily-goals-map-button *,
+html body .daily-goals-card .daily-goals-map-button,
+html body .daily-goals-card .daily-goals-map-button * {
+  font-weight: 400 !important;
+}
+
+html body .home-dashboard-v2 .daily-goals-card .brand-ik,
+html body .daily-goals-card .brand-ik {
+  font-weight: 500 !important;
+}
+
+/* FINAL: daily goals description text should be regular, not bold */
+html body .home-dashboard-v2 .daily-goals-card .daily-goals-empty-combined p.daily-goals-profile-text,
+html body .daily-goals-card .daily-goals-empty-combined p.daily-goals-profile-text {
+  font-weight: 400 !important;
+}
+
+html body .home-dashboard-v2 .daily-goals-card .daily-goals-empty-combined p.daily-goals-profile-text *,
+html body .daily-goals-card .daily-goals-empty-combined p.daily-goals-profile-text * {
+  font-weight: 400 !important;
+}
+
+html body .home-dashboard-v2 .daily-goals-card .daily-goals-empty-combined p.daily-goals-profile-text .brand-ik,
+html body .daily-goals-card .daily-goals-empty-combined p.daily-goals-profile-text .brand-ik {
+  font-weight: 500 !important;
+}
+
+/* FINAL: daily goals description must be regular, not bold */
+html body .daily-goals-card .daily-goals-empty-combined .daily-goals-regular-text,
+html body .daily-goals-card .daily-goals-empty-combined .daily-goals-regular-text *,
+html body .daily-goals-regular-text,
+html body .daily-goals-regular-text * {
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-weight: 400 !important;
+  font-variation-settings: "wght" 400 !important;
+  color: #46564a !important;
+}
+
+html body .daily-goals-card .daily-goals-empty-combined .daily-goals-brand-regular,
+html body .daily-goals-brand-regular {
+  color: #27b333 !important;
+  font-weight: 400 !important;
+  font-variation-settings: "wght" 400 !important;
+}
+
+/* Muted video watch button */
+body .home-video-section .video-card button,
+body .home-video-section .video-card a,
+body .video-card button,
+body .video-card a {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+
+  width: auto !important;
+  min-height: auto !important;
+  margin: 8px 0 0 !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+
+  color: rgba(31, 51, 34, .48) !important;
+  font-family: var(--font-rubik), Rubik, system-ui, sans-serif !important;
+  font-size: 18px !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-decoration: none !important;
+  text-shadow: none !important;
+
+  opacity: .75 !important;
+  cursor: pointer !important;
+}
+
+body .home-video-section .video-card button:hover,
+body .home-video-section .video-card a:hover,
+body .video-card button:hover,
+body .video-card a:hover {
+  color: rgba(31, 51, 34, .7) !important;
+  opacity: 1 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+body .home-video-section .video-card button *,
+body .home-video-section .video-card a *,
+body .video-card button *,
+body .video-card a * {
+  color: inherit !important;
+  font-weight: inherit !important;
+  text-shadow: none !important;
+}
+
+/* Funnel CTA: less bold text */
+html body .funnel-cta-soft-font,
+html body .funnel-cta-soft-font *,
+html body a.funnel-cta-soft-font,
+html body button.funnel-cta-soft-font {
+  font-weight: 500 !important;
+  font-variation-settings: "wght" 500 !important;
+  letter-spacing: 0 !important;
+  text-shadow: none !important;
+}
+
+html body .funnel-cta-soft-font svg,
+html body .funnel-cta-soft-font path {
+  font-weight: initial !important;
+}
+
+/* Profile intro button: less bold */
+html body .profile-question-card.profile-intro-card button,
+html body .profile-question-card.profile-intro-card button *,
+html body .profile-intro-card button,
+html body .profile-intro-card button * {
+  font-weight: 500 !important;
+  font-variation-settings: "wght" 500 !important;
+  letter-spacing: 0 !important;
+  text-shadow: none !important;
+}
+
+/* Content map gate button: less bold */
+html body .content-map-profile-gate-button,
+html body .content-map-profile-gate-button *,
+html body a.content-map-profile-gate-button,
+html body a.content-map-profile-gate-button * {
+  font-weight: 500 !important;
+  font-variation-settings: "wght" 500 !important;
+  letter-spacing: 0 !important;
+  text-shadow: none !important;
+}
+
+/* Content map gate button: less bold */
+html body .content-map-profile-gate-button,
+html body .content-map-profile-gate-button *,
+html body a.content-map-profile-gate-button,
+html body a.content-map-profile-gate-button * {
+  font-weight: 500 !important;
+  font-variation-settings: "wght" 500 !important;
+  letter-spacing: 0 !important;
+  text-shadow: none !important;
+}
+
+/* =========================================================
+   FINAL RESPONSIVE LAYER: desktop / tablet / mobile
+   Applies to LESik dashboard, profile, content map, main page
+   ========================================================= */
+
+/* Base safety */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden !important;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ---------- DESKTOP: keep clean centered layout ---------- */
+@media (min-width: 1200px) {
+  body .profile-question-card.profile-intro-card,
+  body .content-map-profile-gate,
+  body .daily-goals-card {
+    width: min(620px, 100%) !important;
+  }
+
+  body .home-dashboard-v2,
+  body .map-page,
+  body .profile-page {
+    max-width: 1180px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+/* ---------- TABLET: 768px - 1199px ---------- */
+@media (max-width: 1199px) and (min-width: 768px) {
+  body .lesik-app {
+    grid-template-columns: 240px 1fr !important;
+    gap: 24px !important;
+    padding: 22px !important;
+  }
+
+  body .lesik-sidebar {
+    padding: 24px 18px !important;
+    border-radius: 28px !important;
+    min-height: calc(100vh - 44px) !important;
+  }
+
+  body .lesik-brand {
+    gap: 12px !important;
+    margin-bottom: 28px !important;
+  }
+
+  body .lesik-brand img {
+    width: 46px !important;
+    height: 46px !important;
+  }
+
+  body .lesik-brand .lesik-logo {
+    font-size: 28px !important;
+  }
+
+  body .lesik-nav {
+    gap: 12px !important;
+  }
+
+  body .lesik-nav-item {
+    height: 64px !important;
+    padding: 0 14px !important;
+    gap: 12px !important;
+    border-radius: 18px !important;
+  }
+
+  body .lesik-nav-icon {
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+  }
+
+  body .lesik-nav-item > span:last-child {
+    font-size: 15px !important;
+  }
+
+  body .home-dashboard-v2,
+  body .map-page,
+  body .profile-page {
+    padding: 26px !important;
+    border-radius: 30px !important;
+    min-height: calc(100vh - 44px) !important;
+  }
+
+  body .profile-question-card.profile-intro-card,
+  body .content-map-profile-gate,
+  body .daily-goals-card,
+  body .ios-glass-card {
+    width: 100% !important;
+    max-width: 680px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding: 30px !important;
+    border-radius: 26px !important;
+  }
+
+  body .profile-question-card.profile-intro-card h1,
+  body .content-map-profile-gate h1,
+  body .daily-goals-head h2 {
+    font-size: 28px !important;
+    line-height: 1.12 !important;
+  }
+
+  body .profile-question-card.profile-intro-card p,
+  body .content-map-profile-gate p,
+  body .daily-goals-regular-text,
+  body .daily-goals-profile-text {
+    font-size: 15px !important;
+    line-height: 1.45 !important;
+  }
+
+  body .profile-question-card.profile-intro-card button,
+  body .content-map-profile-gate-button,
+  body .daily-goals-map-button,
+  body .profile-green-map-button {
+    min-height: 50px !important;
+    border-radius: 15px !important;
+    font-size: 15px !important;
+  }
+
+  body .home-dynamics-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body .calendar-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body .video-row {
+    display: flex !important;
+    overflow-x: auto !important;
+    gap: 16px !important;
+    padding-bottom: 10px !important;
+    scroll-snap-type: x mandatory !important;
+  }
+
+  body .video-card {
+    min-width: 320px !important;
+    max-width: 360px !important;
+    scroll-snap-align: start !important;
+  }
+}
+
+/* ---------- MOBILE: up to 767px ---------- */
+@media (max-width: 767px) {
+  html,
+  body {
+    width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  body .lesik-app {
+    display: block !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    padding: 10px !important;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(85,255,100,.10), transparent 34%),
+      linear-gradient(135deg, #f8fff7 0%, #eef8ee 100%) !important;
+  }
+
+  body .lesik-sidebar {
+    position: sticky !important;
+    top: 8px !important;
+    z-index: 40 !important;
+    width: 100% !important;
+    min-height: auto !important;
+    margin: 0 0 12px !important;
+    padding: 12px !important;
+    border-radius: 22px !important;
+  }
+
+  body .lesik-brand {
+    margin-bottom: 12px !important;
+    gap: 10px !important;
+  }
+
+  body .lesik-brand img {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 12px !important;
+  }
+
+  body .lesik-brand .lesik-logo {
+    font-size: 24px !important;
+  }
+
+  body .lesik-nav {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  body .lesik-nav-item {
+    height: 62px !important;
+    padding: 6px 4px !important;
+    border-radius: 16px !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 4px !important;
+  }
+
+  body .lesik-nav-icon {
+    width: 26px !important;
+    min-width: 26px !important;
+    height: 26px !important;
+    border-radius: 9px !important;
+  }
+
+  body .custom-nav-svg {
+    width: 17px !important;
+    height: 17px !important;
+  }
+
+  body .lesik-nav-item > span:last-child {
+    text-align: center !important;
+    font-size: 10px !important;
+    line-height: 1.1 !important;
+    font-weight: 700 !important;
+  }
+
+  body .lesik-side-card {
+    display: none !important;
+  }
+
+  body .home-dashboard-v2,
+  body .map-page,
+  body .profile-page {
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 14px !important;
+    border-radius: 22px !important;
+    border-width: 1px !important;
+  }
+
+  body .home-user-top {
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+  }
+
+  body .home-user-top h1 {
+    font-size: 21px !important;
+    line-height: 1.12 !important;
+  }
+
+  body .home-user-top p {
+    font-size: 13px !important;
+  }
+
+  body .profile-question-card.profile-intro-card,
+  body .content-map-profile-gate,
+  body .daily-goals-card,
+  body .ios-glass-card,
+  body .empty-calendar-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 0 14px !important;
+    padding: 22px 18px !important;
+    border-radius: 22px !important;
+  }
+
+  body .profile-question-card.profile-intro-card h1,
+  body .content-map-profile-gate h1 {
+    font-size: 25px !important;
+    line-height: 1.14 !important;
+    margin-bottom: 16px !important;
+  }
+
+  body .daily-goals-head {
+    margin-bottom: 14px !important;
+  }
+
+  body .daily-goals-head span {
+    font-size: 11px !important;
+    margin-bottom: 6px !important;
+  }
+
+  body .daily-goals-head h2 {
+    font-size: 28px !important;
+    line-height: 1.1 !important;
+  }
+
+  body .profile-question-card.profile-intro-card p,
+  body .content-map-profile-gate p,
+  body .daily-goals-regular-text,
+  body .daily-goals-profile-text,
+  body .daily-goals-empty-combined p {
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+  }
+
+  body .privacy-check {
+    padding: 14px !important;
+    gap: 12px !important;
+    border-radius: 16px !important;
+  }
+
+  body .privacy-check label,
+  body .privacy-check span {
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+  }
+
+  body .profile-question-card.profile-intro-card button,
+  body .content-map-profile-gate-button,
+  body .daily-goals-map-button,
+  body .profile-green-map-button,
+  body .content-map-generate-btn {
+    width: 100% !important;
+    min-height: 50px !important;
+    padding: 14px 16px !important;
+    border-radius: 15px !important;
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+  }
+
+  body .home-dynamics-grid,
+  body .calendar-grid,
+  body .client-status-grid,
+  body .client-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body .dynamic-card,
+  body .calendar-start-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 18px !important;
+    border-radius: 20px !important;
+  }
+
+  body .dynamic-card h2,
+  body .calendar-start-card h2,
+  body .video-head h2 {
+    font-size: 24px !important;
+    line-height: 1.15 !important;
+  }
+
+  body .home-mini-calendar {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  body .content-calendar {
+    padding: 16px !important;
+    border-radius: 22px !important;
+    overflow: hidden !important;
+  }
+
+  body .calendar-grid {
+    gap: 10px !important;
+  }
+
+  body .calendar-card {
+    padding: 14px !important;
+    border-radius: 14px !important;
+  }
+
+  body .video-row {
+    display: flex !important;
+    overflow-x: auto !important;
+    gap: 12px !important;
+    padding-bottom: 10px !important;
+    scroll-snap-type: x mandatory !important;
+    scrollbar-width: none !important;
+  }
+
+  body .video-row::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  body .video-card {
+    min-width: 260px !important;
+    max-width: 280px !important;
+    padding: 14px !important;
+    border-radius: 20px !important;
+    scroll-snap-align: start !important;
+  }
+
+  body .video-preview {
+    height: 120px !important;
+    border-radius: 16px !important;
+  }
+
+  body .video-card h3 {
+    font-size: 18px !important;
+    line-height: 1.15 !important;
+  }
+
+  body .video-card p {
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+  }
+
+  body .video-card button,
+  body .video-card a {
+    font-size: 16px !important;
+  }
+
+  body .map-topbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+  }
+
+  body .map-topbar h1 {
+    font-size: 28px !important;
+  }
+
+  body .map-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  body .map-actions button,
+  body .map-actions a {
+    width: 100% !important;
+  }
+
+  body .miro-board {
+    height: auto !important;
+    min-height: 520px !important;
+    padding: 12px !important;
+  }
+
+  body .miro-node,
+  body .miro-summary {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    margin: 12px 0 !important;
+  }
+}
+
+/* ---------- SMALL MOBILE: up to 420px ---------- */
+@media (max-width: 420px) {
+  body .lesik-app {
+    padding: 8px !important;
+  }
+
+  body .profile-question-card.profile-intro-card,
+  body .content-map-profile-gate,
+  body .daily-goals-card,
+  body .ios-glass-card {
+    padding: 20px 16px !important;
+    border-radius: 20px !important;
+  }
+
+  body .profile-question-card.profile-intro-card h1,
+  body .content-map-profile-gate h1 {
+    font-size: 23px !important;
+  }
+
+  body .daily-goals-head h2 {
+    font-size: 26px !important;
+  }
+
+  body .lesik-nav-item > span:last-child {
+    font-size: 9px !important;
+  }
+
+  body .video-card {
+    min-width: 245px !important;
+  }
+}
+
+/* FINAL MOBILE FIX: main hero must fit phone screen */
+@media (max-width: 767px) {
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  body .lesik-app,
+  body .home-dashboard-v2,
+  body .mobile-main-hero-fit,
+  body .mobile-main-hero-fit * {
+    box-sizing: border-box !important;
+  }
+
+  body .home-dashboard-v2 {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  body .mobile-main-hero-fit {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    padding: 26px 18px !important;
+    border-radius: 24px !important;
+  }
+
+  body .mobile-main-hero-fit h1,
+  body .mobile-main-hero-fit h2 {
+    max-width: 100% !important;
+    width: 100% !important;
+    font-size: clamp(34px, 11vw, 48px) !important;
+    line-height: 1.08 !important;
+    letter-spacing: -0.04em !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+  }
+
+  body .mobile-main-hero-fit p {
+    max-width: 100% !important;
+    width: 100% !important;
+    font-size: 20px !important;
+    line-height: 1.45 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  body .mobile-main-hero-fit > div,
+  body .mobile-main-hero-fit > section,
+  body .mobile-main-hero-fit article {
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  body .mobile-main-hero-fit [style*="display:flex"],
+  body .mobile-main-hero-fit [style*="display: flex"] {
+    max-width: 100% !important;
+    flex-wrap: wrap !important;
+  }
+
+  body .mobile-main-hero-fit a,
+  body .mobile-main-hero-fit button {
+    max-width: 100% !important;
+    white-space: normal !important;
+  }
+
+  /* Main CTA row: stack buttons on phone */
+  body .mobile-main-hero-fit .funnel-cta-soft-font,
+  body .mobile-main-hero-fit a[href="/app/profile"],
+  body .mobile-main-hero-fit a[href="/app/content-map"],
+  body .mobile-main-hero-fit button {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 52px !important;
+    justify-content: center !important;
+    margin-right: 0 !important;
+  }
+
+  /* Numbered steps should not crop */
+  body .mobile-main-hero-fit li,
+  body .mobile-main-hero-fit [class*="step"],
+  body .mobile-main-hero-fit [class*="pill"],
+  body .mobile-main-hero-fit [class*="item"] {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+    overflow: hidden !important;
+  }
+
+  body .mobile-main-hero-fit li span,
+  body .mobile-main-hero-fit [class*="step"] span,
+  body .mobile-main-hero-fit [class*="pill"] span,
+  body .mobile-main-hero-fit [class*="item"] span {
+    min-width: 0 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* Hide/collapse overflowing top descriptor if it breaks width */
+  body .mobile-main-hero-fit [class*="tagline"],
+  body .mobile-main-hero-fit [class*="subtitle"],
+  body .mobile-main-hero-fit [class*="label"] {
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow: hidden !important;
+  }
+}
+
+/* FINAL FORCE MOBILE: main top hero must not overflow */
+@media (max-width: 767px) {
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  body * {
+    box-sizing: border-box !important;
+  }
+
+  body .home-dashboard-v2 {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  /* Top cream hero/card on main screen */
+  body .home-dashboard-v2 > section:first-of-type,
+  body .home-dashboard-v2 > div:first-of-type,
+  body .home-dashboard-v2 [class*="hero"],
+  body .home-dashboard-v2 [class*="Hero"],
+  body .home-dashboard-v2 [class*="main"],
+  body .home-dashboard-v2 [class*="Main"],
+  body .home-dashboard-v2 .ios-glass-card:first-child {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+    border-radius: 24px !important;
+  }
+
+  /* Any row inside hero must wrap */
+  body .home-dashboard-v2 > section:first-of-type *,
+  body .home-dashboard-v2 > div:first-of-type *,
+  body .home-dashboard-v2 [class*="hero"] *,
+  body .home-dashboard-v2 [class*="Hero"] *,
+  body .home-dashboard-v2 .ios-glass-card:first-child * {
+    max-width: 100% !important;
+  }
+
+  body .home-dashboard-v2 > section:first-of-type div,
+  body .home-dashboard-v2 > div:first-of-type div,
+  body .home-dashboard-v2 [class*="hero"] div,
+  body .home-dashboard-v2 [class*="Hero"] div,
+  body .home-dashboard-v2 .ios-glass-card:first-child div {
+    min-width: 0 !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* Header/logo row */
+  body .home-dashboard-v2 img {
+    max-width: 100% !important;
+  }
+
+  /* Big title */
+  body .home-dashboard-v2 h1 {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: clamp(38px, 11vw, 52px) !important;
+    line-height: 1.08 !important;
+    letter-spacing: -0.04em !important;
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  body .home-dashboard-v2 p {
+    width: 100% !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  /* Step cards in hero */
+  body .home-dashboard-v2 ol,
+  body .home-dashboard-v2 ul {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0 !important;
+  }
+
+  body .home-dashboard-v2 li {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    white-space: normal !important;
+  }
+
+  body .home-dashboard-v2 li span,
+  body .home-dashboard-v2 li div {
+    min-width: 0 !important;
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+  }
+
+  /* CTA buttons row: stack */
+  body .home-dashboard-v2 a,
+  body .home-dashboard-v2 button {
+    max-width: 100% !important;
+  }
+
+  body .home-dashboard-v2 .funnel-cta-soft-font,
+  body .home-dashboard-v2 a[href="/app/profile"],
+  body .home-dashboard-v2 a[href="/app/content-map"],
+  body .home-dashboard-v2 button {
+    white-space: normal !important;
+  }
+
+  /* The two top buttons should not go outside screen */
+  body .home-dashboard-v2 a:has(+ a),
+  body .home-dashboard-v2 a:has(+ button),
+  body .home-dashboard-v2 button:has(+ button),
+  body .home-dashboard-v2 button:has(+ a) {
+    max-width: 100% !important;
+  }
+}
+
+/* Exact mobile fix for main hero block */
+@media (max-width: 767px) {
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  body .home-dashboard-v2 {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  body .main-hero-mobile-shell {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    display: block !important;
+    overflow: hidden !important;
+    padding: 26px 18px !important;
+    border-radius: 24px !important;
+  }
+
+  body .main-hero-mobile-left {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+  }
+
+  body .main-hero-mobile-logo-row {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    margin-bottom: 24px !important;
+    overflow: hidden !important;
+  }
+
+  body .main-hero-mobile-logo-row > span {
+    min-width: 0 !important;
+  }
+
+  body .main-hero-mobile-tagline {
+    display: none !important;
+  }
+
+  body .main-hero-mobile-title {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: clamp(40px, 11vw, 52px) !important;
+    line-height: 1.08 !important;
+    letter-spacing: -0.045em !important;
+    margin-bottom: 8px !important;
+    white-space: normal !important;
+  }
+
+  body .main-hero-mobile-subtitle {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 22px !important;
+    line-height: 1.42 !important;
+    margin-bottom: 22px !important;
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+  }
+
+  body .main-hero-mobile-nowrap-fix {
+    white-space: normal !important;
+    display: inline !important;
+  }
+
+  body .main-hero-mobile-steps {
+    width: 100% !important;
+    max-width: 100% !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    margin-bottom: 24px !important;
+  }
+
+  body .main-hero-mobile-step-pill {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 12px 14px !important;
+    overflow: hidden !important;
+  }
+
+  body .main-hero-mobile-step-pill .step-item {
+    min-width: 0 !important;
+    display: block !important;
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    font-size: 15px !important;
+    line-height: 1.25 !important;
+  }
+
+  body .main-hero-mobile-actions {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    margin-bottom: 14px !important;
+  }
+
+  body .main-hero-mobile-actions a,
+  body .main-hero-mobile-actions button {
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: center !important;
+    min-height: 52px !important;
+    margin: 0 !important;
+    text-align: center !important;
+  }
+
+  body .main-hero-mobile-actions button {
+    padding: 14px 24px !important;
+  }
+
+  body .main-hero-mobile-right {
+    display: none !important;
+  }
+}
+
+@media (max-width: 420px) {
+  body .main-hero-mobile-title {
+    font-size: 38px !important;
+  }
+
+  body .main-hero-mobile-subtitle {
+    font-size: 20px !important;
+  }
+
+  body .main-hero-mobile-shell {
+    padding: 24px 16px !important;
+  }
+}
+
+/* Exact mobile fix for main hero block */
+@media (max-width: 767px) {
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  body .home-dashboard-v2 {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  body .main-hero-mobile-shell {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    display: block !important;
+    overflow: hidden !important;
+    padding: 26px 18px !important;
+    border-radius: 24px !important;
+  }
+
+  body .main-hero-mobile-left {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+  }
+
+  body .main-hero-mobile-logo-row {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    margin-bottom: 24px !important;
+    overflow: hidden !important;
+  }
+
+  body .main-hero-mobile-logo-row > span {
+    min-width: 0 !important;
+  }
+
+  body .main-hero-mobile-tagline {
+    display: none !important;
+  }
+
+  body .main-hero-mobile-title {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: clamp(40px, 11vw, 52px) !important;
+    line-height: 1.08 !important;
+    letter-spacing: -0.045em !important;
+    margin-bottom: 8px !important;
+    white-space: normal !important;
+  }
+
+  body .main-hero-mobile-subtitle {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 22px !important;
+    line-height: 1.42 !important;
+    margin-bottom: 22px !important;
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+  }
+
+  body .main-hero-mobile-nowrap-fix {
+    white-space: normal !important;
+    display: inline !important;
+  }
+
+  body .main-hero-mobile-steps {
+    width: 100% !important;
+    max-width: 100% !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    margin-bottom: 24px !important;
+  }
+
+  body .main-hero-mobile-step-pill {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 12px 14px !important;
+    overflow: hidden !important;
+  }
+
+  body .main-hero-mobile-step-pill .step-item {
+    min-width: 0 !important;
+    display: block !important;
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    font-size: 15px !important;
+    line-height: 1.25 !important;
+  }
+
+  body .main-hero-mobile-actions {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    margin-bottom: 14px !important;
+  }
+
+  body .main-hero-mobile-actions a,
+  body .main-hero-mobile-actions button {
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: center !important;
+    min-height: 52px !important;
+    margin: 0 !important;
+    text-align: center !important;
+  }
+
+  body .main-hero-mobile-actions button {
+    padding: 14px 24px !important;
+  }
+
+  body .main-hero-mobile-right {
+    display: none !important;
+  }
+}
+
+@media (max-width: 420px) {
+  body .main-hero-mobile-title {
+    font-size: 38px !important;
+  }
+
+  body .main-hero-mobile-subtitle {
+    font-size: 20px !important;
+  }
+
+  body .main-hero-mobile-shell {
+    padding: 24px 16px !important;
+  }
+}
+
+/* Mobile nav active state fix */
+@media (max-width: 767px) {
+  html body .lesik-nav-item.active,
+  html body .lesik-nav-item[aria-current="page"],
+  html body .lesik-nav-item[data-active="true"] {
+    background: linear-gradient(135deg, #0f7a3a 0%, #087033 100%) !important;
+    border-color: rgba(21, 131, 62, .55) !important;
+    color: #ffffff !important;
+    box-shadow: 0 12px 28px rgba(10, 92, 58, .22) !important;
+  }
+
+  html body .lesik-nav-item.active .lesik-nav-icon,
+  html body .lesik-nav-item[aria-current="page"] .lesik-nav-icon,
+  html body .lesik-nav-item[data-active="true"] .lesik-nav-icon {
+    color: #ffffff !important;
+    background: rgba(255,255,255,.16) !important;
+    border-color: rgba(255,255,255,.26) !important;
+  }
+
+  html body .lesik-nav-item.active span,
+  html body .lesik-nav-item[aria-current="page"] span,
+  html body .lesik-nav-item[data-active="true"] span {
+    color: #ffffff !important;
+  }
+
+  html body .lesik-nav-item:not(.active):not([aria-current="page"]):not([data-active="true"]) {
+    background: rgba(255,255,255,.34) !important;
+    color: #1f3322 !important;
+  }
+
+  html body .lesik-nav-item:not(.active):not([aria-current="page"]):not([data-active="true"]) span {
+    color: #1f3322 !important;
+  }
+}
+
+/* FIX: inactive Profile tab must be dark, not white */
+@media (max-width: 767px) {
+  html body .lesik-nav a[href="/app/profile"]:not(.active),
+  html body .lesik-nav a[href="/app/profile"]:not(.active) *,
+  html body .lesik-nav .lesik-nav-item[href="/app/profile"]:not(.active),
+  html body .lesik-nav .lesik-nav-item[href="/app/profile"]:not(.active) * {
+    color: #1f3322 !important;
+    -webkit-text-fill-color: #1f3322 !important;
+  }
+
+  html body .lesik-nav a[href="/app/profile"]:not(.active) .lesik-nav-icon,
+  html body .lesik-nav a[href="/app/profile"]:not(.active) svg,
+  html body .lesik-nav a[href="/app/profile"]:not(.active) path {
+    color: #1f3322 !important;
+    stroke: #1f3322 !important;
+  }
+
+  html body .lesik-nav a[href="/app/profile"].active,
+  html body .lesik-nav a[href="/app/profile"].active *,
+  html body .lesik-nav a[href="/app/profile"].active svg,
+  html body .lesik-nav a[href="/app/profile"].active path {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    stroke: #ffffff !important;
+  }
+}
+
+/* Mobile onboarding modal: compact size */
+@media (max-width: 767px) {
+  html body [class*="tour"],
+  html body [class*="onboarding"],
+  html body [class*="guide"] {
+    box-sizing: border-box !important;
+  }
+
+  /* Overlay modal card */
+  html body [class*="tour"] [class*="modal"],
+  html body [class*="tour"] [class*="card"],
+  html body [class*="onboarding"] [class*="modal"],
+  html body [class*="onboarding"] [class*="card"],
+  html body [class*="guide"] [class*="modal"],
+  html body [class*="guide"] [class*="card"] {
+    width: min(86vw, 380px) !important;
+    max-width: 380px !important;
+    padding: 22px 20px !important;
+    border-radius: 24px !important;
+  }
+
+  /* Skip */
+  html body [class*="tour"] button,
+  html body [class*="onboarding"] button,
+  html body [class*="guide"] button {
+    font-size: 16px !important;
+  }
+
+  /* Icon square */
+  html body [class*="tour"] [class*="icon"],
+  html body [class*="onboarding"] [class*="icon"],
+  html body [class*="guide"] [class*="icon"] {
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 18px !important;
+  }
+
+  /* Step label */
+  html body [class*="tour"] [class*="step"],
+  html body [class*="onboarding"] [class*="step"],
+  html body [class*="guide"] [class*="step"] {
+    font-size: 13px !important;
+    margin-top: 14px !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Title */
+  html body [class*="tour"] h2,
+  html body [class*="tour"] h3,
+  html body [class*="onboarding"] h2,
+  html body [class*="onboarding"] h3,
+  html body [class*="guide"] h2,
+  html body [class*="guide"] h3 {
+    font-size: 26px !important;
+    line-height: 1.12 !important;
+    margin: 0 0 14px !important;
+  }
+
+  /* Description */
+  html body [class*="tour"] p,
+  html body [class*="onboarding"] p,
+  html body [class*="guide"] p {
+    font-size: 17px !important;
+    line-height: 1.45 !important;
+    margin-bottom: 18px !important;
+  }
+
+  /* Dots */
+  html body [class*="tour"] [class*="dot"],
+  html body [class*="onboarding"] [class*="dot"],
+  html body [class*="guide"] [class*="dot"] {
+    transform: scale(.85) !important;
+  }
+
+  /* Bottom buttons */
+  html body [class*="tour"] [class*="actions"],
+  html body [class*="onboarding"] [class*="actions"],
+  html body [class*="guide"] [class*="actions"] {
+    gap: 10px !important;
+    margin-top: 18px !important;
+  }
+
+  html body [class*="tour"] [class*="actions"] button,
+  html body [class*="onboarding"] [class*="actions"] button,
+  html body [class*="guide"] [class*="actions"] button {
+    min-height: 50px !important;
+    padding: 0 22px !important;
+    border-radius: 15px !important;
+    font-size: 17px !important;
+    font-weight: 500 !important;
+  }
+}
+
+@media (max-width: 390px) {
+  html body [class*="tour"] [class*="modal"],
+  html body [class*="tour"] [class*="card"],
+  html body [class*="onboarding"] [class*="modal"],
+  html body [class*="onboarding"] [class*="card"],
+  html body [class*="guide"] [class*="modal"],
+  html body [class*="guide"] [class*="card"] {
+    width: min(88vw, 350px) !important;
+    padding: 20px 18px !important;
+  }
+
+  html body [class*="tour"] h2,
+  html body [class*="tour"] h3,
+  html body [class*="onboarding"] h2,
+  html body [class*="onboarding"] h3,
+  html body [class*="guide"] h2,
+  html body [class*="guide"] h3 {
+    font-size: 24px !important;
+  }
+
+  html body [class*="tour"] p,
+  html body [class*="onboarding"] p,
+  html body [class*="guide"] p {
+    font-size: 16px !important;
+  }
+}
+
+/* FINAL MOBILE FIX: test modal must fit phone screen */
+@media (max-width: 767px) {
+  html body .test-mobile-overlay {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    min-height: 100dvh !important;
+    padding: 12px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+
+  html body .test-mobile-card {
+    max-width: calc(100vw - 32px) !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  html body .test-mobile-card:first-of-type,
+  html body .test-mobile-card:nth-of-type(2) {
+    width: min(88vw, 390px) !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    border-radius: 24px !important;
+  }
+
+  html body .test-mobile-card h1,
+  html body .test-mobile-card h2 {
+    font-size: 32px !important;
+    line-height: 1.12 !important;
+  }
+
+  html body .test-mobile-card p {
+    font-size: 18px !important;
+    line-height: 1.42 !important;
+  }
+
+  html body .test-mobile-card div {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Row with numbers 1-5 */
+  html body .test-mobile-card div:has(button) {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 8px !important;
+  }
+
+  html body .test-mobile-card button {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Rating buttons */
+  html body .test-mobile-card button:not(:last-child) {
+    flex-shrink: 1 !important;
+  }
+
+  /* Big next/back buttons */
+  html body .test-mobile-card button {
+    font-size: 17px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  html body .test-mobile-card:first-of-type,
+  html body .test-mobile-card:nth-of-type(2) {
+    width: calc(100vw - 28px) !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  html body .test-mobile-card h1,
+  html body .test-mobile-card h2 {
+    font-size: 29px !important;
+  }
+
+  html body .test-mobile-card p {
+    font-size: 17px !important;
+  }
+}
+
+/* FIX: inactive Profile nav tab must be dark on desktop/tablet/mobile */
+html body .lesik-sidebar .lesik-nav a[href="/app/profile"]:not(.active):not([aria-current="page"]),
+html body .lesik-sidebar .lesik-nav a[href="/app/profile"]:not(.active):not([aria-current="page"]) *,
+html body .lesik-sidebar .lesik-nav .lesik-nav-item[href="/app/profile"]:not(.active):not([aria-current="page"]),
+html body .lesik-sidebar .lesik-nav .lesik-nav-item[href="/app/profile"]:not(.active):not([aria-current="page"]) * {
+  color: #1f3322 !important;
+  -webkit-text-fill-color: #1f3322 !important;
+  text-shadow: none !important;
+}
+
+/* Icon inside inactive Profile tab */
+html body .lesik-sidebar .lesik-nav a[href="/app/profile"]:not(.active):not([aria-current="page"]) .lesik-nav-icon,
+html body .lesik-sidebar .lesik-nav a[href="/app/profile"]:not(.active):not([aria-current="page"]) svg,
+html body .lesik-sidebar .lesik-nav a[href="/app/profile"]:not(.active):not([aria-current="page"]) path {
+  color: #1f3322 !important;
+  stroke: #1f3322 !important;
+  -webkit-text-fill-color: #1f3322 !important;
+}
+
+/* Active Profile tab stays white text */
+html body .lesik-sidebar .lesik-nav a[href="/app/profile"].active,
+html body .lesik-sidebar .lesik-nav a[href="/app/profile"].active *,
+html body .lesik-sidebar .lesik-nav a[href="/app/profile"][aria-current="page"],
+html body .lesik-sidebar .lesik-nav a[href="/app/profile"][aria-current="page"] * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Active Profile icon */
+html body .lesik-sidebar .lesik-nav a[href="/app/profile"].active svg,
+html body .lesik-sidebar .lesik-nav a[href="/app/profile"].active path,
+html body .lesik-sidebar .lesik-nav a[href="/app/profile"][aria-current="page"] svg,
+html body .lesik-sidebar .lesik-nav a[href="/app/profile"][aria-current="page"] path {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Desktop onboarding popup: bigger icon/image */
+@media (min-width: 768px) {
+  html body [class*="tour"] [class*="icon"],
+  html body [class*="onboarding"] [class*="icon"],
+  html body [class*="guide"] [class*="icon"],
+  html body [class*="tutorial"] [class*="icon"] {
+    width: 92px !important;
+    height: 92px !important;
+    min-width: 92px !important;
+    border-radius: 24px !important;
+  }
+
+  html body [class*="tour"] [class*="icon"] img,
+  html body [class*="tour"] [class*="icon"] svg,
+  html body [class*="onboarding"] [class*="icon"] img,
+  html body [class*="onboarding"] [class*="icon"] svg,
+  html body [class*="guide"] [class*="icon"] img,
+  html body [class*="guide"] [class*="icon"] svg,
+  html body [class*="tutorial"] [class*="icon"] img,
+  html body [class*="tutorial"] [class*="icon"] svg {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  html body [class*="tour"] [class*="modal"],
+  html body [class*="tour"] [class*="card"],
+  html body [class*="onboarding"] [class*="modal"],
+  html body [class*="onboarding"] [class*="card"],
+  html body [class*="guide"] [class*="modal"],
+  html body [class*="guide"] [class*="card"],
+  html body [class*="tutorial"] [class*="modal"],
+  html body [class*="tutorial"] [class*="card"] {
+    width: min(520px, calc(100vw - 48px)) !important;
+    padding: 34px 34px 28px !important;
+  }
+}
+
+/* Exact onboarding tour icon size */
+@media (min-width: 768px) {
+  html body .onb-card {
+    width: min(520px, calc(100vw - 48px)) !important;
+    padding: 38px 38px 32px !important;
+    border-radius: 28px !important;
+  }
+
+  html body .onb-icon {
+    width: 96px !important;
+    height: 96px !important;
+    min-width: 96px !important;
+    min-height: 96px !important;
+    border-radius: 26px !important;
+    margin: 0 auto 22px !important;
+  }
+
+  html body .onb-icon svg,
+  html body .onb-icon img {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  html body .onb-step {
+    font-size: 15px !important;
+    margin-bottom: 10px !important;
+  }
+
+  html body .onb-card h2,
+  html body .onb-title {
+    font-size: 30px !important;
+    line-height: 1.12 !important;
+  }
+
+  html body .onb-card p,
+  html body .onb-text {
+    font-size: 18px !important;
+    line-height: 1.45 !important;
+  }
+}
+
+/* FINAL: mobile test modal must fit the phone screen */
+@media (max-width: 767px) {
+  html body .mobile-test-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    padding: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  html body .mobile-test-card {
+    width: min(92vw, 360px) !important;
+    max-width: calc(100vw - 24px) !important;
+    min-width: 0 !important;
+    max-height: calc(100dvh - 28px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+    border-radius: 22px !important;
+  }
+
+  html body .mobile-test-card h1,
+  html body .mobile-test-card h2 {
+    font-size: 30px !important;
+    line-height: 1.12 !important;
+    margin-bottom: 14px !important;
+  }
+
+  html body .mobile-test-card p {
+    font-size: 17px !important;
+    line-height: 1.42 !important;
+  }
+
+  html body .mobile-test-card div {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  html body .mobile-test-rating-row,
+  html body .mobile-test-card div:has(> button:nth-child(5)) {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  html body .mobile-test-rating-row > button,
+  html body .mobile-test-card div:has(> button:nth-child(5)) > button {
+    width: 100% !important;
+    max-width: 54px !important;
+    min-width: 0 !important;
+    height: 54px !important;
+    padding: 0 !important;
+    border-radius: 16px !important;
+    font-size: 18px !important;
+    justify-self: center !important;
+    flex: 0 1 auto !important;
+  }
+
+  html body .mobile-test-card button {
+    box-sizing: border-box !important;
+  }
+}
+
+@media (max-width: 390px) {
+  html body .mobile-test-card {
+    width: calc(100vw - 22px) !important;
+  }
+
+  html body .mobile-test-card h1,
+  html body .mobile-test-card h2 {
+    font-size: 28px !important;
+  }
+
+  html body .mobile-test-card p {
+    font-size: 16px !important;
+  }
+
+  html body .mobile-test-rating-row > button,
+  html body .mobile-test-card div:has(> button:nth-child(5)) > button {
+    max-width: 50px !important;
+    height: 50px !important;
+  }
+}
+
+/* FINAL: exact mobile test modal fit */
+@media (max-width: 767px) {
+  html body .lesik-test-modal-overlay {
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: 100vw !important;
+    padding: 10px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+
+  html body .lesik-test-modal-shell {
+    width: calc(100vw - 24px) !important;
+    max-width: 360px !important;
+    max-height: calc(100dvh - 24px) !important;
+    padding: 24px 16px 20px !important;
+    border-radius: 24px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+    background-position: center bottom !important;
+  }
+
+  html body .lesik-test-modal-shell > button {
+    top: 12px !important;
+    right: 12px !important;
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  html body .lesik-test-modal-shell h2 {
+    font-size: 30px !important;
+    line-height: 1.08 !important;
+    max-width: calc(100% - 42px) !important;
+  }
+
+  html body .lesik-test-modal-shell > svg {
+    margin: 4px 0 18px !important;
+  }
+
+  html body .lesik-test-question-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 20px 16px 18px !important;
+    border-radius: 18px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  html body .lesik-test-question-card p {
+    font-size: 17px !important;
+    line-height: 1.42 !important;
+    margin-bottom: 20px !important;
+  }
+
+  html body .lesik-test-rating-grid {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 20px !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  html body .lesik-test-rating-grid button {
+    width: 100% !important;
+    max-width: 50px !important;
+    height: 50px !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    border-radius: 15px !important;
+    font-size: 16px !important;
+    justify-self: center !important;
+    flex-shrink: 1 !important;
+  }
+
+  html body .modal-test-actions {
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  html body .modal-test-actions button {
+    height: 52px !important;
+    min-height: 52px !important;
+    max-height: 52px !important;
+    padding: 0 14px !important;
+    font-size: 14px !important;
+    border-radius: 14px !important;
+  }
+
+  html body .modal-test-next-btn img {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    min-height: 16px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  html body .lesik-test-modal-shell {
+    width: calc(100vw - 20px) !important;
+    max-width: 340px !important;
+    padding: 22px 14px 18px !important;
+  }
+
+  html body .lesik-test-modal-shell h2 {
+    font-size: 28px !important;
+  }
+
+  html body .lesik-test-question-card {
+    padding: 18px 14px 16px !important;
+  }
+
+  html body .lesik-test-question-card p {
+    font-size: 16px !important;
+  }
+
+  html body .lesik-test-rating-grid {
+    gap: 6px !important;
+  }
+
+  html body .lesik-test-rating-grid button {
+    max-width: 46px !important;
+    height: 46px !important;
+  }
+}
+
+/* =========================================================
+   MOBILE APP-LIKE BOTTOM NAVIGATION
+   ========================================================= */
+@media (max-width: 767px) {
+  html,
+  body {
+    overflow-x: hidden !important;
+  }
+
+  body .lesik-app {
+    display: block !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    padding: 10px 10px calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* Bottom app tab bar */
+  body .lesik-sidebar {
+    position: fixed !important;
+    left: 10px !important;
+    right: 10px !important;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+    top: auto !important;
+    z-index: 9999 !important;
+
+    width: auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 9px !important;
+
+    border-radius: 28px !important;
+    border: 1px solid rgba(130, 190, 135, .38) !important;
+    background: rgba(244, 255, 244, .88) !important;
+    backdrop-filter: blur(18px) saturate(1.1) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.1) !important;
+    box-shadow: 0 16px 46px rgba(20, 70, 36, .22) !important;
+  }
+
+  /* Hide logo/title in bottom mode */
+  body .lesik-sidebar .lesik-brand,
+  body .lesik-sidebar .lesik-side-card {
+    display: none !important;
+  }
+
+  body .lesik-nav {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  body .lesik-nav-item {
+    height: 64px !important;
+    min-height: 64px !important;
+    padding: 7px 4px !important;
+    border-radius: 20px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+
+    background: rgba(255, 255, 255, .42) !important;
+    border: 1px solid rgba(130, 190, 135, .36) !important;
+    color: #1f3322 !important;
+    box-shadow: none !important;
+  }
+
+  body .lesik-nav-item .lesik-nav-icon {
+    width: 30px !important;
+    min-width: 30px !important;
+    height: 30px !important;
+    border-radius: 12px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    background: rgba(218, 245, 221, .72) !important;
+    border: 1px solid rgba(90, 180, 100, .28) !important;
+    color: #0a5c3a !important;
+  }
+
+  body .lesik-nav-item svg,
+  body .lesik-nav-item path {
+    width: 18px !important;
+    height: 18px !important;
+    color: inherit !important;
+    stroke: currentColor !important;
+  }
+
+  body .lesik-nav-item > span:last-child {
+    color: #1f3322 !important;
+    -webkit-text-fill-color: #1f3322 !important;
+    font-size: 10px !important;
+    line-height: 1.1 !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  /* Active tab */
+  body .lesik-nav-item.active,
+  body .lesik-nav-item[aria-current="page"],
+  body .lesik-nav-item[data-active="true"] {
+    background: linear-gradient(180deg, #15833e 0%, #0d6f33 100%) !important;
+    border-color: rgba(21, 131, 62, .65) !important;
+    color: #ffffff !important;
+    box-shadow: 0 12px 28px rgba(10, 92, 58, .26) !important;
+  }
+
+  body .lesik-nav-item.active .lesik-nav-icon,
+  body .lesik-nav-item[aria-current="page"] .lesik-nav-icon,
+  body .lesik-nav-item[data-active="true"] .lesik-nav-icon {
+    background: rgba(255,255,255,.16) !important;
+    border-color: rgba(255,255,255,.26) !important;
+    color: #ffffff !important;
+  }
+
+  body .lesik-nav-item.active span,
+  body .lesik-nav-item[aria-current="page"] span,
+  body .lesik-nav-item[data-active="true"] span {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+
+  /* Main content should not be hidden behind bottom nav */
+  body .home-dashboard-v2,
+  body .profile-page,
+  body .map-page,
+  body .trends-page {
+    padding-bottom: 108px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  body .lesik-sidebar {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 8px !important;
+    border-radius: 24px !important;
+  }
+
+  body .lesik-nav {
+    gap: 6px !important;
+  }
+
+  body .lesik-nav-item {
+    height: 60px !important;
+    min-height: 60px !important;
+    border-radius: 18px !important;
+  }
+
+  body .lesik-nav-item > span:last-child {
+    font-size: 9px !important;
+  }
+}
+
+/* Admin tab is visible only for letsikekaterina@gmail.com */
+html body .lesik-sidebar .lesik-nav a[href="/app/admin"],
+html body .lesik-sidebar .lesik-nav .lesik-nav-item[href="/app/admin"] {
+  display: none !important;
+}
+
+html body.lesik-is-admin .lesik-sidebar .lesik-nav a[href="/app/admin"],
+html body.lesik-is-admin .lesik-sidebar .lesik-nav .lesik-nav-item[href="/app/admin"] {
+  display: flex !important;
+}
+
+/* Mobile bottom nav: remaining buttons fill full width */
+@media (max-width: 767px) {
+  html body .lesik-sidebar .lesik-nav {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  html body.lesik-is-admin .lesik-sidebar .lesik-nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  html body .lesik-sidebar .lesik-nav a[href="/app/admin"],
+  html body .lesik-sidebar .lesik-nav .lesik-nav-item[href="/app/admin"] {
+    display: none !important;
+  }
+
+  html body.lesik-is-admin .lesik-sidebar .lesik-nav a[href="/app/admin"],
+  html body.lesik-is-admin .lesik-sidebar .lesik-nav .lesik-nav-item[href="/app/admin"] {
+    display: flex !important;
+  }
+
+  html body .lesik-sidebar .lesik-nav .lesik-nav-item,
+  html body .lesik-sidebar .lesik-nav a {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+@media (max-width: 390px) {
+  html body .lesik-sidebar .lesik-nav {
+    gap: 6px !important;
+  }
+}
+
+/* Stats page */
+.stats-page {
+  min-height: calc(100vh - 68px);
+  padding: 30px;
+  border-radius: 34px;
+  border: 2px solid rgba(117, 255, 76, .32);
+  background:
+    radial-gradient(circle at 82% 4%, rgba(97,255,78,.08), transparent 25%),
+    linear-gradient(rgba(0,36,17,.58), rgba(0,20,9,.72));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.stats-hero-card,
+.stats-card,
+.stats-detail-card,
+.stats-empty-card {
+  background: #ffffff;
+  border: 1px solid #d8efd9;
+  border-radius: 28px;
+  box-shadow: 0 18px 46px rgba(60, 120, 72, .08);
+  color: #1f3322;
+}
+
+.stats-hero-card {
+  padding: 34px;
+  margin-bottom: 18px;
+}
+
+.stats-kicker {
+  margin: 0 0 8px;
+  color: #ffbd59;
+  font-size: 13px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.stats-hero-card h1 {
+  margin: 0 0 14px;
+  color: #1f3322;
+  font-size: 34px;
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.stats-hero-card p {
+  margin: 0;
+  max-width: 620px;
+  color: #46564a;
+  font-size: 16px;
+  line-height: 1.45;
+  font-weight: 400;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.stats-card {
+  padding: 24px;
+}
+
+.stats-card span,
+.stats-detail-card span {
+  display: block;
+  margin-bottom: 8px;
+  color: #627468;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.stats-card b {
+  display: block;
+  color: #0a5c3a;
+  font-size: 46px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+.stats-card p {
+  margin: 10px 0 0;
+  color: #46564a;
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 400;
+}
+
+.stats-detail-card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 24px;
+  margin-bottom: 14px;
+}
+
+.stats-detail-card b {
+  color: #1f3322;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.stats-empty-card {
+  padding: 28px;
+}
+
+.stats-empty-card h2 {
+  margin: 0 0 12px;
+  color: #1f3322;
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.stats-empty-card p {
+  margin: 0 0 20px;
+  color: #46564a;
+  font-size: 16px;
+  line-height: 1.45;
+  font-weight: 400;
+}
+
+.stats-empty-card a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #15833e 0%, #0d6f33 100%);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+/* Mobile bottom nav after adding Stats:
+   common users = 4 tabs, admin = 5 tabs */
+@media (max-width: 767px) {
+  html body .lesik-sidebar .lesik-nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  html body.lesik-is-admin .lesik-sidebar .lesik-nav {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+
+  html body .stats-page {
+    padding: 14px 14px 112px !important;
+    border-radius: 22px !important;
+    min-height: auto !important;
+  }
+
+  html body .stats-hero-card,
+  html body .stats-card,
+  html body .stats-detail-card,
+  html body .stats-empty-card {
+    border-radius: 22px !important;
+  }
+
+  html body .stats-hero-card {
+    padding: 24px 20px !important;
+  }
+
+  html body .stats-hero-card h1 {
+    font-size: 28px !important;
+  }
+
+  html body .stats-grid,
+  html body .stats-detail-card {
+    grid-template-columns: 1fr !important;
+  }
+
+  html body .stats-card {
+    padding: 22px 20px !important;
+  }
+
+  html body .stats-card b {
+    font-size: 42px !important;
+  }
+
+  html body .stats-empty-card {
+    padding: 24px 20px !important;
+  }
+
+  html body .stats-empty-card h2 {
+    font-size: 24px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  html body .lesik-sidebar .lesik-nav-item > span:last-child {
+    font-size: 8.5px !important;
+  }
+}
+
+/* FINAL: visible button in empty stats */
+html body .stats-empty-card a,
+html body .stats-empty-card a *,
+html body .stats-empty-card a:visited,
+html body .stats-empty-card a:visited * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+}
+
+html body .stats-empty-card a {
+  background: linear-gradient(180deg, #15833e 0%, #0d6f33 100%) !important;
+  opacity: 1 !important;
+}
+
+/* Mobile bottom nav icons: app-like outline */
+@media (max-width: 767px) {
+  html body .lesik-nav-item .custom-nav-svg {
+    width: 28px !important;
+    height: 28px !important;
+    stroke-width: 4.2 !important;
+  }
+
+  html body .lesik-nav-item[href="/app/stats"] .custom-nav-svg,
+  html body .lesik-nav-item[href="/app/profile"] .custom-nav-svg {
+    width: 30px !important;
+    height: 30px !important;
+  }
+}
+
+/* FINAL: beautiful green profile gear icon */
+html body .lesik-nav-item[href="/app/profile"] .custom-nav-svg,
+html body .lesik-nav-item[href="/app/profile"] .custom-nav-svg * {
+  color: #18a957 !important;
+  stroke: #18a957 !important;
+  fill: none !important;
+}
+
+html body .lesik-nav-item[href="/app/profile"] .lesik-nav-icon {
+  background: rgba(209, 248, 215, 0.82) !important;
+  border-color: rgba(24, 169, 87, 0.28) !important;
+}
+
+html body .lesik-nav-item.active[href="/app/profile"] .custom-nav-svg,
+html body .lesik-nav-item.active[href="/app/profile"] .custom-nav-svg *,
+html body .lesik-nav-item[aria-current="page"][href="/app/profile"] .custom-nav-svg,
+html body .lesik-nav-item[aria-current="page"][href="/app/profile"] .custom-nav-svg * {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  fill: none !important;
+}
+
+/* FINAL: profile beautiful gear */
+html body .lesik-nav-item[href="/app/profile"] .custom-nav-svg {
+  width: 28px !important;
+  height: 28px !important;
+  stroke: #18a957 !important;
+  color: #18a957 !important;
+  stroke-width: 1.9 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  fill: none !important;
+}
+
+html body .lesik-nav-item[href="/app/profile"] .custom-nav-svg * {
+  stroke: #18a957 !important;
+  color: #18a957 !important;
+  fill: none !important;
+}
+
+html body .lesik-nav-item[href="/app/profile"] .lesik-nav-icon {
+  background: rgba(209, 248, 215, 0.82) !important;
+  border-color: rgba(24, 169, 87, 0.28) !important;
+}
+
+html body .lesik-nav-item.active[href="/app/profile"] .custom-nav-svg,
+html body .lesik-nav-item.active[href="/app/profile"] .custom-nav-svg *,
+html body .lesik-nav-item[aria-current="page"][href="/app/profile"] .custom-nav-svg,
+html body .lesik-nav-item[aria-current="page"][href="/app/profile"] .custom-nav-svg * {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+  fill: none !important;
+}
+
+/* FINAL: force real gear icon for Profile */
+html body .lesik-nav-item[href="/app/profile"] .custom-nav-svg {
+  display: none !important;
+}
+
+html body .lesik-nav-item[href="/app/profile"] .lesik-nav-icon::before {
+  content: "⚙";
+  display: block !important;
+  color: #18a957 !important;
+  -webkit-text-fill-color: #18a957 !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+  font-weight: 400 !important;
+  font-family: Arial, "Helvetica Neue", sans-serif !important;
+  transform: translateY(-1px);
+}
+
+html body .lesik-nav-item.active[href="/app/profile"] .lesik-nav-icon::before,
+html body .lesik-nav-item[aria-current="page"][href="/app/profile"] .lesik-nav-icon::before {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+@media (max-width: 767px) {
+  html body .lesik-nav-item[href="/app/profile"] .lesik-nav-icon::before {
+    font-size: 25px !important;
+  }
+}
+
+/* FINAL: bigger profile gear icon */
+html body .lesik-nav-item[href="/app/profile"] .lesik-nav-icon {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 14px !important;
+}
+
+html body .lesik-nav-item[href="/app/profile"] .lesik-nav-icon::before {
+  font-size: 31px !important;
+  line-height: 1 !important;
+  transform: translateY(-1px) !important;
+}
+
+@media (max-width: 767px) {
+  html body .lesik-nav-item[href="/app/profile"] .lesik-nav-icon {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+  }
+
+  html body .lesik-nav-item[href="/app/profile"] .lesik-nav-icon::before {
+    font-size: 33px !important;
+  }
+}
+
+/* FINAL: profile gear even bigger */
+html body .lesik-nav-item[href="/app/profile"] .lesik-nav-icon {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  border-radius: 16px !important;
+}
+
+html body .lesik-nav-item[href="/app/profile"] .lesik-nav-icon::before {
+  font-size: 40px !important;
+  line-height: 1 !important;
+  transform: translateY(-1px) !important;
+}
+
+@media (max-width: 767px) {
+  html body .lesik-nav-item[href="/app/profile"] .lesik-nav-icon {
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+  }
+
+  html body .lesik-nav-item[href="/app/profile"] .lesik-nav-icon::before {
+    font-size: 42px !important;
+  }
+}
+
+/* FINAL: remove glow from bottom nav icons */
+html body .lesik-nav-item,
+html body .lesik-nav-item.active,
+html body .lesik-nav-item[aria-current="page"],
+html body .lesik-nav-item[data-active="true"] {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+html body .lesik-nav-item .lesik-nav-icon,
+html body .lesik-nav-item.active .lesik-nav-icon,
+html body .lesik-nav-item[aria-current="page"] .lesik-nav-icon,
+html body .lesik-nav-item[data-active="true"] .lesik-nav-icon {
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+html body .lesik-nav-item .custom-nav-svg,
+html body .lesik-nav-item .custom-nav-svg *,
+html body .lesik-nav-item .lesik-nav-icon::before {
+  filter: none !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 767px) {
+  html body .lesik-sidebar {
+    box-shadow: 0 8px 24px rgba(20, 70, 36, 0.12) !important;
+  }
+
+  html body .lesik-nav-item.active,
+  html body .lesik-nav-item[aria-current="page"],
+  html body .lesik-nav-item[data-active="true"] {
+    box-shadow: none !important;
+  }
+}
+
+/* Social analysis in profile */
+.social-analysis-ready {
+  display: block;
+  margin-top: 10px;
+  color: #0a6b3a;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 500;
+}
+
+.social-analysis-result {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(232, 250, 233, 0.88);
+  border: 1px solid rgba(10, 92, 58, 0.14);
+  color: #1f3322;
+}
+
+.social-analysis-result h3 {
+  margin: 0 0 8px;
+  color: #0a5c3a;
+  font-size: 17px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.social-analysis-result p {
+  margin: 0;
+  white-space: pre-line;
+  color: #334438;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.social-analysis-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.social-analysis-actions .modal-save-button.secondary {
+  background: rgba(255,255,255,0.92) !important;
+  color: #0a5c3a !important;
+  -webkit-text-fill-color: #0a5c3a !important;
+  border: 1px solid rgba(10,92,58,0.22) !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 767px) {
+  .social-analysis-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .social-analysis-result {
+    max-height: 260px;
+    overflow-y: auto;
+  }
+}
+
+/* Social analysis timer */
+.social-analysis-timer-hint {
+  display: block;
+  margin-top: 8px;
+  color: #6b6b5f;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 500;
+}
+
+/* Social analysis percent progress */
+.social-analysis-progress-wrap {
+  margin-top: 10px;
+}
+
+.social-analysis-progress-text {
+  margin-bottom: 7px;
+  color: #3f4f43;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.social-analysis-progress-bar {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(10, 92, 58, 0.12);
+}
+
+.social-analysis-progress-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0a5c3a, #18a957);
+  transition: width 0.45s ease;
+}
+
+/* FINAL: show beautiful phone mockup on mobile main screen */
+@media (max-width: 767px) {
+  html body .main-hero-mobile-right {
+    display: flex !important;
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 360px !important;
+    min-height: 360px !important;
+    margin: 18px auto 0 !important;
+    padding: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+  }
+
+  /* Hide desktop side cards/arrows on mobile */
+  html body .main-hero-mobile-right > div:first-child {
+    display: none !important;
+  }
+
+  html body .main-hero-mobile-right > div:last-child {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-shrink: 1 !important;
+  }
+
+  html body .main-hero-mobile-right img {
+    width: 235px !important;
+    max-width: 72vw !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0 auto !important;
+    transform: perspective(1200px) rotateY(-13deg) rotateZ(4deg) translateX(0) !important;
+    filter: drop-shadow(0 20px 34px rgba(0,0,0,0.20)) contrast(1.06) saturate(1.03) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  html body .main-hero-mobile-right {
+    height: 330px !important;
+    min-height: 330px !important;
+    margin-top: 14px !important;
+  }
+
+  html body .main-hero-mobile-right img {
+    width: 215px !important;
+    max-width: 70vw !important;
+  }
+}
+
+/* FINAL: desktop profile modal opens higher, without huge top space */
+@media (min-width: 768px) {
+  html body .profile-modal-backdrop {
+    align-items: flex-start !important;
+    justify-content: center !important;
+    padding: 32px 24px !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  html body .profile-modal,
+  html body .profile-modal.profile-modal-large {
+    margin: 0 auto 32px !important;
+    max-height: calc(100vh - 64px) !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* FINAL: rebuild content map button color */
+html body .funnel-regenerate-button,
+html body button.funnel-regenerate-button,
+html body .content-map-generate-btn,
+html body button.content-map-generate-btn {
+  background: linear-gradient(180deg, #ff9800 0%, #f07500 100%) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 14px 28px rgba(240, 117, 0, 0.22) !important;
+  opacity: 1 !important;
+  font-weight: 700 !important;
+}
+
+html body .funnel-regenerate-button *,
+html body .content-map-generate-btn * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Grey only when really disabled */
+html body .funnel-regenerate-button:disabled,
+html body button.funnel-regenerate-button:disabled,
+html body .content-map-generate-btn:disabled,
+html body button.content-map-generate-btn:disabled {
+  background: #a9bbaa !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.78 !important;
+}
+
+/* FINAL: keep rebuild map button orange, not grey */
+html body button.funnel-generate-button,
+html body button.funnel-regenerate-button,
+html body button.content-map-generate-btn,
+html body .funnel-generate-button,
+html body .funnel-regenerate-button,
+html body .content-map-generate-btn {
+  background: linear-gradient(180deg, #ff9800 0%, #f07500 100%) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: none !important;
+  opacity: 1 !important;
+  box-shadow: 0 14px 28px rgba(240, 117, 0, 0.22) !important;
+}
+
+/* Even if disabled, do not make it grey */
+html body button.funnel-generate-button:disabled,
+html body button.funnel-regenerate-button:disabled,
+html body button.content-map-generate-btn:disabled,
+html body .funnel-generate-button:disabled,
+html body .funnel-regenerate-button:disabled,
+html body .content-map-generate-btn:disabled {
+  background: linear-gradient(180deg, #ff9800 0%, #f07500 100%) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 0.82 !important;
+  box-shadow: 0 10px 22px rgba(240, 117, 0, 0.16) !important;
+}
+
+html body button.funnel-generate-button *,
+html body button.funnel-regenerate-button *,
+html body button.content-map-generate-btn *,
+html body .funnel-generate-button *,
+html body .funnel-regenerate-button *,
+html body .content-map-generate-btn * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* FINAL: bright green rebuild map button */
+html body .map-actions button.content-map-generate-btn,
+html body .map-actions .content-map-generate-btn,
+html body button.content-map-generate-btn,
+html body .content-map-generate-btn {
+  background: linear-gradient(180deg, #20d866 0%, #079846 100%) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: none !important;
+  opacity: 1 !important;
+  box-shadow: 0 14px 30px rgba(7, 152, 70, 0.28) !important;
+  font-weight: 800 !important;
+}
+
+/* Even if disabled/loading — keep bright green */
+html body .map-actions button.content-map-generate-btn:disabled,
+html body button.content-map-generate-btn:disabled,
+html body .content-map-generate-btn:disabled {
+  background: linear-gradient(180deg, #20d866 0%, #079846 100%) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+  box-shadow: 0 14px 30px rgba(7, 152, 70, 0.22) !important;
+  cursor: wait !important;
+}
+
+html body .content-map-generate-btn *,
+html body .content-map-generate-btn:disabled * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* FINAL: rebuild map button dark green in LESik design */
+html body .map-actions button.content-map-generate-btn,
+html body .map-actions .content-map-generate-btn,
+html body button.content-map-generate-btn,
+html body .content-map-generate-btn {
+  background: linear-gradient(180deg, #0f6b45 0%, #06452e 100%) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: none !important;
+  opacity: 1 !important;
+  box-shadow: 0 12px 26px rgba(6, 69, 46, 0.24) !important;
+  font-weight: 800 !important;
+}
+
+html body .map-actions button.content-map-generate-btn:disabled,
+html body button.content-map-generate-btn:disabled,
+html body .content-map-generate-btn:disabled {
+  background: linear-gradient(180deg, #0f6b45 0%, #06452e 100%) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 0.92 !important;
+  box-shadow: 0 8px 20px rgba(6, 69, 46, 0.16) !important;
+}
+
+html body .content-map-generate-btn *,
+html body .content-map-generate-btn:disabled * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* FINAL: rebuild funnel button dark green */
+html body .funnel-regenerate-button,
+html body button.funnel-regenerate-button,
+html body .funnel-generate-button,
+html body button.funnel-generate-button {
+  background: linear-gradient(180deg, #0f6b45 0%, #06452e 100%) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: none !important;
+  opacity: 1 !important;
+  box-shadow: 0 12px 26px rgba(6, 69, 46, 0.24) !important;
+  font-weight: 800 !important;
+}
+
+html body .funnel-regenerate-button:disabled,
+html body button.funnel-regenerate-button:disabled,
+html body .funnel-generate-button:disabled,
+html body button.funnel-generate-button:disabled {
+  background: linear-gradient(180deg, #0f6b45 0%, #06452e 100%) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 0.92 !important;
+  box-shadow: 0 8px 20px rgba(6, 69, 46, 0.16) !important;
+}
+
+html body .funnel-regenerate-button *,
+html body .funnel-generate-button * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* FINAL: calendar AI button must be clickable */
+html body .calendar-card-clickable {
+  cursor: pointer !important;
+  position: relative !important;
+}
+
+html body .calendar-ai-inline-button {
+  position: relative !important;
+  z-index: 5 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* FINAL: "Discuss with AI" modal must be immediately visible */
+html body .calendar-ai-modal-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10050 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px !important;
+  overflow-y: auto !important;
+  background: rgba(0, 0, 0, 0.48) !important;
+  box-sizing: border-box !important;
+}
+
+html body .calendar-ai-modal {
+  width: min(860px, calc(100vw - 48px)) !important;
+  max-height: calc(100dvh - 48px) !important;
+  margin: 0 auto !important;
+  overflow-y: auto !important;
+  border-radius: 28px !important;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28) !important;
+  transform: translateY(0) !important;
+}
+
+@media (max-width: 767px) {
+  html body .calendar-ai-modal-backdrop {
+    align-items: flex-end !important;
+    padding: 12px !important;
+  }
+
+  html body .calendar-ai-modal {
+    width: 100% !important;
+    max-height: calc(100dvh - 24px) !important;
+    border-radius: 24px 24px 18px 18px !important;
+  }
+}
+
+/* FINAL: Discuss with AI modal always opens from top */
+html body .calendar-ai-modal-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10050 !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  padding: 24px !important;
+  overflow-y: auto !important;
+  background: rgba(0, 0, 0, 0.48) !important;
+  box-sizing: border-box !important;
+}
+
+html body .calendar-ai-modal {
+  width: min(860px, calc(100vw - 48px)) !important;
+  max-height: calc(100dvh - 48px) !important;
+  margin: 0 auto 24px !important;
+  overflow-y: auto !important;
+  border-radius: 28px !important;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28) !important;
+  transform: none !important;
+  scroll-behavior: auto !important;
+}
+
+@media (max-width: 767px) {
+  html body .calendar-ai-modal-backdrop {
+    align-items: flex-start !important;
+    justify-content: center !important;
+    padding: 10px !important;
+  }
+
+  html body .calendar-ai-modal {
+    width: 100% !important;
+    max-height: calc(100dvh - 20px) !important;
+    margin: 0 auto 10px !important;
+    border-radius: 22px !important;
+  }
+}
+
+/* FINAL: AI discuss modal is always visible at top of viewport */
+html body.calendar-ai-body-locked {
+  overflow: hidden !important;
+}
+
+html body [data-calendar-ai-modal="true"].calendar-ai-modal-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483000 !important;
+
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+
+  width: 100vw !important;
+  height: 100dvh !important;
+  padding: 18px 24px 24px !important;
+
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+
+  background: rgba(0, 0, 0, 0.54) !important;
+}
+
+html body [data-calendar-ai-modal="true"] .calendar-ai-modal {
+  position: relative !important;
+  top: 0 !important;
+  left: auto !important;
+  right: auto !important;
+  transform: none !important;
+
+  width: min(880px, calc(100vw - 48px)) !important;
+  max-height: calc(100dvh - 36px) !important;
+  margin: 0 auto !important;
+
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+
+  border-radius: 28px !important;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.34) !important;
+  scroll-behavior: auto !important;
+}
+
+@media (max-width: 767px) {
+  html body [data-calendar-ai-modal="true"].calendar-ai-modal-backdrop {
+    padding: 10px !important;
+  }
+
+  html body [data-calendar-ai-modal="true"] .calendar-ai-modal {
+    width: 100% !important;
+    max-height: calc(100dvh - 20px) !important;
+    border-radius: 22px !important;
+  }
+}
+
+/* FINAL: Discuss with AI portal modal — always inside monitor viewport */
+html body [data-calendar-ai-modal="true"].calendar-ai-modal-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 2147483647 !important;
+
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+
+  padding: 18px 24px !important;
+  margin: 0 !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  background: rgba(0, 0, 0, 0.56) !important;
+  box-sizing: border-box !important;
+}
+
+html body [data-calendar-ai-modal="true"] .calendar-ai-modal {
+  position: relative !important;
+  top: 0 !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+
+  width: min(880px, calc(100vw - 48px)) !important;
+  max-height: calc(100vh - 36px) !important;
+  max-height: calc(100dvh - 36px) !important;
+
+  margin: 0 auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  border-radius: 26px !important;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.36) !important;
+}
+
+@media (max-width: 767px) {
+  html body [data-calendar-ai-modal="true"].calendar-ai-modal-backdrop {
+    padding: 10px !important;
+  }
+
+  html body [data-calendar-ai-modal="true"] .calendar-ai-modal {
+    width: 100% !important;
+    max-height: calc(100dvh - 20px) !important;
+    border-radius: 22px !important;
+  }
+}
+
+/* Calendar card button alignment */
+.calendar-card {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 236px;
+}
+
+.calendar-card .calendar-ai-inline-button {
+  margin-top: auto !important;
+  width: 100%;
+  min-height: 38px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.15;
+}
+
+/* Fix content map text overlap */
+.mind-map-card,
+.mindmap-card,
+.mind-node,
+.mindmap-node,
+.content-map-node,
+.map-node {
+  min-height: 92px !important;
+  height: auto !important;
+  overflow: hidden !important;
+}
+
+.mind-map-card h3,
+.mindmap-card h3,
+.mind-node h3,
+.mindmap-node h3,
+.content-map-node h3,
+.map-node h3 {
+  display: block !important;
+  margin: 0 0 8px !important;
+  padding: 0 !important;
+  font-size: 13px !important;
+  line-height: 1.22 !important;
+  font-weight: 900 !important;
+  color: #0f2417 !important;
+  max-height: 34px !important;
+  overflow: hidden !important;
+}
+
+.mind-map-card p,
+.mindmap-card p,
+.mind-node p,
+.mindmap-node p,
+.content-map-node p,
+.map-node p {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 11px !important;
+  line-height: 1.28 !important;
+  color: rgba(15, 36, 23, 0.78) !important;
+  max-height: 56px !important;
+  overflow: hidden !important;
+}
+
+.mind-map-card *,
+.mindmap-card *,
+.mind-node *,
+.mindmap-node *,
+.content-map-node *,
+.map-node * {
+  box-sizing: border-box !important;
 }

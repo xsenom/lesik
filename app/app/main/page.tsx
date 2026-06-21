@@ -183,6 +183,33 @@ function buildCalendarDays(calendar: CalendarItem[], startDate: string): Calenda
 }
 
 
+
+function ServiceFooter() {
+  return (
+    <footer className="service-footer">
+      <div className="service-footer-inner">
+        <div className="service-footer-brand">
+          <b>ЛЕС<span className="brand-ik">ik</span></b>
+          <p>Сервис для системного роста через контент, смыслы и воронку.</p>
+        </div>
+
+        <div className="service-footer-info">
+          <p><strong>ИП:</strong> Лецик Екатерина Андреевна</p>
+          <p><strong>ИНН:</strong> 720414883539</p>
+          <p><strong>ОГРНИП:</strong> 324723200018946</p>
+          <p><strong>Email:</strong> csenom@gmail.com</p>
+        </div>
+
+        <nav className="service-footer-links" aria-label="Документы">
+          <a href="/oferta" target="_blank">Публичная оферта</a>
+          <a href="/privacy" target="_blank">Политика обработки персональных данных</a>
+          <a href="/agreement" target="_blank">Пользовательское соглашение</a>
+        </nav>
+      </div>
+    </footer>
+  );
+}
+
 function PromoHero() {
   const featureCards = [
     { icon: "search", title: ["Анализ", "профиля"] },
@@ -273,7 +300,7 @@ function PromoHero() {
           <b>В ЕЖЕДНЕВНУЮ ИГРУ</b>
         </h1>
 
-        <div className="refHeroAction">
+        <div className="refHeroAction mobile-main-hero-fit">
           <Link href="/app/content-map">Построить карту</Link>
           <p>Собери свою стратегию продаж</p>
         </div>
@@ -1293,7 +1320,7 @@ export default function TrendsPage() {
                 <p>ИИ пишет посты и карусели за тебя</p>
               </div>
             </div>
-            <button className="onboard-cta" onClick={() => setOnboardStep("test")}>
+            <button className="onboard-cta profile-green-map-button" onClick={() => setOnboardStep("test")}>
               Пройти тест — узнать свой результат
             </button>
             <p className="onboard-note">Бесплатно · 5 вопросов · 2 минуты</p>
@@ -1519,7 +1546,7 @@ export default function TrendsPage() {
           minHeight: 660,
           overflow: "hidden",
           fontFamily: "var(--font-rubik, Rubik, Arial, sans-serif)"
-        }}>
+        }} className="main-hero-mobile-shell">
           {/* Фон деревьев */}
           <img
               src="/trees-bg.png"
@@ -1580,19 +1607,19 @@ export default function TrendsPage() {
               }}
             />
 
-<div style={{ position:"relative", zIndex:2, paddingBottom:0, paddingRight:0, paddingLeft:0 }}>
+<div className="main-hero-mobile-left" style={{ position:"relative", zIndex:2, paddingBottom:0, paddingRight:0, paddingLeft:0 }}>
             {/* Лого */}
-            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:28 }}>
+            <div className="main-hero-mobile-logo-row" style={{ display:"flex", alignItems:"center", gap:10, marginBottom:28 }}>
               <div style={{ width:50, height:50, borderRadius:18, background:"#1a3a2a", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                 <img src="/leaf-icon.png" style={{ width:28, height:28, filter:"brightness(0) invert(1)" }} alt=""/>
               </div>
               <span style={{ fontSize:26, fontWeight:900, color:"#0a2e18", letterSpacing:"-0.02em" }}>ЛЕС<span style={{ color:"#009b46" }}>ik</span></span>
               <span style={{ width:1, height:16, background:"rgba(0,0,0,0.2)", margin:"0 6px" }}/>
-              <span style={{ fontSize:18, fontWeight:500, color:"#aaa", letterSpacing:"0.06em", textTransform:"uppercase" }}>КЛИЕНТЫ ИЗ СОЦ СЕТЕЙ</span>
+              <span className="main-hero-mobile-tagline" style={{ fontSize:18, fontWeight:500, color:"#aaa", letterSpacing:"0.06em", textTransform:"uppercase" }}>КЛИЕНТЫ ИЗ СОЦ СЕТЕЙ</span>
             </div>
 
             {/* Заголовок */}
-            <h1 style={{ fontSize:"54px", fontWeight:900, lineHeight:1.05, margin:"0 0 6px", letterSpacing:"-0.04em" }}>
+            <h1 className="main-hero-mobile-title" style={{ fontSize:"54px", fontWeight:900, lineHeight:1.05, margin:"0 0 6px", letterSpacing:"-0.04em" }}>
               <span style={{ color:"#0a2e18" }}>Собери свою</span><br/>
               <span style={{ color:"#0a5c3a" }}>контент-воронку</span><br/>
               <span style={{ color:"#0a2e18" }}>с ботом</span>
@@ -1604,14 +1631,14 @@ export default function TrendsPage() {
             </svg>
 
             {/* Подзаголовок */}
-            <p style={{ fontSize:20, color:"#444", margin:"0 0 22px", lineHeight:1.5, maxWidth:"100%", fontWeight:500 }}>
-              Расскажи о себе и продукте —<br/><span style={{ whiteSpace:"nowrap" }}><strong style={{ color:"#0a5c3a", fontWeight:800 }}>получи готовую систему:</strong> что писать, куда вести людей</span><br/>и что делать каждый день
+            <p className="main-hero-mobile-subtitle" style={{ fontSize:20, color:"#444", margin:"0 0 22px", lineHeight:1.5, maxWidth:"100%", fontWeight:500 }}>
+              Расскажи о себе и продукте —<br/><span className="main-hero-mobile-nowrap-fix" style={{ whiteSpace:"normal" }}><strong style={{ color:"#0a5c3a", fontWeight:800 }}>получи готовую систему:</strong> что писать, куда вести людей</span><br/>и что делать каждый день
             </p>
 
             {/* Шаги */}
-            <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:8, marginBottom:24 }}>
+            <div className="main-hero-mobile-steps" style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:8, marginBottom:24 }}>
               {([["1","Заполни профиль — расскажи о себе и цели"],["2","ИИ соберёт карту контента под твою нишу"],["3","Получи календарь постов и готовые тексты"]] as [string,string][]).map(([n,t]) => (
-                <div key={n} style={{ display:"inline-flex", alignItems:"center", gap:12, background:"rgba(220,232,222,0.15)", border:"1px solid rgba(10,92,58,0.15)", borderRadius:18, padding:"10px 18px", backdropFilter:"blur(8px)" }}>
+                <div key={n} className="main-hero-mobile-step-pill" style={{ display:"inline-flex", alignItems:"center", gap:12, background:"rgba(220,232,222,0.15)", border:"1px solid rgba(10,92,58,0.15)", borderRadius:18, padding:"10px 18px", backdropFilter:"blur(8px)" }}>
                   <b style={{ width:26, height:26, borderRadius:18, background:"#0a5c3a", color:"#fff", fontSize:13, fontWeight:900, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>{n}</b>
                   <span className="step-item" style={{ fontSize:15, fontWeight:400, color:"#1a1a1a" }}>{t}</span>
                 </div>
@@ -1619,8 +1646,8 @@ export default function TrendsPage() {
             </div>
 
             {/* Кнопки */}
-            <div style={{ display:"flex", gap:10, flexWrap:"wrap", alignItems:"center", marginBottom:14 }}>
-              <Link href="/app/profile" style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"14px 24px", background:"#0a5c3a", borderRadius:18, fontSize:15, fontWeight:800, textDecoration:"none", boxShadow:"0 4px 16px rgba(10,92,58,0.35)" }}>
+            <div className="main-hero-mobile-actions" style={{ display:"flex", gap:10, flexWrap:"wrap", alignItems:"center", marginBottom:14 }}>
+              <Link href="/app/profile" style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"14px 24px", background:"#0a5c3a", borderRadius:18, fontSize:15, fontWeight:800, textDecoration:"none", boxShadow:"0 4px 16px rgba(10,92,58,0.35)" }} className="funnel-cta-soft-font">
                 <img src="/leaf-icon.png" style={{ width:22, height:22, filter:"brightness(0) invert(1)", flexShrink:0 }} alt=""/>
                 <span style={{ color:"#ffffff", WebkitTextFillColor:"#ffffff" }}>Собрать свою воронку →</span>
               </Link>
@@ -1637,7 +1664,7 @@ export default function TrendsPage() {
           </div>
 
           {/* Правая колонка */}
-          <div style={{ position:"relative", zIndex:2, height:620, display:"flex", alignItems:"center", justifyContent:"flex-end", gap:0, paddingBottom:0, paddingRight:8, overflow:"visible" }}>
+          <div className="main-hero-mobile-right" style={{ position:"relative", zIndex:2, height:620, display:"flex", alignItems:"center", justifyContent:"flex-end", gap:0, paddingBottom:0, paddingRight:8, overflow:"visible" }}>
             {/* Карточки */}
             <div style={{ position:"absolute", left:86, top:"50%", transform:"translateY(-50%)", display:"flex", flexDirection:"column", justifyContent:"center", gap:22, paddingBottom:0, zIndex:8, overflow:"visible" }}>
               {([
@@ -1696,9 +1723,9 @@ export default function TrendsPage() {
         </div>
       )}
       {testModalOpen && (
-        <div style={{ position:"fixed", inset:0, zIndex:1000, background:"rgba(0,0,0,0.5)", display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}
+        <div className="lesik-test-modal-overlay" style={{ position:"fixed", inset:0, zIndex:1000, background:"rgba(0,0,0,0.5)", display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}
           onClick={() => { setTestModalOpen(false); setOnboardStep("welcome"); setTestStep(0); }}>
-          <div style={{ position:"relative", width:"100%", maxWidth:700, borderRadius:18, background:"#f3efe6", overflow:"hidden", padding:"40px 44px 44px", backgroundImage:"url(/trees-bg.png)", backgroundSize:"cover", backgroundPosition:"right center", backgroundRepeat:"no-repeat" }}
+          <div className="lesik-test-modal-shell" style={{ position:"relative", width:"100%", maxWidth:700, borderRadius:18, background:"#f3efe6", overflow:"hidden", padding:"40px 44px 44px", backgroundImage:"url(/trees-bg.png)", backgroundSize:"cover", backgroundPosition:"right center", backgroundRepeat:"no-repeat" }}
             onClick={(e) => e.stopPropagation()}>
 
 
@@ -1728,7 +1755,7 @@ export default function TrendsPage() {
             </svg>
 
               {onboardStep !== "result" && (
-                <div style={{ position:"relative", background:"rgba(255,255,255,0.85)", borderRadius:18, padding:"28px 28px 24px", backdropFilter:"blur(8px)", border:"1px solid rgba(10,92,58,0.1)" }}>
+                <div className="lesik-test-question-card" style={{ position:"relative", background:"rgba(255,255,255,0.85)", borderRadius:18, padding:"28px 28px 24px", backdropFilter:"blur(8px)", border:"1px solid rgba(10,92,58,0.1)" }}>
                   <div style={{ display:"flex", gap:6, marginBottom:22 }}>
                     {testQuestions.map((_, i) => (
                       <div
@@ -1748,7 +1775,7 @@ export default function TrendsPage() {
                     {testQuestions[testStep]}
                   </p>
 
-                  <div style={{ display:"flex", flexWrap:"nowrap", gap:4, marginBottom:28 }}>
+                  <div className="lesik-test-rating-grid" style={{ display:"flex", flexWrap:"nowrap", gap:4, marginBottom:28 }}>
                     {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
                       <button
                         key={n}
@@ -1879,8 +1906,7 @@ export default function TrendsPage() {
                 <div style={{ display:"inline-block", padding:"6px 16px", background:"rgba(10,92,58,0.1)", color:"#0a5c3a", borderRadius:18, fontSize:14, fontWeight:700, marginBottom:24 }}>
                   Твой счёт: {testTotal} из 50
                 </div>
-                <a href="/app/profile" onClick={() => setTestModalOpen(false)}
-                  style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:"16px", background:"#0a5c3a", borderRadius:18, textDecoration:"none", fontSize:16, fontWeight:800, boxShadow:"0 4px 18px rgba(10,92,58,0.4)" }}>
+                <a href="/app/profile" className="profile-green-map-button" onClick={() => setTestModalOpen(false)} style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:"16px", background:"#0a5c3a", borderRadius:18, textDecoration:"none", fontSize:16, fontWeight:800, boxShadow:"0 4px 18px rgba(10,92,58,0.4)" }}>
                   <span style={{color:"#ffffff !important" as any, fontWeight:800, WebkitTextFillColor:"#ffffff"}}>Построить свою систему →</span>
                 </a>
               </div>
@@ -1907,12 +1933,17 @@ export default function TrendsPage() {
           </div>
 
           {calendarDays.length === 0 ? (
-            <div className="daily-goals-empty">
-              Сначала сформируйте карту контента. После этого ЛЕС<span className="brand-ik">ik</span> покажет цели
-              на день, и они будут сформированы ИИ по каждому дню.
+            <div className="daily-goals-empty-combined">
+              <p className="daily-goals-regular-text">
+                Сначала сформируйте карту контента. После этого ЛЕС<span className="brand-ik daily-goals-brand-regular">ik</span> покажет цели на день, и они будут сформированы ИИ по каждому дню
+              </p>
+
+              <Link href="/app/content-map" className="daily-goals-map-button">
+                Сформировать карту
+              </Link>
             </div>
           ) : !selectedDay ? (
-            <div className="daily-goals-empty">Выберите день в календаре.</div>
+            <div className="daily-goals-empty daily-goals-empty-clean">Выберите день в календаре.</div>
           ) : (
             <>
               <div className="insta-selected-day-card">
@@ -1949,7 +1980,7 @@ export default function TrendsPage() {
               >
                 Открыть календарь
               </button>
-            </>
+</>
           )}
         </section>
 
@@ -1993,16 +2024,8 @@ export default function TrendsPage() {
         )}
       </div>
 
-      {!calendarDays.length && (
-        <section className="ios-glass-card empty-calendar-card">
-          <h2>Карта контента ещё не создана</h2>
-          <p>
-            Сначала сформируйте карту. После этого появятся календарь, цели на день
-            и динамика.
-          </p>
-          <Link href="/app/content-map">Сформировать карту</Link>
-        </section>
-      )}
+      
+
 
       <section className="ios-glass-card home-video-section">
         <div className="video-head">
@@ -2179,7 +2202,7 @@ export default function TrendsPage() {
           <p>Здесь будет раздел с подсказками, ответами и быстрыми ссылками.</p>
         </div>
 
-        <Link href="/app/profile">Проверить профиль</Link>
+        
       </footer>
 
       {calendarOpen && (
@@ -2284,6 +2307,7 @@ export default function TrendsPage() {
         </div>
       )}
     </section>
+
   );
 }
 

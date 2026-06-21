@@ -7,11 +7,29 @@ import {
   sendAccessEmail,
   upsertUserFromPaidOrder,
 } from "@/lib/workbookAccess";
+import {
+  getServiceOrder,
+  markServiceOrderPaid,
+  sendServicePaymentTelegram,
+  upsertServiceAccessFromPaidOrder,
+} from "@/lib/serviceAccess";
 
 export const dynamic = "force-dynamic";
 
 function md5(value: string) {
   return crypto.createHash("md5").update(value).digest("hex").toUpperCase();
+}
+
+
+function amountToCents(value: string) {
+  const normalized = String(value || "").replace(",", ".").trim();
+  const number = Number(normalized);
+
+  if (!Number.isFinite(number)) {
+    return NaN;
+  }
+
+  return Math.round(number * 100);
 }
 
 function requiredEnv(name: string) {
@@ -57,20 +75,65 @@ export async function POST(request: NextRequest) {
 
     const shpName = String(data.Shp_name || "");
     const shpPhone = String(data.Shp_phone || "");
+    const shpEmail = String(data.Shp_email || "").trim().toLowerCase();
+    const shpProduct = String(data.Shp_product || "");
 
-    const expectedSignature = md5(
-      `${outSum}:${invId}:${password2}:Shp_name=${shpName}:Shp_phone=${shpPhone}`
-    );
+    const expectedSignature =
+      shpProduct === "content_map_full"
+        ? md5(
+            `${outSum}:${invId}:${password2}:Shp_email=${shpEmail}:Shp_name=${shpName}:Shp_phone=${shpPhone}:Shp_product=${shpProduct}`
+          )
+        : md5(
+            `${outSum}:${invId}:${password2}:Shp_name=${shpName}:Shp_phone=${shpPhone}`
+          );
 
     if (signatureValue !== expectedSignature) {
       console.error("Robokassa bad signature", {
         outSum,
         invId,
+        shpProduct,
         signatureValue,
         expectedSignature,
       });
 
       return new NextResponse("bad sign", { status: 400 });
+    }
+
+    if (shpProduct === "content_map_full") {
+      const serviceOrder = getServiceOrder(invId);
+
+      if (!serviceOrder) {
+        console.error("Robokassa service order not found", { invId, outSum });
+        return new NextResponse("service order not found", { status: 404 });
+      }
+
+      if (amountToCents(serviceOrder.outSum) !== amountToCents(outSum)) {
+        console.error("Robokassa service bad sum", {
+          invId,
+          expected: serviceOrder.outSum,
+          received: outSum,
+          expectedCents: amountToCents(serviceOrder.outSum),
+          receivedCents: amountToCents(outSum),
+        });
+        return new NextResponse("bad sum", { status: 400 });
+      }
+
+      const paidServiceOrder = markServiceOrderPaid(invId) || serviceOrder;
+      upsertServiceAccessFromPaidOrder(paidServiceOrder);
+      await sendServicePaymentTelegram(paidServiceOrder);
+
+      console.log("ROBOKASSA SERVICE PAYMENT SUCCESS", {
+        outSum,
+        invId,
+        email: paidServiceOrder.email,
+      });
+
+      return new NextResponse(`OK${invId}`, {
+        status: 200,
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+        },
+      });
     }
 
     const order = getOrder(invId);
