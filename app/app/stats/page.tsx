@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 type StatsState = {
   publishedTotal: number;
@@ -56,6 +56,15 @@ function safeJsonParse(value: string | null) {
 }
 
 function collectGoalStats(email: string): StatsState {
+  if (typeof window === "undefined") {
+    return {
+      publishedTotal: 0,
+      publishedMonth: 0,
+      activeDays: 0,
+      lastDate: "",
+    };
+  }
+
   const now = new Date();
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
@@ -132,20 +141,8 @@ function formatDate(value: string) {
 }
 
 export default function StatsPage() {
-  const [email, setEmail] = useState("");
-  const [stats, setStats] = useState<StatsState>({
-    publishedTotal: 0,
-    publishedMonth: 0,
-    activeDays: 0,
-    lastDate: "",
-  });
-
-  useEffect(() => {
-    const currentEmail = getStoredEmail();
-
-    setEmail(currentEmail);
-    setStats(collectGoalStats(currentEmail));
-  }, []);
+  const [email] = useState(() => getStoredEmail());
+  const [stats] = useState<StatsState>(() => collectGoalStats(getStoredEmail()));
 
   const hasStats = stats.publishedTotal > 0;
 

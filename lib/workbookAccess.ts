@@ -106,6 +106,30 @@ export function verifyPassword(password: string, passwordHash: string) {
   );
 }
 
+function safeEqualHex(left: string, right: string) {
+  const leftBuffer = Buffer.from(left, "hex");
+  const rightBuffer = Buffer.from(right, "hex");
+
+  if (leftBuffer.length !== rightBuffer.length) return false;
+
+  return crypto.timingSafeEqual(leftBuffer, rightBuffer);
+}
+
+function escapeHtml(value: string) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function maskEmail(email: string) {
+  const [name = "", domain = ""] = String(email || "").split("@");
+  if (!domain) return "***";
+  return `${name.slice(0, 2)}***@${domain}`;
+}
+
 export function upsertUserFromPaidOrder(order: Order, password: string) {
   const users = readJson<WorkbookUser>(USERS_PATH);
   const email = order.email.toLowerCase();
@@ -157,7 +181,7 @@ export function verifyAuthToken(token: string | undefined) {
   const payload = `${email}:${timestamp}`;
   const expected = crypto.createHmac("sha256", secret).update(payload).digest("hex");
 
-  if (signature !== expected) return null;
+  if (!safeEqualHex(signature, expected)) return null;
 
   const age = Date.now() - Number(timestamp);
   const maxAge = 1000 * 60 * 60 * 24 * 30;
@@ -180,7 +204,11 @@ export async function sendAccessEmail(params: {
   const from = process.env.SMTP_FROM || user;
 
   if (!host || !user || !pass || !from) {
-    console.log("SMTP не настроен. Доступ для клиента:", params);
+    console.log("SMTP не настроен. Доступ для клиента:", {
+      email: maskEmail(params.email),
+      name: params.name,
+      hasPassword: Boolean(params.password),
+    });
     return;
   }
 
@@ -195,6 +223,9 @@ export async function sendAccessEmail(params: {
   });
 
   const loginUrl = "https://ekaterinaletsik.ru/workbook/login";
+  const safeName = escapeHtml(params.name);
+  const safeEmail = escapeHtml(params.email);
+  const safePassword = escapeHtml(params.password);
 
   await transporter.sendMail({
     from,
@@ -216,12 +247,12 @@ ${loginUrl}
 Екатерина Лецик`,
     html: `
       <div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.5;color:#111">
-        <p>Здравствуйте, ${params.name}!</p>
+        <p>Здравствуйте, ${safeName}!</p>
         <p>Спасибо за оплату рабочей тетради.</p>
         <p><b>Доступ в личный кабинет:</b><br/>
         <a href="${loginUrl}">${loginUrl}</a></p>
-        <p><b>Логин:</b> ${params.email}<br/>
-        <b>Пароль:</b> ${params.password}</p>
+        <p><b>Логин:</b> ${safeEmail}<br/>
+        <b>Пароль:</b> ${safePassword}</p>
         <p>В личном кабинете вы сможете скачать PDF-файл рабочей тетради.</p>
         <p>С уважением,<br/>Екатерина Лецик</p>
       </div>
@@ -266,7 +297,11 @@ export async function sendPasswordResetEmail(params: {
   const from = process.env.SMTP_FROM || user;
 
   if (!host || !user || !pass || !from) {
-    console.log("SMTP не настроен. Новый пароль для клиента:", params);
+    console.log("SMTP не настроен. Новый пароль для клиента:", {
+      email: maskEmail(params.email),
+      name: params.name,
+      hasPassword: Boolean(params.password),
+    });
     return;
   }
 
@@ -281,6 +316,9 @@ export async function sendPasswordResetEmail(params: {
   });
 
   const loginUrl = "https://ekaterinaletsik.ru/workbook/login";
+  const safeName = escapeHtml(params.name);
+  const safeEmail = escapeHtml(params.email);
+  const safePassword = escapeHtml(params.password);
 
   await transporter.sendMail({
     from,
@@ -300,16 +338,15 @@ ${loginUrl}
 Екатерина Лецик`,
     html: `
       <div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.5;color:#111">
-        <p>Здравствуйте, ${params.name}!</p>
+        <p>Здравствуйте, ${safeName}!</p>
         <p>Мы сформировали новый пароль для входа в личный кабинет.</p>
         <p><b>Вход:</b><br/>
         <a href="${loginUrl}">${loginUrl}</a></p>
-        <p><b>Логин:</b> ${params.email}<br/>
-        <b>Новый пароль:</b> ${params.password}</p>
+        <p><b>Логин:</b> ${safeEmail}<br/>
+        <b>Новый пароль:</b> ${safePassword}</p>
         <p>С уважением,<br/>Екатерина Лецик</p>
       </div>
     `,
   });
 }
-
 

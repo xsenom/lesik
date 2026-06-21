@@ -1,15 +1,9 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { Rubik } from "next/font/google";
 import styles from "../workbook.module.css";
 import { verifyAuthToken } from "@/lib/workbookAccess";
 
-const rubik = Rubik({
-  subsets: ["cyrillic", "latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  display: "swap",
-  variable: "--font-rubik",
-});
+const rubik = { variable: "" };
 
 export default async function WorkbookCabinetPage() {
   const cookieStore = await cookies();

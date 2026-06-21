@@ -1,14 +1,8 @@
 "use client";
 
-import { Rubik } from "next/font/google";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-const rubik = Rubik({
-  subsets: ["cyrillic", "latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  display: "swap",
-  variable: "--font-rubik",
-});
+const rubik = { variable: "" };
 
 function normalizeRuKzPhone(value: string) {
   const digits = String(value || "").replace(/\D/g, "");
@@ -39,14 +33,12 @@ function isValidRuKzPhone(value: string) {
 }
 
 export default function ServicePaymentPage() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return new URLSearchParams(window.location.search).get("email") || "";
+  });
   const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState("");
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setEmail(params.get("email") || "");
-  }, []);
 
   return (
     <main className={rubik.variable} style={{

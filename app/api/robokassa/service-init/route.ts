@@ -141,8 +141,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: "Не удалось создать ссылку на оплату.",
-        debug: message,
+        error: "Не удалось создать ссылку на оплату." +
+          (process.env.NODE_ENV === "development" ? ` ${message}` : ""),
       },
       { status: 500 }
     );

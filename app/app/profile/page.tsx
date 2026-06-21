@@ -16,6 +16,16 @@ type Answers = {
   blocker: string;
 };
 
+type ProfileTestResult = {
+  label?: string;
+  desc?: string;
+  days?: string;
+  level?: string;
+  focus?: string[];
+  score?: number;
+  maxScore?: number;
+};
+
 type ProfileDetails = {
   email: string;
   notify_email: boolean;
@@ -128,53 +138,20 @@ const basicQuestions = [
 ] as const;
 
 export default function ProfilePage() {
-
-  // LESIK_PROFILE_PAGE_LOAD_TEST_RESULT
-  
-
-
-useEffect(() => {
-    const loadProfileTestResult = () => {
-      try {
-        const raw = window.localStorage.getItem("lesik_test_result");
-        if (!raw) {
-          setProfileTestResult(null);
-          return;
-        }
-
-        const parsed = JSON.parse(raw);
-        setProfileTestResult(parsed?.label ? parsed : null);
-      } catch {
-        setProfileTestResult(null);
-      }
-    };
-
-    loadProfileTestResult();
-
-    window.addEventListener("focus", loadProfileTestResult);
-    window.addEventListener("storage", loadProfileTestResult);
-
-  
-  const normalizeNicheForPositioning = (value: string) => {
-    const raw = (value || "").trim();
-    const lower = raw.toLowerCase();
-
-    if (!raw) return "чат-ботам";
-    if (lower.includes("чат") && lower.includes("бот")) return "чат-ботам";
-
-    return lower;
-  };
-
-  const positioningText = `${answers.client_type || "Эксперт"} по ${normalizeNicheForPositioning(answers.niche || "чат-боты")}`;
-
-  return () => {
-      window.removeEventListener("focus", loadProfileTestResult);
-      window.removeEventListener("storage", loadProfileTestResult);
-    };
-  }, []);
-
   const [step, setStep] = useState(0);
-  const [profileTestResult, setProfileTestResult] = useState<any>(null);
+  const [profileTestResult, setProfileTestResult] = useState<ProfileTestResult | null>(() => {
+    if (typeof window === "undefined") return null;
+
+    try {
+      const raw = window.localStorage.getItem("lesik_test_result");
+      if (!raw) return null;
+
+      const parsed = JSON.parse(raw) as ProfileTestResult;
+      return parsed?.label ? parsed : null;
+    } catch {
+      return null;
+    }
+  });
   const [introAccepted, setIntroAccepted] = useState(false);
   const [privacyChecked, setPrivacyChecked] = useState(false);
   const [showPrimaryPlatform, setShowPrimaryPlatform] = useState(false);
@@ -208,6 +185,34 @@ useEffect(() => {
   const [answers, setAnswers] = useState<Answers>(emptyAnswers);
 
   useEffect(() => {
+    const loadProfileTestResult = () => {
+      let nextResult: ProfileTestResult | null = null;
+
+      try {
+        const raw = window.localStorage.getItem("lesik_test_result");
+        if (raw) {
+          const parsed = JSON.parse(raw) as ProfileTestResult;
+          nextResult = parsed?.label ? parsed : null;
+        }
+      } catch {
+        nextResult = null;
+      }
+
+      setProfileTestResult(nextResult);
+    };
+
+    queueMicrotask(loadProfileTestResult);
+
+    window.addEventListener("focus", loadProfileTestResult);
+    window.addEventListener("storage", loadProfileTestResult);
+
+    return () => {
+      window.removeEventListener("focus", loadProfileTestResult);
+      window.removeEventListener("storage", loadProfileTestResult);
+    };
+  }, []);
+
+  useEffect(() => {
     const serviceEmail = (
       answers.email ||
       (typeof window !== "undefined" ? window.localStorage.getItem("lesik_email") : "") ||
@@ -215,8 +220,10 @@ useEffect(() => {
     ).trim().toLowerCase();
 
     if (!serviceEmail) {
-      setServiceAccessPaid(false);
-      setServiceAccessUntilText("");
+      queueMicrotask(() => {
+        setServiceAccessPaid(false);
+        setServiceAccessUntilText("");
+      });
       return;
     }
 
@@ -250,9 +257,11 @@ useEffect(() => {
     const email = localStorage.getItem("lesik_email") || "";
     const savedAvatar = localStorage.getItem("lesik_avatar") || "";
 
-    setAvatar(savedAvatar);
-    setAnswers((prev) => ({ ...prev, email }));
-    setDetails((prev) => ({ ...prev, email }));
+    queueMicrotask(() => {
+      setAvatar(savedAvatar);
+      setAnswers((prev) => ({ ...prev, email }));
+      setDetails((prev) => ({ ...prev, email }));
+    });
 
     if (!email) return;
 
@@ -619,11 +628,11 @@ useEffect(() => {
   };
   useEffect(() => {
     if (!socialAnalysisLoading) {
-      setSocialAnalysisProgress(0);
+      queueMicrotask(() => setSocialAnalysisProgress(0));
       return;
     }
 
-    setSocialAnalysisProgress(5);
+    queueMicrotask(() => setSocialAnalysisProgress(5));
 
     const timer = window.setInterval(() => {
       setSocialAnalysisProgress((value) => {
@@ -653,7 +662,7 @@ const runSocialLinksAnalysis = async () => {
       return;
     }
 
-    setSocialAnalysisProgress(5);
+    queueMicrotask(() => setSocialAnalysisProgress(5));
     setSocialAnalysisLoading(true);
 
     try {

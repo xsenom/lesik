@@ -16,26 +16,38 @@ type LesikTestResult = {
 
 export default function LesikTestResultInsight() {
   const pathname = usePathname();
-  const [result, setResult] = useState<LesikTestResult | null>(null);
+  const [result, setResult] = useState<LesikTestResult | null>(() => {
+    if (typeof window === "undefined") return null;
 
-  useEffect(() => {
     try {
       const raw = localStorage.getItem("lesik_test_result");
-      if (!raw) {
-        setResult(null);
-        return;
-      }
+      if (!raw) return null;
 
       const parsed = JSON.parse(raw) as LesikTestResult;
-      if (!parsed?.label) {
-        setResult(null);
-        return;
+      return parsed?.label ? parsed : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    const syncResult = () => {
+      let nextResult: LesikTestResult | null = null;
+
+    try {
+      const raw = localStorage.getItem("lesik_test_result");
+        if (raw) {
+          const parsed = JSON.parse(raw) as LesikTestResult;
+          nextResult = parsed?.label ? parsed : null;
+        }
+      } catch {
+        nextResult = null;
       }
 
-      setResult(parsed);
-    } catch {
-      setResult(null);
-    }
+      setResult(nextResult);
+    };
+
+    queueMicrotask(syncResult);
   }, [pathname]);
 
   const isProfile = pathname?.includes("/app/profile");
